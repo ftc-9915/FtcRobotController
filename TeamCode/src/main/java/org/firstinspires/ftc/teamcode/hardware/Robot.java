@@ -13,7 +13,7 @@ public class Robot {
     double wheelDiameter = 4;
     double wheelInchesPerRotation = Math.PI * wheelDiameter;
     int motorTicksPerRotation = 1120;
-    double gearRatioMotorToWheel = 2/1;
+    double gearRatioMotorToWheel = 1.0/2.0;
     // double type for higher accuracy when multiplying by distanceInch in driveForward() method
     public double robotTicksPerInch = motorTicksPerRotation / (gearRatioMotorToWheel * wheelInchesPerRotation);
 
