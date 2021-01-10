@@ -46,10 +46,11 @@ public class RoadrunnerAutoTest extends LinearOpMode {
         Pose2d zoneCPoseBlue = new Pose2d(48.0, 48.0, Math.toRadians(20.0));
         Pose2d parkingPosition =  new Pose2d(12.0, 48.0, Math.toRadians(0.0));
 
-        Trajectory myTrajectory = drive.trajectoryBuilder(startPoseBlue2)
-                .splineTo(zoneCPoseBlue.vec(), zoneCPoseBlue.getHeading())
-                .lineToSplineHeading(parkingPosition)
+        Trajectory myTrajectory = drive.trajectoryBuilder(new Pose2d())
+                .strafeRight(10)
+                .forward(5)
                 .build();
+
 
         telemetry.addLine("Waiting for start");
         telemetry.update();
