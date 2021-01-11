@@ -23,21 +23,25 @@ public class AutonomousTest extends LinearOpMode {
         Pose2d placeGoalPose = new Pose2d(22, 24, Math.toRadians(0.0));
         Pose2d pickUpGoalPose = new Pose2d(-63,63, Math.toRadians(180.0));
 
-        Trajectory goToShootingPose = drive.trajectoryBuilder(shootingPose)
-                .forward(1)
-                .build();
 
-        Trajectory goToPlaceGoalPose = drive.trajectoryBuilder(placeGoalPose)
-                .forward(1)
-                .build();
-
-        Trajectory goToPickUpGoalPose = drive.trajectoryBuilder(pickUpGoalPose)
-                .forward(1)
-                .build();
 
         waitForStart();
 
         if (isStopRequested()) return;
+
+
+
+        Trajectory goToShootingPose = drive.trajectoryBuilder(CoordinateConstants.START_POS_BLUE_2)
+                .splineTo(shootingPose.vec(), shootingPose.getHeading())
+                .build();
+
+        Trajectory goToPlaceGoalPose = drive.trajectoryBuilder(placeGoalPose)
+                .splineTo(placeGoalPose.vec(), placeGoalPose.getHeading())
+                .build();
+
+        Trajectory goToPickUpGoalPose = drive.trajectoryBuilder(pickUpGoalPose)
+                .splineTo(pickUpGoalPose.vec(), pickUpGoalPose.getHeading())
+                .build();
 
         drive.followTrajectory(goToShootingPose);
 
