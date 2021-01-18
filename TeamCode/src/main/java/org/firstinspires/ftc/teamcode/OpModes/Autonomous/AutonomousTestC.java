@@ -24,10 +24,10 @@ public class AutonomousTestC extends LinearOpMode {
     public static int armPos2 = -400;
 
     public static int testX = -35;
-    public static int testY = 55;
+    public static int testY = 54;
 
     Pose2d shootingPose = new Pose2d(0, 24, Math.toRadians(0.0));
-    Pose2d placeGoalPose = new Pose2d(48, 48, Math.toRadians(0.0));
+    Pose2d placeGoalPose = new Pose2d(48, 55, Math.toRadians(0.0));
     Pose2d pickUpGoalPose1 = new Pose2d(-24, testY, Math.toRadians(180.0));
     Pose2d pickUpGoalPose2 = new Pose2d(testX, testY, Math.toRadians(180.0));
     Pose2d placeSecondGoalPose1 = new Pose2d(48, 57, Math.toRadians(0.0));

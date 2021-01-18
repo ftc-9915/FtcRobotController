@@ -31,7 +31,7 @@ public class AutonomousTestB extends LinearOpMode {
     Pose2d pickUpGoalPose1 = new Pose2d(-24, testY, Math.toRadians(180.0));
     Pose2d pickUpGoalPose2 = new Pose2d(testX, testY, Math.toRadians(180.0));
     Pose2d placeSecondGoalPose1 = new Pose2d(27, 57, Math.toRadians(0.0));
-    Pose2d placeSecondGoalPose2 = new Pose2d(20, 35, Math.toRadians(0.0));
+    Pose2d placeSecondGoalPose2 = new Pose2d(20, 27, Math.toRadians(0.0));
 
 
 
@@ -118,7 +118,7 @@ public class AutonomousTestB extends LinearOpMode {
 
         sleep(1000);
 
-        armMotor.setTargetPosition(armPos);
+        armMotor.setTargetPosition(-200);
         armMotor.setPower(0.3);
 
 

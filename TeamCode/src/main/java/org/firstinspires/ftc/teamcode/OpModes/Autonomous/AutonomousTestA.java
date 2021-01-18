@@ -20,10 +20,10 @@ public class AutonomousTestA extends LinearOpMode {
 
     public DcMotor armMotor;
     public Servo clawServo;
-    public static int armPos = -500;
-    public static int armPos2 = -400;
+    public static int armPos = -525;
+    public static int armPos2 = -500;
 
-    public static int testX = -35;
+    public static int testX = -37;
     public static int testY = 55;
 
     Pose2d shootingPose = new Pose2d(0, 24, Math.toRadians(0.0));
@@ -31,8 +31,8 @@ public class AutonomousTestA extends LinearOpMode {
 
     Pose2d pickUpGoalPose1 = new Pose2d(-24, testY, Math.toRadians(180.0));
     Pose2d pickUpGoalPose2 = new Pose2d(testX, testY, Math.toRadians(180.0));
-    Pose2d placeSecondGoalPose1 = new Pose2d(0, 57, Math.toRadians(0.0));
-    Pose2d parkingPose = new Pose2d(20, 30, Math.toRadians(0.0));
+    Pose2d placeSecondGoalPose = new Pose2d(0, 57, Math.toRadians(0.0));
+    Pose2d parkingPose = new Pose2d(10, 30, Math.toRadians(0.0));
 
 
 
@@ -71,25 +71,30 @@ public class AutonomousTestA extends LinearOpMode {
         Trajectory goToPickUpGoalPose1 = drive.trajectoryBuilder(goToShootingandPlaceGoalPose.end())
                 .addDisplacementMarker(()->{
                     clawServo.setPosition(CLAW_OPEN_POS);
+                    armMotor.setTargetPosition(-100);
+                    armMotor.setPower(0.3);
+                    sleep(500);
                 })
                 .lineToLinearHeading(pickUpGoalPose1)
                 .build();
 
         Trajectory goToPickUpGoalPose2 = drive.trajectoryBuilder(goToPickUpGoalPose1.end())
-                .lineToConstantHeading(pickUpGoalPose2.vec())
-                .addDisplacementMarker(() -> {
-                    clawServo.setPosition(CLAW_CLOSE_POS);
-                })
-                .build();
-
-
-        Trajectory goToPlaceSecondGoalPart1 = drive.trajectoryBuilder(goToPickUpGoalPose2.end())
                 .addDisplacementMarker(() -> {
                     armMotor.setTargetPosition(armPos2);
                     armMotor.setPower(0.3);
                     sleep(500);
                 })
-                .lineToSplineHeading(placeSecondGoalPose1)
+                .lineToConstantHeading(pickUpGoalPose2.vec())
+                .build();
+
+
+        Trajectory goToPlaceSecondGoalPart1 = drive.trajectoryBuilder(goToPickUpGoalPose2.end())
+                .addDisplacementMarker(() -> {
+//                    armMotor.setTargetPosition(armPos2);
+//                    armMotor.setPower(0.3);
+//                    sleep(500);
+                })
+                .lineToSplineHeading(placeSecondGoalPose)
                 .build();
 
         Trajectory goToParking = drive.trajectoryBuilder(goToPlaceSecondGoalPart1.end())
@@ -106,6 +111,8 @@ public class AutonomousTestA extends LinearOpMode {
         sleep(1000);
 
         drive.followTrajectory(goToPickUpGoalPose2);
+
+        clawServo.setPosition(CLAW_CLOSE_POS);
 
         sleep(1000);
 
