@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.Tests;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.hardware.Robot;
+import org.firstinspires.ftc.teamcode.Common.Robot;
 
 @TeleOp(name = "Strafe Test", group = "test")
 public class StrafeTest extends LinearOpMode {

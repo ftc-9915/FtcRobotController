@@ -1,5 +1,6 @@
-package org.firstinspires.ftc.teamcode.OpModes.Autonomous;
+package org.firstinspires.ftc.teamcode.OpModes.Vision;
 
+import org.firstinspires.ftc.teamcode.Common.RingPosition;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -39,15 +40,6 @@ public class VisionPipeline extends OpenCvPipeline {
     private int avgCbValue;
     public volatile RingPosition position;
 
-    /**
-     * An enum to define the ring position
-     */
-    public enum RingPosition
-    {
-        FOUR,
-        ONE,
-        NONE
-    }
 
     /**
      * An enum to define the viewfinder colorspace

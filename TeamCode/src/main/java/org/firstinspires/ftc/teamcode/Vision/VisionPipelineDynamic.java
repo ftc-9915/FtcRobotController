@@ -10,6 +10,7 @@ are then used to determine the most accurate Ring Position.
 
 package org.firstinspires.ftc.teamcode.Vision;
 
+import org.firstinspires.ftc.teamcode.Common.RingPosition;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -38,15 +39,8 @@ import static org.opencv.core.CvType.CV_64FC1;
 public class VisionPipelineDynamic extends OpenCvPipeline {
 
 
-    /**
-     * An enum to define the ring position
-     */
-    public enum RingPosition
-    {
-        FOUR,
-        ONE,
-        NONE
-    }
+
+
 
     public static final double MM_TO_INCHES = 0.0393701;
     public static final double FOCAL_LENGTH_MM = 16.207;

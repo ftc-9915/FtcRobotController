@@ -3,6 +3,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.Common.RingPosition;
 import org.firstinspires.ftc.teamcode.Vision.VisionPipelineDynamic;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
@@ -21,7 +22,7 @@ public class AutonomousFramework extends LinearOpMode {
     boolean B = false;
     OpenCvCamera webcam;
 
-
+    RingPosition ringConfiguration;
 
     DcMotor armMotor; // this stuff is going to be replaced by robot class later
 
@@ -69,73 +70,16 @@ public class AutonomousFramework extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            switch (state) {
-                case 1: // Grab wobble goal
-                    /*
-                    clawServo.setPosition(CLAW_OPEN_POS);
-                    armMotor.setTargetPosition(-500); i totally didn't forget how to write autonomous code
-                    armMotor.setPower(1.0);
-                    clawServo.setPosition(CLAW_CLOSE_POS);
-                    armMotor.setTargetPosition(0);
-                    armMotor.setPower(1.0);
-                    goToNextState();
-                     */
-                    break;
 
-                case 2: // Drive forward to rings
-                    break;
-
-                case 3: // Detect number of rings, determine A, B, C
-
-                case 4: // Straighten robot
-                    if (B) {
-                        goToNextState(); // path B
-                    } else {
-                        goToState(7); // path A/C
-                    }
-                    break;
-
-                case 5: // Path B: Go straight forward until 2 lines have been detected
-                    break;
-
-                case 6: // Path B: Go forward 12 inches
-                    goToState(11); // this is the drop wobble goal state
-                    break;
-
-                case 7: // Path A/C: Strafe towards wall
-                    if (A) {
-                        goToNextState(); // path A
-                    } else {
-                        goToState(9); // path C
-                    }
-                break;
-
-                case 8: // Path A: Go straight forward until 2 lines have been detected
-                    goToState(11); // this is the drop wobble goal state
-                    break;
-
-                case 9: // Path C: Go straight forward until 4 lines have been detected
-                    break;
-
-                case 10: // Path C: Go forward 12 inches
-                    break;
-
-                case 11: // Release wobble goal
-                    // clawServo.setPosition(CLAW_OPEN_POS);
-                    break;
-
-                case 12: // Back up behind white line
-                    break;
-
-                case 13: // Strafe towards center until 36 inches away from wall
-                    break;
-
-                case 14: // Launch rings
-                    break;
-
-                case 15: // Park on white line
-                    break;
-
+            switch (ringConfiguration) {
+                case NONE:
+                    //Execute path A
+                case ONE:
+                    //Execute path B
+                case FOUR:
+                    //Execute path C
+                default:
+                    ringConfiguration = pipeline.position;
             }
 
         }

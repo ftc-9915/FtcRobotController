@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.Vision;
 
+import org.firstinspires.ftc.teamcode.Common.RingPosition;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -19,15 +20,6 @@ import java.util.Comparator;
 
 public class VisionPipelineDynamicSearchAll extends OpenCvPipeline {
 
-    /**
-     * An enum to define the ring position
-     */
-    public enum RingPosition
-    {
-        FOUR,
-        ONE,
-        NONE
-    }
 
 
 
