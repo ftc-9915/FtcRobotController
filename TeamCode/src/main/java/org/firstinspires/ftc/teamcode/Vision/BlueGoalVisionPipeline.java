@@ -42,43 +42,11 @@ import java.util.ArrayList;
 @Config
 public class BlueGoalVisionPipeline extends OpenCvPipeline {
 
-    public class Fraction {
-        private int numerator, denominator;
-        Fraction(long a, long b) {
-            numerator = (int) (a / gcd(a, b));
-            denominator = (int) (b / gcd(a, b));
-        }
-        /**
-         * @return the greatest common denominator
-         */
-        private long gcd(long a, long b) {
-            return b == 0 ? a : gcd(b, a % b);
-        }
-        public int getNumerator() {
-            return numerator;
-        }
-        public int getDenominator() {
-            return denominator;
-        }
-    }
 
 
     //Pinhole Camera Variables
     public static final double CAMERA_HEIGHT = 8.25; //camera height inches for distance calculation
     public static final double HIGH_GOAL_HEIGHT = 35.875; //camera height inches for distance calculation
-
-    private int imageWidth;
-    private int imageHeight;
-
-    private double cameraPitchOffset;
-    private double cameraYawOffset;
-
-    private double fov;
-    private double imageArea;
-    private double offsetCenterX;
-    private double offsetCenterY;
-    private double horizontalFocalLength;
-    private double verticalFocalLength;
 
 
     //Boundary Line (Only detects above this to eliminate field tape)
@@ -103,33 +71,20 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
     public Mat ContourFrame = new Mat();
 
 
-    //USEFUL VALUES TO BE ACCESSED FROM AUTONOMOUS
+    //Variables for distance calculation
+
     public Rect goalRect = new Rect();
 
+    Point upperLeftCorner;
+    Point upperRightCorner;
+    Point lowerLeftCorner;
+    Point lowerRightCorner;
+
+    Point upperMiddle;
+    Point lowerMiddle;
+
+
     public int viewfinderIndex = 0;
-
-    @Override
-    public void init(Mat firstFrame) {
-        imageWidth = firstFrame.width();
-        imageHeight = firstFrame.height();
-
-        imageArea = this.imageWidth * this.imageHeight;
-        offsetCenterX = ((double) this.imageWidth / 2) - 0.5;
-        offsetCenterY = ((double) this.imageHeight / 2) - 0.5;
-
-        // pinhole model calculations
-        double diagonalView = Math.toRadians(this.fov);
-        Fraction aspectFraction = new Fraction(this.imageWidth, this.imageHeight);
-        int horizontalRatio = aspectFraction.getNumerator();
-        int verticalRatio = aspectFraction.getDenominator();
-        double diagonalAspect = Math.hypot(horizontalRatio, verticalRatio);
-        double horizontalView = Math.atan(Math.tan(diagonalView / 2) * (horizontalRatio / diagonalAspect)) * 2;
-        double verticalView = Math.atan(Math.tan(diagonalView / 2) * (verticalRatio / diagonalAspect)) * 2;
-        horizontalFocalLength = this.imageWidth / (2 * Math.tan(horizontalView / 2));
-        verticalFocalLength = this.imageHeight / (2 * Math.tan(verticalView / 2));
-    }
-
-
 
     @Override
     public Mat processFrame(Mat input) {
@@ -166,13 +121,29 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
                     contourRect.area() > largestAreaRect) {
                 largestAreaRect = contourRect.area();
                 goalRect = contourRect;
+                findCorners(contour.toArray());
             }
 
             contour.release(); // releasing the buffer of the contour, since after use, it is no longer needed
             convertedContour.release(); // releasing the buffer of the copy of the contour, since after use, it is no longer needed
         }
+
         //draw Rect
-        Imgproc.rectangle(input, goalRect, new Scalar(0,255,0), 2);
+//        Imgproc.rectangle(input, goalRect, new Scalar(0,255,0), 2);
+
+        //draw corners
+        Imgproc.circle(input, upperLeftCorner,2, new Scalar(0,255,0),5);
+        Imgproc.circle(input, upperRightCorner,2, new Scalar(0,255,0),5);
+        Imgproc.circle(input, lowerLeftCorner,2, new Scalar(0,255,0),5);
+        Imgproc.circle(input, lowerRightCorner,2, new Scalar(0,255,0),5);
+
+        Imgproc.circle(input, upperMiddle,2, new Scalar(255,0,0),2);
+        Imgproc.circle(input, lowerMiddle,2, new Scalar(255,0,0),2);
+
+        Imgproc.line(input, upperMiddle, lowerMiddle, new Scalar(255, 0, 0));
+        Imgproc.putText(input, "Goal Height: " + Math.round(getGoalHeight()) + "px",  new Point(upperMiddle.x, (upperMiddle.y + lowerMiddle.y) / 2), 1, 0.5, new Scalar(255, 255, 255));
+        Imgproc.putText(input, "Distance from robot: " + Math.round(getXDistance()) + "in",  new Point(upperMiddle.x, (upperMiddle.y + lowerMiddle.y) / 2 + 10), 1, 0.5, new Scalar(255, 255, 255));
+
 
         //Return MaskFrame for tuning purposes
 //        return MaskFrame;
@@ -188,33 +159,14 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
         return goalRect != null;
     }
 
-    public double getGoalPitch() {
-        if(goalRect == null){
-            return -1;
-        }
-        double targetCenterY = goalRect.y + goalRect.height / 2;
-        return -Math.toDegrees(
-                Math.atan((offsetCenterY - targetCenterY) / verticalFocalLength));
-    }
-    public double getGoalYaw() {
-        if(goalRect == null){
-            return -1;
-        }
-
-        double targetCenterX = goalRect.x + goalRect.width / 2;
-        return Math.toDegrees(
-                Math.atan((offsetCenterX - targetCenterX) / horizontalFocalLength));
-    }
-
-    public double getGoalDistance(){
-        double xDistance = getXDistance();
-        double yDistance = HIGH_GOAL_HEIGHT - CAMERA_HEIGHT;
-        double diagonalDistance = Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2));
-        return diagonalDistance;
-    }
 
     public double getXDistance(){
-        return (5642.0/goalRect.width) - 0.281;
+        return (5642.0/getGoalHeight()) - 0.281;
+    }
+
+    //"Real Height" gives returns an accurate goal height in pixels even when goal is viewed at an angle by calculating distance between middle two points
+    public double getGoalHeight(){
+        return Math.sqrt(Math.pow(lowerMiddle.y - upperMiddle.y, 2) + Math.pow(Math.abs(lowerMiddle.x - upperMiddle.x), 2));
     }
 
     @Override
@@ -226,8 +178,43 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
         viewfinderIndex++;
     }
 
+    public void findCorners(Point[] goalContourPoints){
+
+        //Default all points to first point in list
+        upperLeftCorner = upperRightCorner = lowerLeftCorner = lowerRightCorner = goalContourPoints[0];
+
+        //Find corner points
+        for (Point point : goalContourPoints){
+            double x = point.x;
+            double y = point.y;
+
+            //Check if point is upper leftmost point
+            if((-x + y) > (-upperLeftCorner.x + upperLeftCorner.y)){
+                upperLeftCorner = point;
+                //Check if point is upper rightmost point
+            } else if ((x + y) > (upperRightCorner.x + upperRightCorner.y)){
+                upperRightCorner = point;
+                //Check if point is lower leftmost point
+            } else if ((-x - y) > (-lowerLeftCorner.x - lowerRightCorner.y)) {
+                lowerLeftCorner = point;
+            }
+            //Check if point is lower rightmost point
+            else if((x - y) > (lowerRightCorner.x - lowerRightCorner.y)){
+                lowerRightCorner = point;
+            }
+        }
+
+        //Calculate "middle points" for true height calculation
+        upperMiddle = new Point((upperLeftCorner.x + upperRightCorner.x) / 2, (upperLeftCorner.y + upperRightCorner.y) / 2);
+        lowerMiddle = new Point((lowerLeftCorner.x + lowerRightCorner.x) / 2, (lowerLeftCorner.y + lowerRightCorner.y) / 2);
+
+    }
+
 
 
 
 
 }
+
+
+

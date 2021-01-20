@@ -45,10 +45,8 @@ public class VisionTester extends LinearOpMode {
             if(pipeline.isGoalVisible()) {
                 telemetry.addData("Rectangle Width", pipeline.goalRect.width);
                 telemetry.addData("Rectangle Height", pipeline.goalRect.height);
-                telemetry.addData("Pitch", pipeline.getGoalPitch());
-                telemetry.addData("Yaw", pipeline.getGoalYaw());
-                telemetry.addData("Diagonal Distance To Goal", pipeline.getGoalDistance());
-                telemetry.addData("Horizontal Distance TO Goal", pipeline.getXDistance());
+                telemetry.addData("Goal Height", pipeline.getGoalHeight());
+                telemetry.addData("Horizontal Distance To Goal", pipeline.getXDistance());
             } else {
                 telemetry.addLine("Goal not visible");
             }
