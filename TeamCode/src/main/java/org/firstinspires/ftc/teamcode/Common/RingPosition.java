@@ -7,5 +7,6 @@ public enum RingPosition
 {
     FOUR,
     ONE,
-    NONE
+    NONE,
+    UNKNOWN
 }

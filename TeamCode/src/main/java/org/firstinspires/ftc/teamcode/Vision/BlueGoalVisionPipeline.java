@@ -54,11 +54,11 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
 
 
     //Mask constants to isolate blue coloured subjects
-    public static double lowerH = 106;
-    public static double lowerS = 78;
-    public static double lowerV = 135;
+    public static double lowerH = 92;
+    public static double lowerS = 104;
+    public static double lowerV = 150;
 
-    public static double upperH = 118;
+    public static double upperH = 113;
     public static double upperS = 255;
     public static double upperV = 255;
 
@@ -132,17 +132,20 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
 //        Imgproc.rectangle(input, goalRect, new Scalar(0,255,0), 2);
 
         //draw corners
-        Imgproc.circle(input, upperLeftCorner,2, new Scalar(0,255,0),5);
-        Imgproc.circle(input, upperRightCorner,2, new Scalar(0,255,0),5);
-        Imgproc.circle(input, lowerLeftCorner,2, new Scalar(0,255,0),5);
-        Imgproc.circle(input, lowerRightCorner,2, new Scalar(0,255,0),5);
+        if(isCornersVisible()){
+            Imgproc.circle(input, upperLeftCorner,2, new Scalar(0,255,0),5);
+            Imgproc.circle(input, upperRightCorner,2, new Scalar(0,255,0),5);
+            Imgproc.circle(input, lowerLeftCorner,2, new Scalar(0,255,0),5);
+            Imgproc.circle(input, lowerRightCorner,2, new Scalar(0,255,0),5);
 
-        Imgproc.circle(input, upperMiddle,2, new Scalar(255,0,0),2);
-        Imgproc.circle(input, lowerMiddle,2, new Scalar(255,0,0),2);
+            Imgproc.circle(input, upperMiddle,2, new Scalar(255,0,0),2);
+            Imgproc.circle(input, lowerMiddle,2, new Scalar(255,0,0),2);
+//
+            Imgproc.line(input, upperMiddle, lowerMiddle, new Scalar(255, 0, 0));
+            Imgproc.putText(input, "Goal Height: " + Math.round(getGoalHeight()) + "px",  new Point(upperMiddle.x, (upperMiddle.y + lowerMiddle.y) / 2), 1, 0.5, new Scalar(255, 255, 255));
+            Imgproc.putText(input, "Distance from robot: " + Math.round(getXDistance()) + "in",  new Point(upperMiddle.x, (upperMiddle.y + lowerMiddle.y) / 2 + 10), 1, 0.5, new Scalar(255, 255, 255));
+        }
 
-        Imgproc.line(input, upperMiddle, lowerMiddle, new Scalar(255, 0, 0));
-        Imgproc.putText(input, "Goal Height: " + Math.round(getGoalHeight()) + "px",  new Point(upperMiddle.x, (upperMiddle.y + lowerMiddle.y) / 2), 1, 0.5, new Scalar(255, 255, 255));
-        Imgproc.putText(input, "Distance from robot: " + Math.round(getXDistance()) + "in",  new Point(upperMiddle.x, (upperMiddle.y + lowerMiddle.y) / 2 + 10), 1, 0.5, new Scalar(255, 255, 255));
 
 
         //Return MaskFrame for tuning purposes
@@ -159,12 +162,14 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
         return goalRect != null;
     }
 
-
+    public boolean isCornersVisible(){
+        return upperLeftCorner != null && upperRightCorner != null && lowerLeftCorner != null && lowerRightCorner != null && upperMiddle != null && lowerMiddle != null;
+    }
     public double getXDistance(){
         return (5642.0/getGoalHeight()) - 0.281;
     }
 
-    //"Real Height" gives returns an accurate goal height in pixels even when goal is viewed at an angle by calculating distance between middle two points
+//    "Real Height" gives returns an accurate goal height in pixels even when goal is viewed at an angle by calculating distance between middle two points
     public double getGoalHeight(){
         return Math.sqrt(Math.pow(lowerMiddle.y - upperMiddle.y, 2) + Math.pow(Math.abs(lowerMiddle.x - upperMiddle.x), 2));
     }
@@ -209,6 +214,10 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
         lowerMiddle = new Point((lowerLeftCorner.x + lowerRightCorner.x) / 2, (lowerLeftCorner.y + lowerRightCorner.y) / 2);
 
     }
+
+
+
+
 
 
 

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.OpModes.Vision;
 
+import com.acmerobotics.dashboard.config.Config;
+
 import org.firstinspires.ftc.teamcode.Common.RingPosition;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -9,19 +11,20 @@ import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
 
+@Config
 public class VisionPipeline extends OpenCvPipeline {
     // -- TWEAKABLE CONSTANTS ---
 
     public boolean viewportPaused = false;
 
     //ringAnalysisZone location, b2 (60, 140)
-    public static final Point ZONE_CENTER = new Point(53, 120);
+    public static Point ZONE_CENTER = new Point(65, 126);
     public static final int ZONE_WIDTH = 45;
     public static final int ZONE_HEIGHT = 50;
 
     //Cb Threshhold Values
-    private static final int FOUR_RING_THRESHOLD = 149;
-    private static final int ONE_RING_THRESHOLD = 128;
+    private static  int FOUR_RING_THRESHOLD = 138;
+    private static  int ONE_RING_THRESHOLD = 127;
 
     //Viewfinder Colorspace
     public ViewfinderType[] COLOR_SPACES = new ViewfinderType[] {ViewfinderType.RGB, ViewfinderType.YcrCb, ViewfinderType.Cb};
@@ -38,7 +41,7 @@ public class VisionPipeline extends OpenCvPipeline {
     private Mat ringAnalysisZone = new Mat();
 
     private int avgCbValue;
-    public volatile RingPosition position;
+    public volatile RingPosition position = RingPosition.UNKNOWN;
 
 
     /**
@@ -119,6 +122,8 @@ public class VisionPipeline extends OpenCvPipeline {
     public int getAnalysis(){
         return avgCbValue;
     }
+
+
 
 
 }
