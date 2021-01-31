@@ -1,12 +1,12 @@
-package org.firstinspires.ftc.teamcode.Tests;
+package org.firstinspires.ftc.teamcode.OpModes.TeleOp;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@TeleOp(name="Collector Test", group="test")
-public class CollectorTest extends OpMode {
+@TeleOp(name="TeleOp Test", group="test")
+public class TeleOpTest extends OpMode {
 
     DcMotor leftFront;
     DcMotor leftBack;
