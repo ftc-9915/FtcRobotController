@@ -41,7 +41,7 @@ public class TeleOpTest extends OpMode {
     boolean buttonReleased2;
     boolean triggerReleased;
 
-    static final double LIFT_UP_POS = 0.49 ;
+    static final double LIFT_UP_POS = 0.50;
     static final double LIFT_DOWN_POS = 0.75;
     static final double NOT_PUSH_POS = 0.70;
     static final double PUSH_POS = 0.52;
@@ -58,6 +58,7 @@ public class TeleOpTest extends OpMode {
     double strafe = 0.0;
     double rotation = 0.0;
     double strafePower = 1.0;
+    boolean slowmodeOn = false;
 
     @Override
     public void init() {
@@ -109,17 +110,21 @@ public class TeleOpTest extends OpMode {
     @Override
     public void loop() {
         // Controls and Information
-        telemetry.addData("Launcher Speed: ", launcherPower);
+        telemetry.addData("Launcher Speed", launcherPower);
+        telemetry.addData("Slowmode On", slowmodeOn);
         telemetry.addLine("--- Controls (Gamepad 1) ---");
         telemetry.addData("Turn collector on", "Button A");
         telemetry.addData("Turn collector off", "Button B");
         telemetry.addData("Reverse collector direction", "Button X");
+        telemetry.addData("Slowmode", "Button Y");
         telemetry.addLine();
         telemetry.addLine("--- Controls (Gamepad 2) ---");
         telemetry.addData("Turn launcher on/off", "Button X");
         telemetry.addData("Push/retract collector servo", "Button Y");
         telemetry.addData("Lower collector platform", "Left Bumper");
         telemetry.addData("Lift collector platform", "Right Bumper");
+        telemetry.addData("Decrease Launcher Speed", "Left Trigger");
+        telemetry.addData("Increase Launcher Speed", "Right Trigger");
 
         // Chassis code
         speed = -gamepad1.left_stick_y * strafePower;
@@ -135,10 +140,12 @@ public class TeleOpTest extends OpMode {
         // Slowmode
 
         if (gamepad1.y && buttonReleased1) {
-            if (strafePower == 1.0) {
-                strafePower = 0.5;
-            } else {
+            if (slowmodeOn) {
                 strafePower = 1.0;
+                slowmodeOn = false;
+            } else {
+                strafePower = 0.5;
+                slowmodeOn = true;
             }
             buttonReleased1 = false;
         }
@@ -159,14 +166,14 @@ public class TeleOpTest extends OpMode {
         // Reverses collector
 
         if (gamepad1.x && buttonReleased1) {
-            collectorPower *= -1;
+            collectorPower = -1.0;
             buttonReleased1 = false;
         }
 
         // Turns launcher on/off
         if (gamepad2.x && buttonReleased2) {
             if (launcherPower == 0.0) {
-                launcherPower = -0.68;
+                launcherPower = -0.73;
             } else {
                 launcherPower = 0.0;
             }
@@ -174,14 +181,13 @@ public class TeleOpTest extends OpMode {
         }
 
         // Adjusts launcher speed every time trigger goes below 0.4
-
         if (gamepad2.left_trigger > 0.4 && triggerReleased) {
-            launcherPower -= 0.05;
+            launcherPower += 0.05;
             triggerReleased = false;
         }
 
         if (gamepad2.right_trigger > 0.4 && triggerReleased) {
-            launcherPower += 0.05;
+            launcherPower -= 0.05;
             triggerReleased = false;
         }
 
@@ -244,7 +250,7 @@ public class TeleOpTest extends OpMode {
             buttonReleased2 = true;
         }
 
-        if (gamepad2.left_trigger < 0.2 && gamepad2.right_trigger < 0.2) {
+        if (gamepad2.left_trigger < 0.4 && gamepad2.right_trigger < 0.4) {
             triggerReleased = true;
         }
 
