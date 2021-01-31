@@ -173,7 +173,7 @@ public class TeleOpTest extends OpMode {
         // Turns launcher on/off
         if (gamepad2.x && buttonReleased2) {
             if (launcherPower == 0.0) {
-                launcherPower = -0.73;
+                launcherPower = -0.68;
             } else {
                 launcherPower = 0.0;
             }
