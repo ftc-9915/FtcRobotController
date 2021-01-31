@@ -17,6 +17,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import static org.firstinspires.ftc.teamcode.Common.RingPosition.NONE;
+
 
 @Autonomous(name = "AutonomousFramework", group = "test")
 public class AutonomousFramework extends LinearOpMode {
@@ -34,7 +36,7 @@ public class AutonomousFramework extends LinearOpMode {
     DcMotor leftBack;
     DcMotor rightFront;
     DcMotor rightBack;
-    boolean firstTime = true;
+    boolean pathIsFinished = false;
 
     Servo clawServo;
 
@@ -95,25 +97,33 @@ public class AutonomousFramework extends LinearOpMode {
 
         waitForStart();
 
-        while (opModeIsActive()) {
+        while (opModeIsActive() && !pathIsFinished) {
         // TODO: For each path, robot repeats the path after completing it rather than stopping.
             switch (ringConfiguration) {
                 case NONE:
                     telemetry.addLine("Go Path NONE");
                     //Execute path A
                     pathA.followPath(drive, armMotor, clawServo);
+                    pathIsFinished = true;
+                    break;
+
                 case ONE:
                     telemetry.addLine("Go Path ONE");
                     //Execute path B
                     pathB.followPath(drive, armMotor, clawServo);
+                    pathIsFinished = true;
+                    break;
 
                 case FOUR:
                     telemetry.addLine("Go Path FOUR");
                     //Execute path C
                     pathC.followPath(drive, armMotor, clawServo);
+                    pathIsFinished = true;
+                    break;
 
                 default:
                     ringConfiguration = pipeline.position;
+                    break;
             }
 
             telemetry.update();

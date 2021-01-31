@@ -24,6 +24,7 @@ public class AutonomousPathB {
     Pose2d pickUpGoalPose2 = new Pose2d(testX, testY, Math.toRadians(180.0));
     Pose2d placeSecondGoalPose1 = new Pose2d(27, 57, Math.toRadians(0.0));
     Pose2d placeSecondGoalPose2 = new Pose2d(20, 27, Math.toRadians(0.0));
+    Pose2d parkPose = new Pose2d(12, 27, Math.toRadians(0.0));
 
     public void followPath(SampleMecanumDrive drive, DcMotor armMotor, Servo clawServo) {
         Trajectory goToShootingPose = drive.trajectoryBuilder(CoordinateConstants.START_POS_BLUE_2)
@@ -69,6 +70,10 @@ public class AutonomousPathB {
                 })
                 .build();
 
+        Trajectory goToParkingPose = drive.trajectoryBuilder(goToPlaceSecondGoalPart2.end())
+                .lineToConstantHeading(parkPose.vec())
+                .build();
+
 
         drive.followTrajectory(goToShootingPose);
 
@@ -83,6 +88,7 @@ public class AutonomousPathB {
 
         drive.followTrajectory(goToPlaceSecondGoalPart1);
         drive.followTrajectory(goToPlaceSecondGoalPart2);
+        drive.followTrajectory(goToParkingPose);
 
         sleep(1000);
 
