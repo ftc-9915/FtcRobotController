@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Common.RingPosition;
 import org.firstinspires.ftc.teamcode.OpModes.Vision.VisionPipeline;
 import org.firstinspires.ftc.teamcode.Vision.VisionPipelineDynamic;
