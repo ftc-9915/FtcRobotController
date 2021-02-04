@@ -4,21 +4,16 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Common.RingPosition;
-import org.firstinspires.ftc.teamcode.OpModes.Vision.VisionPipeline;
-import org.firstinspires.ftc.teamcode.Vision.VisionPipelineDynamic;
+import org.firstinspires.ftc.teamcode.Vision.VisionPipeline;
 import org.firstinspires.ftc.teamcode.drive.CoordinateConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
-
-import static org.firstinspires.ftc.teamcode.Common.RingPosition.NONE;
 
 
 @Autonomous(name = "AutonomousFramework", group = "test")

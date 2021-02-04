@@ -5,14 +5,15 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.Vision.BlueGoalVisionPipeline;
+import org.firstinspires.ftc.teamcode.Vision.VisionPipeline;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
-import org.firstinspires.ftc.teamcode.Vision.VisionPipeline;
 
 
 @Autonomous(name="Vision Test", group="test")
-public class VisionTester extends LinearOpMode {
+public class BlueGoalVisionTester extends LinearOpMode {
 
     OpenCvCamera webcam;
 
@@ -23,7 +24,7 @@ public class VisionTester extends LinearOpMode {
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
 //        VisionPipelineDynamic pipeline = new VisionPipelineDynamic();
-        VisionPipeline pipeline = new VisionPipeline();
+        BlueGoalVisionPipeline pipeline = new BlueGoalVisionPipeline();
         webcam.setPipeline(pipeline);
 
         webcam.openCameraDeviceAsync(() -> {
@@ -54,19 +55,24 @@ public class VisionTester extends LinearOpMode {
 
 
         while (opModeIsActive()) {
-//            if(pipeline.isGoalVisible()) {
-//                telemetry.addData("Rectangle Width", pipeline.goalRect.width);
-//                telemetry.addData("Rectangle Height", pipeline.goalRect.height);
-//                telemetry.addData("Goal Height (Center line)", pipeline.getGoalHeight());
-//              //  telemetry.addData("Goal Height", pipeline.getGoalHeight());
-//                //telemetry.addData("Horizontal Distance To Goal", pipeline.getXDistance());
-//            } else {
-//                telemetry.addLine("Goal not visible");
-//            }
-//            telemetry.addData("Corners visible",pipeline.isCornersVisible());
 
-            telemetry.addData("Ring Position", pipeline.position);
-            telemetry.addData("Cb Value", pipeline.getAnalysis());
+            if(gamepad1.a){
+                pipeline.viewfinderIndex++;
+            }
+
+            if(pipeline.isGoalVisible()){
+                telemetry.addData("Height", pipeline.getGoalHeight());
+                telemetry.addData("Bounding Rect Height", pipeline.goalRect.height);
+                telemetry.addData("Goal Distance", pipeline.getXDistance());
+
+                telemetry.addData("Lower H",pipeline.lowerH);
+                telemetry.addData("Lower S",pipeline.lowerS);
+                telemetry.addData("Lower V",pipeline.lowerV);
+                telemetry.addData("Upper H",pipeline.upperH);
+                telemetry.addData("Upper S",pipeline.upperS);
+                telemetry.addData("Upper V",pipeline.upperV);
+
+            }
             telemetry.update();
 
         }

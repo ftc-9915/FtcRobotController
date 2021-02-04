@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.OpModes.Vision;
+package org.firstinspires.ftc.teamcode.Vision;
 
 import com.acmerobotics.dashboard.config.Config;
 
