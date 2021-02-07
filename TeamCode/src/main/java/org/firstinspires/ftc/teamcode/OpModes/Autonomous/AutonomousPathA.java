@@ -17,6 +17,8 @@ import org.firstinspires.ftc.teamcode.Subsystems.Drive.opmode.AutonomousPath;
 
 import java.util.Arrays;
 
+import static org.firstinspires.ftc.teamcode.Common.Robot.ARM_POS_LIFT_ARM;
+import static org.firstinspires.ftc.teamcode.Common.Robot.ARM_POS_PICKUP_GOAL;
 import static org.firstinspires.ftc.teamcode.Common.Robot.ARM_POS_PLACE_GOAL;
 import static org.firstinspires.ftc.teamcode.OpModes.Autonomous.AutonomousFramework.CLAW_CLOSE_POS;
 import static org.firstinspires.ftc.teamcode.OpModes.Autonomous.AutonomousFramework.CLAW_OPEN_POS;
@@ -24,9 +26,6 @@ import static org.firstinspires.ftc.teamcode.OpModes.Autonomous.AutonomousFramew
 @Config
 public class AutonomousPathA extends AutonomousPath {
 
-    public static int armPosPlaceGoal = -525;
-    public static int armPosPickupGoal = -510;
-    public static int armPosLiftArm = -200;
 
     public static int goalX = -32;
     public static int goalY = 53;
@@ -68,7 +67,7 @@ public class AutonomousPathA extends AutonomousPath {
             ),
                 new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .addDisplacementMarker(() -> {
-                    armMotor.setTargetPosition(armPosPickupGoal);
+                    armMotor.setTargetPosition(ARM_POS_PICKUP_GOAL);
                     armMotor.setPower(0.3);
                     sleep(500);
                 })
@@ -77,7 +76,7 @@ public class AutonomousPathA extends AutonomousPath {
 
         Trajectory goToPlaceSecondGoalPart1 = drive.trajectoryBuilder(goToPickUpGoalPose2.end())
                 .addDisplacementMarker(()->{
-                    armMotor.setTargetPosition(armPosLiftArm);
+                    armMotor.setTargetPosition(ARM_POS_LIFT_ARM);
                     armMotor.setPower(0.3);
                 })
                 .lineToSplineHeading(placeSecondGoalPose)
@@ -88,7 +87,7 @@ public class AutonomousPathA extends AutonomousPath {
 
         Trajectory goToParking = drive.trajectoryBuilder(goToPlaceSecondGoalPart1.end())
                 .addDisplacementMarker(() -> {
-                    armMotor.setTargetPosition(armPosLiftArm);
+                    armMotor.setTargetPosition(ARM_POS_LIFT_ARM);
                     armMotor.setPower(0.3);
                     sleep(500);
                 })

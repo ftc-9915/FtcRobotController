@@ -20,8 +20,8 @@ public class DriveConstants {
     /*
      * These are motor constants that should be listed online for your motors.
      */
-    public static final double TICKS_PER_REV = 1120;
-    public static final double MAX_RPM = 150;
+    public static final double TICKS_PER_REV = 537.6;
+    public static final double MAX_RPM = 312;
     public static final double ENCODER_OFFSET = 1.02146212;
 
     /*
@@ -45,8 +45,8 @@ public class DriveConstants {
      * convenience. Make sure to exclude any gear ratio included in MOTOR_CONFIG from GEAR_RATIO.
      */
     public static double WHEEL_RADIUS = 1.889; // in
-    public static double GEAR_RATIO = 2 * ENCODER_OFFSET; // output (wheel) speed / input (motor) speed
-    public static double TRACK_WIDTH = 10.82; // in
+    public static double GEAR_RATIO = 1 * ENCODER_OFFSET; // output (wheel) speed / input (motor) speed
+    public static double TRACK_WIDTH = 15.25; // in
 
     /*
      * These are the feedforward parameters used to model the drive motor behavior. If you are using
