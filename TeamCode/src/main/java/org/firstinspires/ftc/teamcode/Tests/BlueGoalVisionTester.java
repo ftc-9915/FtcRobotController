@@ -12,7 +12,7 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
 
-@Autonomous(name="Vision Test", group="test")
+@Autonomous(name="Blue Goal Vision Test", group="test")
 public class BlueGoalVisionTester extends LinearOpMode {
 
     OpenCvCamera webcam;

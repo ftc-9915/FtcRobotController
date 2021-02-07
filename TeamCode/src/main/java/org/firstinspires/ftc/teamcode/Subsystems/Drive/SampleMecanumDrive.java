@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive;
+package org.firstinspires.ftc.teamcode.Subsystems.Drive;
 
 import androidx.annotation.NonNull;
 
@@ -43,17 +43,17 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ACCEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ANG_ACCEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ANG_VEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_VEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MOTOR_VELO_PID;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.RUN_USING_ENCODER;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.encoderTicksToInches;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kA;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kStatic;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
+import static org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants.MAX_ACCEL;
+import static org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants.MAX_ANG_ACCEL;
+import static org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants.MAX_ANG_VEL;
+import static org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants.MAX_VEL;
+import static org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants.MOTOR_VELO_PID;
+import static org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants.RUN_USING_ENCODER;
+import static org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants.TRACK_WIDTH;
+import static org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants.encoderTicksToInches;
+import static org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants.kA;
+import static org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants.kStatic;
+import static org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants.kV;
 
 /*
  * Simple mecanum drive hardware implementation for REV hardware.
@@ -151,8 +151,6 @@ public class SampleMecanumDrive extends MecanumDrive {
         leftFront.setDirection(DcMotor.Direction.REVERSE);
         leftRear.setDirection(DcMotor.Direction.REVERSE);
 
-        rangeSensor = hardwareMap.get(Rev2mDistanceSensor.class, "rangeSensor");
-
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
 
         for (DcMotorEx motor : motors) {
@@ -218,6 +216,10 @@ public class SampleMecanumDrive extends MecanumDrive {
     public void followTrajectory(Trajectory trajectory) {
         followTrajectoryAsync(trajectory);
         waitForIdle();
+    }
+
+    public void cancelFollowing() {
+        mode = Mode.IDLE;
     }
 
     public Pose2d getLastError() {

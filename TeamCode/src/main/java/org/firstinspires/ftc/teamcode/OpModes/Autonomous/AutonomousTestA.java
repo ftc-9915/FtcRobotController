@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.OpModes.Autonomous;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.constraints.AngularVelocityConstraint;
@@ -12,11 +11,10 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.drive.CoordinateConstants;
-import org.firstinspires.ftc.teamcode.drive.DriveConstants;
-import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.Subsystems.Drive.CoordinateConstants;
+import org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants;
+import org.firstinspires.ftc.teamcode.Subsystems.Drive.SampleMecanumDrive;
 
-import java.sql.Array;
 import java.util.Arrays;
 
 import static org.firstinspires.ftc.teamcode.OpModes.Autonomous.AutonomousFramework.CLAW_CLOSE_POS;

@@ -5,9 +5,10 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.Common.RingPosition;
+import org.firstinspires.ftc.teamcode.OpModes.PoseStorage;
 import org.firstinspires.ftc.teamcode.Vision.VisionPipeline;
-import org.firstinspires.ftc.teamcode.drive.CoordinateConstants;
-import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.Subsystems.Drive.CoordinateConstants;
+import org.firstinspires.ftc.teamcode.Subsystems.Drive.SampleMecanumDrive;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -44,10 +45,12 @@ public class AutonomousFramework extends LinearOpMode {
     AutonomousPathB pathB = new AutonomousPathB();
     AutonomousPathC pathC = new AutonomousPathC();
 
+    SampleMecanumDrive drive;
+
     @Override
     public void runOpMode() throws InterruptedException {
 
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        drive = new SampleMecanumDrive(hardwareMap);
 
         armMotor = hardwareMap.dcMotor.get("armMotor"); // this stuff is going to be replaced by robot class later
         armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -130,4 +133,8 @@ public class AutonomousFramework extends LinearOpMode {
 
     public void goToNextState() { state++; }
     public void goToState(int newState) { state = newState; }
+    public void finishRoutine() {
+        pathIsFinished = true;
+        PoseStorage.autoEndingPose = drive.getPoseEstimate();
+    }
 }

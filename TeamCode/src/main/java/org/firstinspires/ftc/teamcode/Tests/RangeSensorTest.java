@@ -5,8 +5,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.Common.Robot;
-import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 @Autonomous (name = "RangeSensorTest", group = "test")
 public class RangeSensorTest extends OpMode {

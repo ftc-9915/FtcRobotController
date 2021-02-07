@@ -9,14 +9,10 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.Common.PDController;
-import org.firstinspires.ftc.teamcode.Examples.SkystoneDeterminationExample;
 import org.firstinspires.ftc.teamcode.Vision.VisionPipelineDynamic;
-import org.firstinspires.ftc.teamcode.drive.opmode.DriveVelocityPIDTuner;
-import org.opencv.core.Rect;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
-import org.openftc.easyopencv.OpenCvInternalCamera;
 
 @Config
 @TeleOp(name = "DriveToRingTest", group = "test")
