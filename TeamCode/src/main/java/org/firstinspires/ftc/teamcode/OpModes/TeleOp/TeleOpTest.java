@@ -129,8 +129,7 @@ public class TeleOpTest extends OpMode {
 
         //set localization
         drive = new SampleMecanumDrive(hardwareMap);
-        StandardTrackingWheelLocalizer robotLocalizer = new StandardTrackingWheelLocalizer(hardwareMap);
-        robotLocalizer.setPoseEstimate(PoseStorage.autoEndingPose);
+//        robotLocalizer.setPoseEstimate(PoseStorage.autoEndingPose);
 
 
     }
