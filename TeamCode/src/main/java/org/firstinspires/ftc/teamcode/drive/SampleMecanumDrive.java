@@ -27,7 +27,6 @@ import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityCons
 import com.acmerobotics.roadrunner.util.NanoClock;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxModule;
-import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -96,8 +95,6 @@ public class SampleMecanumDrive extends MecanumDrive {
     private List<DcMotorEx> motors;
     private BNO055IMU imu;
 
-    public Rev2mDistanceSensor rangeSensor;
-
     private VoltageSensor batteryVoltageSensor;
 
     private Pose2d lastPoseOnTurn;
@@ -150,8 +147,6 @@ public class SampleMecanumDrive extends MecanumDrive {
 
         leftFront.setDirection(DcMotor.Direction.REVERSE);
         leftRear.setDirection(DcMotor.Direction.REVERSE);
-
-        rangeSensor = hardwareMap.get(Rev2mDistanceSensor.class, "rangeSensor");
 
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
 
