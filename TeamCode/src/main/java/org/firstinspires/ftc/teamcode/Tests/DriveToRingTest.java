@@ -1,27 +1,21 @@
 package org.firstinspires.ftc.teamcode.Tests;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.Common.PDController;
 import org.firstinspires.ftc.teamcode.Examples.SkystoneDeterminationExample;
 import org.firstinspires.ftc.teamcode.Vision.VisionPipelineDynamic;
 import org.firstinspires.ftc.teamcode.drive.opmode.DriveVelocityPIDTuner;
 import org.opencv.core.Rect;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
-import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera;
 
-@Config
 @TeleOp(name = "DriveToRingTest", group = "test")
 public class DriveToRingTest extends OpMode {
-
     enum Mode {
         DRIVER_MODE,
         RING_FOLLOW_MODE
@@ -44,12 +38,11 @@ public class DriveToRingTest extends OpMode {
     OpenCvCamera webcam;
     VisionPipelineDynamic pipeline;
 
-
-    public static double kP = 5;
-    public static double kD = 0;
-    PDController pd;
-
-    Mode mode = Mode.DRIVER_MODE;
+    double k_p = 1;
+    double p = 0;
+    double current_error = 0;
+    //max error is 360 - 180
+    double MAX_ERROR = 180;
 
 
 
@@ -69,33 +62,17 @@ public class DriveToRingTest extends OpMode {
         leftFront.setDirection(DcMotor.Direction.REVERSE);
         leftBack.setDirection(DcMotor.Direction.REVERSE);
 
-        pd = new PDController(kP, kD);
-        pd.setSetPoint(180);
-        pd.setTolerance(10);
-
         // Vision
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
         pipeline = new VisionPipelineDynamic();
         webcam.setPipeline(pipeline);
 
-        //opens connection to camera asynchronously
-        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
-        {
-            @Override
-            public void onOpened()
-            {
-                webcam.startStreaming(320,240, OpenCvCameraRotation.UPRIGHT);
-                FtcDashboard.getInstance().startCameraStream(webcam, 0);
-            }
-        });
-
     }
 
     @Override
     public void loop() {
-
-        telemetry.addData("Mode:", mode);
+        Mode mode = Mode.DRIVER_MODE;
 
         switch (mode) {
             case DRIVER_MODE:
@@ -113,42 +90,30 @@ public class DriveToRingTest extends OpMode {
                     mode = Mode.RING_FOLLOW_MODE;
                 }
             case RING_FOLLOW_MODE:
+                 current_error = 180 - pipeline.maxRect.x;
+                 p = k_p * current_error;
 
-                if(pipeline.maxRect != null){
-                    double currentPosition = pipeline.maxRect.x;
-                    double output = pd.calculate(currentPosition);
-
-                    telemetry.addData("Current Position", currentPosition);
-                    telemetry.addData("Output: ", output);
-
-                    //when ring x value is too small / too far left, turn right
-                    if (output > 0){
-                        leftFront.setPower(output);
-                        leftBack.setPower(output);
-                        rightFront.setPower(-output);
-                        rightBack.setPower(-output);
-                    } else if (output < 0){
-                        leftFront.setPower(-output);
-                        leftBack.setPower(-output);
-                        rightFront.setPower(output);
-                        rightBack.setPower(output);
-                    } else {
-                        leftFront.setPower(0);
-                        leftBack.setPower(0);
-                        rightFront.setPower(0);
-                        rightBack.setPower(0);
-                    }
+                 //if current error is negative move left
+                if (current_error < -10){
+                    rotation = p / MAX_ERROR;
                 }
+                //if current error is positive move right
+                else if (current_error > 10){
+                    rotation = p / MAX_ERROR;
+                }
+
+                leftFront.setPower(speed + strafe + rotation);
+                leftBack.setPower(speed - strafe + rotation);
+                rightBack.setPower(speed + strafe - rotation);
+                rightFront.setPower(speed - strafe - rotation);
 
                 if(gamepad1.a) {
+                     k_p = 0;
+                     p = 0;
+                     current_error = 0;
                     mode = Mode.DRIVER_MODE;
                 }
-                if (gamepad2.b){
-                    pd.reset();
-                }
         }
-
-
 
 
 

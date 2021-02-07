@@ -89,9 +89,6 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
     @Override
     public Mat processFrame(Mat input) {
 
-        //for tuning purposes
-         Scalar lowerHSV = new Scalar(lowerH, lowerS, lowerV);
-         Scalar upperHSV = new Scalar(upperH, upperS, upperV);
 
         //define largestAreaRect in method so it resets every cycle
         double largestAreaRect = 0;
@@ -169,7 +166,7 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
         return upperLeftCorner != null && upperRightCorner != null && lowerLeftCorner != null && lowerRightCorner != null && upperMiddle != null && lowerMiddle != null;
     }
     public double getXDistance(){
-        return (3386/getGoalHeight()) - 7.56;
+        return (5642.0/getGoalHeight()) - 0.281;
     }
 
 //    "Real Height" gives returns an accurate goal height in pixels even when goal is viewed at an angle by calculating distance between middle two points

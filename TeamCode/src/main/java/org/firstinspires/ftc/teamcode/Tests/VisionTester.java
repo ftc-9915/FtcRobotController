@@ -5,10 +5,12 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.Vision.BlueGoalVisionPipeline;
+import org.firstinspires.ftc.teamcode.Vision.VisionPipelineDynamic;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
-import org.firstinspires.ftc.teamcode.Vision.VisionPipeline;
+import org.firstinspires.ftc.teamcode.OpModes.Vision.VisionPipeline;
 
 
 @Autonomous(name="Vision Test", group="test")
