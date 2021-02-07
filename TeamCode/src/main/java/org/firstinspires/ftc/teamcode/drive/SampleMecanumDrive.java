@@ -151,7 +151,7 @@ public class SampleMecanumDrive extends MecanumDrive {
         leftFront.setDirection(DcMotor.Direction.REVERSE);
         leftRear.setDirection(DcMotor.Direction.REVERSE);
 
-        rangeSensor = hardwareMap.get(Rev2mDistanceSensor.class, "rangeSensor");
+//        rangeSensor = hardwareMap.get(Rev2mDistanceSensor.class, "rangeSensor");
 
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
 
