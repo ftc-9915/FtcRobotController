@@ -1,9 +1,12 @@
 package org.firstinspires.ftc.teamcode.Common;
 
+import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+@Config
 public class Robot {
 
     public boolean encodersReseted = false;
@@ -21,6 +24,10 @@ public class Robot {
     static final int ARM_INCREMENT = 3;
     static final double CLAW_OPEN_POS = 0.7;
     static final double CLAW_CLOSE_POS = 0.15;
+
+    public static int ARM_POS_PLACE_GOAL = -525;
+    public static int ARM_POS_PICKUP_GOAL = -510;
+    public static int ARM_POS_LIFT_ARM = -200;
 
     // TODO: test these and edit with accurate values
     public static final double FEEDER_SERVO_RESET_POS = 1.0;
@@ -45,6 +52,9 @@ public class Robot {
     public Servo tiltServo;
     public Servo clawServo;
 
+    // -- Sensors -- //
+    public Rev2mDistanceSensor rangeSensor;
+
     /*
      * Robot init() method for driving to a position. Use if you want to use the drive(), strafe(), or driveMecanum() methods
      */
@@ -65,6 +75,9 @@ public class Robot {
      * This init() method is called by the other init() methods. Do not call this method outside of this class.
      */
     private void init(HardwareMap hardwareMap) {
+        // -- Sensors -- //
+//        this.rangeSensor = hardwareMap.get(Rev2mDistanceSensor.class, "rangeSensor");
+
         // -- Chassis -- //
         this.chassisLeftFront = hardwareMap.dcMotor.get("leftFront");
         this.chassisRightFront = hardwareMap.dcMotor.get("rightFront");
