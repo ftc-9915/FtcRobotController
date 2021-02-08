@@ -9,9 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.OpModes.PoseStorage;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.Subsystems.Drive.StandardTrackingWheelLocalizer;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Shooter;
 
 
@@ -34,7 +32,8 @@ public class TeleOpTest extends OpMode {
 
     Servo liftServo;
     Servo pushServo;
-    Servo clawServo;
+    Servo clawServo1;
+    Servo clawServo2;
 
     ElapsedTime timer = new ElapsedTime();
 
@@ -109,7 +108,8 @@ public class TeleOpTest extends OpMode {
         armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armMotor.setTargetPosition(0);
         armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        clawServo = hardwareMap.servo.get("clawServo");
+        clawServo1 = hardwareMap.servo.get("clawServo");
+        clawServo2 = hardwareMap.servo.get("clawServo2");
 
 
         // Initialization values
@@ -286,11 +286,13 @@ public class TeleOpTest extends OpMode {
                 // Opens/Closes Wobble Goal Claw
 
                 if (gamepad2.a && buttonReleased2) {
-                    clawServo.setPosition(CLAW_OPEN_POS);
+                    clawServo1.setPosition(CLAW_OPEN_POS);
+                    clawServo2.setPosition(CLAW_OPEN_POS);
                     buttonReleased2 = false;
                 }
                 if (gamepad2.b && buttonReleased2) {
-                    clawServo.setPosition(CLAW_CLOSE_POS);
+                    clawServo1.setPosition(CLAW_CLOSE_POS);
+                    clawServo2.setPosition(CLAW_CLOSE_POS);
                     buttonReleased2 = false;
                 }
 
