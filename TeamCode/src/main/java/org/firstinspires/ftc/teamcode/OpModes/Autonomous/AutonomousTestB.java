@@ -8,7 +8,7 @@
 //import com.qualcomm.robotcore.hardware.Servo;
 //
 //import org.firstinspires.ftc.teamcode.Subsystems.Drive.CoordinateConstants;
-//import org.firstinspires.ftc.teamcode.Subsystems.Drive.SampleMecanumDrive;
+//import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
 //
 //import static org.firstinspires.ftc.teamcode.OpModes.Autonomous.AutonomousFramework.CLAW_CLOSE_POS;
 //import static org.firstinspires.ftc.teamcode.OpModes.Autonomous.AutonomousFramework.CLAW_OPEN_POS;
@@ -37,7 +37,7 @@
 //
 //    @Override
 //    public void runOpMode() throws InterruptedException {
-//        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+//        MecanumDrivebase drive = new MecanumDrivebase(hardwareMap);
 //
 //        armMotor = hardwareMap.dcMotor.get("armMotor"); // this stuff is going to be replaced by robot class later
 //        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);

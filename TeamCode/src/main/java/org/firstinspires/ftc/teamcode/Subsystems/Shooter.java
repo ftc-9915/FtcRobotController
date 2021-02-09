@@ -1,12 +1,16 @@
-package org.firstinspires.ftc.teamcode.Subsystems.Shooter;
+package org.firstinspires.ftc.teamcode.Subsystems;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
-public class Shooter {
+import org.firstinspires.ftc.teamcode.Subsystems.SubsystemBase;
+
+@Config
+public class Shooter implements SubsystemBase {
     private DcMotorEx flywheel;
     private int ticksPerRev = 28;
     private String name = "launcherMotor";
@@ -35,17 +39,35 @@ public class Shooter {
         MotorConfigurationType motorConfigurationType = flywheel.getMotorType().clone();
         motorConfigurationType.setAchieveableMaxRPMFraction(1.0);
         flywheel.setMotorType(motorConfigurationType);
-    }
 
-    public void setRPM (double rpm){
         PIDFCoefficients PIDF = new PIDFCoefficients(kP,  kI,   kD,  kF);
+        flywheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
         flywheel.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, PIDF);
-
-        double rotationsPerSecond = rpm / 60;
-        double ticksPerSecond = rotationsPerSecond * ticksPerRev;
-        flywheel.setVelocity(ticksPerSecond);
-
+        flywheel.setVelocity(0);
     }
+
+    @Override
+    public boolean isBusy() {
+        return flywheel.isBusy();
+    }
+
+
+    public boolean setRPM (double rpm){
+        if(!isBusy()) {
+            //respond to active updates
+            PIDFCoefficients PIDF = new PIDFCoefficients(kP,  kI,   kD,  kF);
+            flywheel.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, PIDF);
+
+            double rotationsPerSecond = rpm / 60;
+            double ticksPerSecond = rotationsPerSecond * ticksPerRev;
+            flywheel.setVelocity(ticksPerSecond);
+
+            return true;
+        }
+        return false;
+    }
+
 
     public double getRPM () {
         double ticksPerSecond = flywheel.getVelocity();
@@ -54,6 +76,17 @@ public class Shooter {
 
         return rpm;
     }
+
+
+    public boolean setRawPower(double power) {
+        if(!isBusy()) {
+            flywheel.setPower(power);
+            return true;
+        }
+        return false;
+    }
+
+
 
     //Math probably inaccurate, will need calibration curve
 //    public void setRPMWithDistance(double horizontalDistance){

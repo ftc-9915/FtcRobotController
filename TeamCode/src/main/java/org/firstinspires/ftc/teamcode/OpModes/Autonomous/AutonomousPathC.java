@@ -7,25 +7,21 @@ import com.acmerobotics.roadrunner.trajectory.constraints.AngularVelocityConstra
 import com.acmerobotics.roadrunner.trajectory.constraints.MecanumVelocityConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.MinVelocityConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.ProfileAccelerationConstraint;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.Subsystems.Collector;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.CoordinateConstants;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants;
-import org.firstinspires.ftc.teamcode.Subsystems.Drive.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.Subsystems.Drive.opmode.AutonomousPath;
+import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
+import org.firstinspires.ftc.teamcode.Subsystems.Shooter;
+import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
 
 import java.util.Arrays;
 
-import static org.firstinspires.ftc.teamcode.Common.Robot.ARM_POS_LIFT_ARM;
-import static org.firstinspires.ftc.teamcode.Common.Robot.ARM_POS_PICKUP_GOAL;
-import static org.firstinspires.ftc.teamcode.Common.Robot.ARM_POS_PLACE_GOAL;
-import static org.firstinspires.ftc.teamcode.OpModes.Autonomous.AutonomousFramework.CLAW_CLOSE_POS;
-import static org.firstinspires.ftc.teamcode.OpModes.Autonomous.AutonomousFramework.CLAW_OPEN_POS;
+import static org.firstinspires.ftc.teamcode.Common.UtilMethods.sleep;
 
 
 @Config
-public class AutonomousPathC extends AutonomousPath {
+public class AutonomousPathC extends AutonomousPath{
 
     public static int goalX = -35;
     public static int goalY = 55;
@@ -38,7 +34,11 @@ public class AutonomousPathC extends AutonomousPath {
     Pose2d placeSecondGoalPose1 = new Pose2d(48, 57, Math.toRadians(0.0));
     Pose2d parkingPose = new Pose2d(12, 57, Math.toRadians(0.0));
 
-    public void followPath(SampleMecanumDrive drive, DcMotor armMotor, Servo clawServo) {
+    public AutonomousPathC(MecanumDrivebase drive, WobbleArm wobbleArm, Shooter shooter, Collector collector) {
+        super(drive, wobbleArm, shooter, collector);
+    }
+
+    public boolean followPath() {
         Trajectory goToShootingPose = drive.trajectoryBuilder(CoordinateConstants.START_POS_BLUE_2)
                 .splineTo(shootingPosePt1.vec(), shootingPosePt1.getHeading())
                 .splineTo(shootingPosePt2.vec(), shootingPosePt2.getHeading())
@@ -47,15 +47,13 @@ public class AutonomousPathC extends AutonomousPath {
         Trajectory goToPlaceGoalPose = drive.trajectoryBuilder(goToShootingPose.end())
                 .splineTo(placeGoalPose.vec(), placeGoalPose.getHeading())
                 .addDisplacementMarker(() -> {
-                    placeGoal(armMotor, clawServo, ARM_POS_PLACE_GOAL, CLAW_OPEN_POS);
+                    wobbleArm.placeGoalAuto();
                 })
                 .build();
 
         Trajectory goToPickUpGoalPose1 = drive.trajectoryBuilder(goToPlaceGoalPose.end())
                 .addDisplacementMarker(()->{
-                    armMotor.setTargetPosition(ARM_POS_LIFT_ARM);
-                    armMotor.setPower(0.3);
-                    clawServo.setPosition(CLAW_OPEN_POS);
+                    wobbleArm.liftArmAuto();
                 })
                 .lineToLinearHeading(pickUpGoalPose1)
                 .build();
@@ -69,23 +67,18 @@ public class AutonomousPathC extends AutonomousPath {
                         ),
                         new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .addDisplacementMarker(() -> {
-                    sleep(200);
-                    armMotor.setTargetPosition(ARM_POS_PICKUP_GOAL);
-                    armMotor.setPower(0.3);
-                    sleep(500);
-                    clawServo.setPosition(CLAW_CLOSE_POS);
+                    wobbleArm.pickupGoalAuto();
                 })
                 .build();
 
 
         Trajectory goToPlaceSecondGoalPart1 = drive.trajectoryBuilder(goToPickUpGoalPose2.end())
                 .addDisplacementMarker(() -> {
-                    armMotor.setTargetPosition(ARM_POS_LIFT_ARM);
-                    armMotor.setPower(0.3);
+                    wobbleArm.liftArmAuto();
                 })
                 .lineToSplineHeading(placeSecondGoalPose1)
                 .addDisplacementMarker(() -> {
-                    placeGoal(armMotor, clawServo, ARM_POS_PLACE_GOAL, CLAW_OPEN_POS);
+                    wobbleArm.placeGoalAuto();
                 })
                 .build();
 
@@ -107,15 +100,15 @@ public class AutonomousPathC extends AutonomousPath {
 
         drive.followTrajectory(goToPlaceSecondGoalPart1);
 
-        clawServo.setPosition(CLAW_OPEN_POS);
         sleep(1000);
 
         drive.followTrajectory(goToParkingPose);
 
         sleep(1000);
 
-        armMotor.setTargetPosition(ARM_POS_LIFT_ARM);
-        armMotor.setPower(0.3);
+        wobbleArm.liftArmAuto();
+
+        return true;
     }
 
 }

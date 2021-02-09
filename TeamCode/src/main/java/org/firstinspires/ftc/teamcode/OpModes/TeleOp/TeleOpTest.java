@@ -9,8 +9,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.Subsystems.Drive.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Shooter;
+import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
+import org.firstinspires.ftc.teamcode.Subsystems.Shooter;
 
 
 @Config
@@ -61,15 +61,15 @@ public class TeleOpTest extends OpMode {
     static final double CLAW_CLOSE_POS = 0.15;
 
 
-    double speed = 0.0;
-    double strafe = 0.0;
-    double rotation = 0.0;
-    double strafePower = 1.0;
+//    double speed = 0.0;
+//    double strafe = 0.0;
+//    double rotation = 0.0;
+//    double strafePower = 1.0;
     boolean slowmodeOn = false;
 
     Shooter shooter;
 
-    SampleMecanumDrive drive;
+    MecanumDrivebase drive;
     public static int shootingPositionX;
     public static int shootingPositionY;
     public static double shootingPositionHeading;
@@ -127,7 +127,7 @@ public class TeleOpTest extends OpMode {
         pushServo.setPosition(NOT_PUSH_POS);
 
         //set localization
-        drive = new SampleMecanumDrive(hardwareMap);
+        drive = new MecanumDrivebase(hardwareMap);
 //        robotLocalizer.setPoseEstimate(PoseStorage.autoEndingPose);
 
 
@@ -173,24 +173,32 @@ public class TeleOpTest extends OpMode {
             case DRIVER_CONTROL:
 
                 // Chassis code
-                speed = -gamepad1.left_stick_y * strafePower;
-                strafe = gamepad1.left_stick_x * strafePower;
-                rotation = gamepad1.right_stick_x * strafePower;
+//                speed = -gamepad1.left_stick_y * strafePower;
+//                strafe = gamepad1.left_stick_x * strafePower;
+//                rotation = gamepad1.right_stick_x * strafePower;
+//
+//
+//                leftFront.setPower(speed + strafe + rotation);
+//                leftBack.setPower(speed - strafe + rotation);
+//                rightBack.setPower(speed + strafe - rotation);
+//                rightFront.setPower(speed - strafe - rotation);
 
-
-                leftFront.setPower(speed + strafe + rotation);
-                leftBack.setPower(speed - strafe + rotation);
-                rightBack.setPower(speed + strafe - rotation);
-                rightFront.setPower(speed - strafe - rotation);
+                drive.setWeightedDrivePower(
+                        new Pose2d(
+                                -gamepad1.left_stick_y,
+                                -gamepad1.left_stick_x,
+                                -gamepad1.right_stick_x
+                        )
+                );
 
                 // Slowmode
 
                 if (gamepad1.y && buttonReleased1) {
                     if (slowmodeOn) {
-                        strafePower = 1.0;
+                        MecanumDrivebase.VY_WEIGHT = 1.0;
                         slowmodeOn = false;
                     } else {
-                        strafePower = 0.5;
+                        MecanumDrivebase.VY_WEIGHT = 0.5;
                         slowmodeOn = true;
                     }
                     buttonReleased1 = false;

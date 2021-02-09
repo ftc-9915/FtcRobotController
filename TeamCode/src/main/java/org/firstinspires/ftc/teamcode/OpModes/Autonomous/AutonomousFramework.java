@@ -6,9 +6,12 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.Common.RingPosition;
 import org.firstinspires.ftc.teamcode.OpModes.PoseStorage;
+import org.firstinspires.ftc.teamcode.Subsystems.Collector;
+import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
+import org.firstinspires.ftc.teamcode.Subsystems.Shooter;
+import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
 import org.firstinspires.ftc.teamcode.Vision.VisionPipeline;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.CoordinateConstants;
-import org.firstinspires.ftc.teamcode.Subsystems.Drive.SampleMecanumDrive;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -37,31 +40,31 @@ public class AutonomousFramework extends LinearOpMode {
 
     Servo clawServo;
 
-    static final int ARM_INCREMENT = 3;
-    static final double CLAW_OPEN_POS = 0.7;
-    static final double CLAW_CLOSE_POS = 0.15;
 
-    AutonomousPathA pathA = new AutonomousPathA();
-    AutonomousPathB pathB = new AutonomousPathB();
-    AutonomousPathC pathC = new AutonomousPathC();
+    AutonomousPath path;
 
-    SampleMecanumDrive drive;
+    MecanumDrivebase drive;
+    WobbleArm wobbleArm;
+    Shooter shooter;
+    Collector collector;
+
 
     @Override
     public void runOpMode() throws InterruptedException {
 
-        drive = new SampleMecanumDrive(hardwareMap);
-
-        armMotor = hardwareMap.dcMotor.get("armMotor"); // this stuff is going to be replaced by robot class later
-        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armMotor.setTargetPosition(0);
-        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        clawServo = hardwareMap.servo.get("clawServo");
-        clawServo.setPosition(CLAW_CLOSE_POS);
-
-        // Starting Position
+        //Init Drive
+        drive = new MecanumDrivebase(hardwareMap);
         drive.setPoseEstimate(CoordinateConstants.START_POS_BLUE_2);
+
+        //Initialize Wobble Arm
+        wobbleArm = new WobbleArm(hardwareMap);
+
+        //Initialize Shooter
+        shooter = new Shooter(hardwareMap);
+
+        //Initialize collector
+        collector = new Collector(hardwareMap);
+
 
         //Initialize webcam
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
@@ -82,42 +85,26 @@ public class AutonomousFramework extends LinearOpMode {
 
         ringConfiguration =  pipeline.position;
         telemetry.addLine("Waiting for start");
-        telemetry.addData("Ring Config", ringConfiguration);
         telemetry.update();
-
-//        armMotor = hardwareMap.dcMotor.get("armMotor"); // this stuff is going to be replaced by robot class later
-//        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        armMotor.setTargetPosition(0);
-//        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//
-//        clawServo = hardwareMap.servo.get("clawServo");
-//        clawServo.setPosition(CLAW_CLOSE_POS);
 
 
         waitForStart();
 
         while (opModeIsActive() && !pathIsFinished) {
-        // TODO: For each path, robot repeats the path after completing it rather than stopping.
             switch (ringConfiguration) {
                 case NONE:
                     telemetry.addLine("Go Path NONE");
-                    //Execute path A
-                    pathA.followPath(drive, armMotor, clawServo);
-                    pathIsFinished = true;
+                    path = new AutonomousPathA(drive, wobbleArm, shooter, collector);
                     break;
 
                 case ONE:
                     telemetry.addLine("Go Path ONE");
-                    //Execute path B
-                    pathB.followPath(drive, armMotor, clawServo);
-                    pathIsFinished = true;
+                    path = new AutonomousPathB(drive, wobbleArm, shooter, collector);
                     break;
 
                 case FOUR:
                     telemetry.addLine("Go Path FOUR");
-                    //Execute path C
-                    pathC.followPath(drive, armMotor, clawServo);
-                    pathIsFinished = true;
+                    path = new AutonomousPathC(drive, wobbleArm, shooter, collector);
                     break;
 
                 default:
@@ -125,8 +112,10 @@ public class AutonomousFramework extends LinearOpMode {
                     break;
             }
 
-            telemetry.update();
+            //Returns true when path is finished
+            pathIsFinished = path.followPath();
 
+            telemetry.update();
 
         }
     }
