@@ -125,7 +125,7 @@ public class SampleMecanumDrive extends MecanumDrive {
 
         poseHistory = new LinkedList<>();
 
-        LynxModuleUtil.ensureMinimumFirmwareVersion(hardwareMap);
+//        LynxModuleUtil.ensureMinimumFirmwareVersion(hardwareMap);
 
         batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
 
