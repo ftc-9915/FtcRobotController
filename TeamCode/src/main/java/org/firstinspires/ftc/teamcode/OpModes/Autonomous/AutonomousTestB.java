@@ -7,7 +7,7 @@
 //import com.qualcomm.robotcore.hardware.DcMotor;
 //import com.qualcomm.robotcore.hardware.Servo;
 //
-//import org.firstinspires.ftc.teamcode.Subsystems.Drive.CoordinateConstants;
+//import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
 //import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
 //
 //import static org.firstinspires.ftc.teamcode.OpModes.Autonomous.AutonomousFramework.CLAW_CLOSE_POS;
@@ -48,7 +48,7 @@
 //        clawServo.setPosition(CLAW_CLOSE_POS);
 //
 //        // Starting Position
-//        drive.setPoseEstimate(CoordinateConstants.START_POS_BLUE_2);
+//        drive.setPoseEstimate(PoseLibrary.START_POS_BLUE_2);
 //
 //
 //        waitForStart();
@@ -57,7 +57,7 @@
 //
 //
 //
-//        Trajectory goToShootingPose = drive.trajectoryBuilder(CoordinateConstants.START_POS_BLUE_2)
+//        Trajectory goToShootingPose = drive.trajectoryBuilder(PoseLibrary.START_POS_BLUE_2)
 //                .splineTo(shootingPose.vec(), shootingPose.getHeading())
 //                .build();
 //

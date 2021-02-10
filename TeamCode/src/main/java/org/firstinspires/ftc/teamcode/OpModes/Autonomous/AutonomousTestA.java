@@ -11,7 +11,7 @@
 //import com.qualcomm.robotcore.hardware.DcMotor;
 //import com.qualcomm.robotcore.hardware.Servo;
 //
-//import org.firstinspires.ftc.teamcode.Subsystems.Drive.CoordinateConstants;
+//import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
 //import org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants;
 //import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
 //
@@ -56,7 +56,7 @@
 //        clawServo.setPosition(CLAW_CLOSE_POS);
 //
 //        // Starting Position
-//        drive.setPoseEstimate(CoordinateConstants.START_POS_BLUE_2);
+//        drive.setPoseEstimate(PoseLibrary.START_POS_BLUE_2);
 //
 //
 //        waitForStart();
@@ -65,7 +65,7 @@
 //
 //
 //
-//        Trajectory goToShootingandPlaceGoalPose = drive.trajectoryBuilder(CoordinateConstants.START_POS_BLUE_2)
+//        Trajectory goToShootingandPlaceGoalPose = drive.trajectoryBuilder(PoseLibrary.START_POS_BLUE_2)
 //                .splineTo(placeGoalPose.vec(), placeGoalPose.getHeading())
 //                .addDisplacementMarker(() -> {
 //                    armMotor.setTargetPosition(armPos);

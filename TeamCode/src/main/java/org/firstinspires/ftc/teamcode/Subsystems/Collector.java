@@ -56,8 +56,10 @@ public class Collector implements SubsystemBase {
     }
 
     public boolean turnCollectorOff(){
-        return setRawPower(COLLECTOR_REVERSE_SPEED);
+        return setRawPower(0);
     }
+
+    public boolean turnCollectorReverse() { return setRawPower(COLLECTOR_REVERSE_SPEED);}
 
     public boolean toggleCollectorOnOff(){
         if (currentMode == Mode.COLLECTOR_OFF) {

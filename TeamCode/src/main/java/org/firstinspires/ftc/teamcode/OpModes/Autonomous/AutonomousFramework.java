@@ -5,13 +5,12 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.Common.RingPosition;
-import org.firstinspires.ftc.teamcode.OpModes.PoseStorage;
+import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
 import org.firstinspires.ftc.teamcode.Subsystems.Collector;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
 import org.firstinspires.ftc.teamcode.Vision.VisionPipeline;
-import org.firstinspires.ftc.teamcode.Subsystems.Drive.CoordinateConstants;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -54,7 +53,7 @@ public class AutonomousFramework extends LinearOpMode {
 
         //Init Drive
         drive = new MecanumDrivebase(hardwareMap);
-        drive.setPoseEstimate(CoordinateConstants.START_POS_BLUE_2);
+        drive.setPoseEstimate(PoseLibrary.START_POS_BLUE_2);
 
         //Initialize Wobble Arm
         wobbleArm = new WobbleArm(hardwareMap);
@@ -124,6 +123,6 @@ public class AutonomousFramework extends LinearOpMode {
     public void goToState(int newState) { state = newState; }
     public void finishRoutine() {
         pathIsFinished = true;
-        PoseStorage.autoEndingPose = drive.getPoseEstimate();
+        PoseLibrary.autoEndingPose = drive.getPoseEstimate();
     }
 }

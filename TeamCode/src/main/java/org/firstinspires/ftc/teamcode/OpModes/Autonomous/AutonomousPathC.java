@@ -9,7 +9,7 @@ import com.acmerobotics.roadrunner.trajectory.constraints.MinVelocityConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.ProfileAccelerationConstraint;
 
 import org.firstinspires.ftc.teamcode.Subsystems.Collector;
-import org.firstinspires.ftc.teamcode.Subsystems.Drive.CoordinateConstants;
+import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter;
@@ -39,7 +39,7 @@ public class AutonomousPathC extends AutonomousPath{
     }
 
     public boolean followPath() {
-        Trajectory goToShootingPose = drive.trajectoryBuilder(CoordinateConstants.START_POS_BLUE_2)
+        Trajectory goToShootingPose = drive.trajectoryBuilder(PoseLibrary.START_POS_BLUE_2)
                 .splineTo(shootingPosePt1.vec(), shootingPosePt1.getHeading())
                 .splineTo(shootingPosePt2.vec(), shootingPosePt2.getHeading())
                 .build();

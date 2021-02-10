@@ -10,7 +10,7 @@ import com.acmerobotics.roadrunner.trajectory.constraints.ProfileAccelerationCon
 
 import org.firstinspires.ftc.teamcode.Common.UtilMethods;
 import org.firstinspires.ftc.teamcode.Subsystems.Collector;
-import org.firstinspires.ftc.teamcode.Subsystems.Drive.CoordinateConstants;
+import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter;
@@ -41,7 +41,7 @@ public class AutonomousPathA extends AutonomousPath{
     }
 
     public boolean followPath() {
-        Trajectory goToShootingAndPlaceGoalPose = drive.trajectoryBuilder(CoordinateConstants.START_POS_BLUE_2)
+        Trajectory goToShootingAndPlaceGoalPose = drive.trajectoryBuilder(PoseLibrary.START_POS_BLUE_2)
                 .splineTo(placeGoalAndShootingPose.vec(), placeGoalAndShootingPose.getHeading())
                 .addDisplacementMarker(() -> {
                     wobbleArm.placeGoalAuto();

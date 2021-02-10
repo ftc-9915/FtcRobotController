@@ -1,15 +1,15 @@
 package org.firstinspires.ftc.teamcode.Subsystems;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.util.MathUtil;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
+import org.apache.commons.math3.util.MathUtils;
 import org.firstinspires.ftc.teamcode.Common.UtilMethods;
-import org.firstinspires.ftc.teamcode.Subsystems.SubsystemBase;
+
+import static org.firstinspires.ftc.teamcode.Common.UtilMethods.ensureRange;
 
 //TODO Add Second Wobble Goal Claw
 @Config
@@ -17,35 +17,46 @@ public class WobbleArm implements SubsystemBase {
 
     //Subsystem Components
     private DcMotor armMotor;
-    private Servo clawServo;
+    private Servo clawServoLeft;
+    private Servo clawServoRight;
 
     //Subsystem Component Names
     private String armName = "armMotor";
-    private String clawName = "clawServo";
+    private String clawServoLeftName = "clawServo";
+    private String clawServoRightName = "clawServo2";
+
 
     //Subsystem Constants
     private static int ARM_POS_PLACE_GOAL = -525;
     private static int ARM_POS_PICKUP_GOAL = -510;
     private static int ARM_POS_LIFT_ARM = -200;
 
+    private static int ARM_UPPER_LIMIT = 10000;
+    private static int ARM_LOWER_LIMIT = -10000;
+
     private static double DEFAULT_ARM_POWER = 0.3;
 
-    private static double CLAW_OPEN_POS = 0.7;
-    private static double CLAW_CLOSE_POS = 0.15;
+    private static double LEFT_CLAW_OPEN_POS = 0.7;
+    private static double LEFT_CLAW_CLOSE_POS = 0.15;
+
+    private static double RIGHT_CLAW_OPEN_POS = 0.7;
+    private static double RIGHT_CLAW_CLOSE_POS = 0.15;
 
 
 
 
 
     public WobbleArm(HardwareMap hardwareMap){
-        armMotor = hardwareMap.dcMotor.get(armName); // this stuff is going to be replaced by robot class later
-        clawServo = hardwareMap.servo.get(clawName);
+        armMotor = hardwareMap.dcMotor.get(armName);
+        clawServoLeft = hardwareMap.servo.get(clawServoLeftName);
+        clawServoRight = hardwareMap.servo.get(clawServoRightName);
 
         armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armMotor.setTargetPosition(0);
         armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        clawServo.setPosition(CLAW_CLOSE_POS);
+        clawServoLeft.setPosition(LEFT_CLAW_CLOSE_POS);
+        clawServoRight.setPosition(RIGHT_CLAW_CLOSE_POS);
     }
 
 
@@ -75,16 +86,35 @@ public class WobbleArm implements SubsystemBase {
         return false;
     }
 
+    public boolean setArmPos(int position) {
+        if(!armMotor.isBusy()) {
+            int normalizedPosition = UtilMethods.ensureRange(position, ARM_LOWER_LIMIT, ARM_UPPER_LIMIT);
+            armMotor.setTargetPosition(normalizedPosition);
+            armMotor.setPower(DEFAULT_ARM_POWER);
+
+            return true;
+        }
+        return false;
+    }
+
+    public double getArmPosition() {
+        return armMotor.getCurrentPosition();
+    }
+
     public boolean openClaw() {
-        clawServo.setPosition(CLAW_OPEN_POS);
-        if (clawServo.getPosition() == CLAW_OPEN_POS) {
+        clawServoLeft.setPosition(LEFT_CLAW_OPEN_POS);
+        clawServoRight.setPosition(RIGHT_CLAW_OPEN_POS);
+
+        if (clawServoLeft.getPosition() == LEFT_CLAW_OPEN_POS && clawServoRight.getPosition() == RIGHT_CLAW_OPEN_POS) {
             return true;
         }
         return false;
     }
 
     public boolean closeClaw() {
-        clawServo.setPosition(CLAW_CLOSE_POS);
+        clawServoLeft.setPosition(LEFT_CLAW_CLOSE_POS);
+        clawServoRight.setPosition(RIGHT_CLAW_CLOSE_POS);
+
         return true;
     }
 
@@ -96,7 +126,7 @@ public class WobbleArm implements SubsystemBase {
             armMotor.setTargetPosition(ARM_POS_PICKUP_GOAL);
             armMotor.setPower(DEFAULT_ARM_POWER);
             UtilMethods.sleep(500);
-            clawServo.setPosition(CLAW_CLOSE_POS);
+            clawServoLeft.setPosition(LEFT_CLAW_CLOSE_POS);
 
             return true;
         }
@@ -110,7 +140,7 @@ public class WobbleArm implements SubsystemBase {
             armMotor.setTargetPosition(ARM_POS_PLACE_GOAL);
             armMotor.setPower(DEFAULT_ARM_POWER);
             UtilMethods.sleep(600);
-            clawServo.setPosition(CLAW_OPEN_POS);
+            clawServoLeft.setPosition(LEFT_CLAW_OPEN_POS);
             UtilMethods.sleep(500);
 
             return true;

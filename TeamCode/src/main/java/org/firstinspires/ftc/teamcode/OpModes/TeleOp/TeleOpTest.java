@@ -6,41 +6,45 @@ import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.Subsystems.Collector;
+import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
+import org.firstinspires.ftc.teamcode.Subsystems.Hopper;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter;
+import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
 
 
 @Config
 @TeleOp(name="TeleOp Test", group="test")
 public class TeleOpTest extends OpMode {
 
-    DcMotor leftFront;
-    DcMotor leftBack;
-    DcMotor rightFront;
-    DcMotor rightBack;
+    //Subsystems
+    MecanumDrivebase drive;
+    Shooter shooter;
+    WobbleArm wobbleArm;
+    Collector collector;
+    Hopper hopper;
 
 
 
     //DcMotor launcherMotor;
-
-    DcMotor collectorMotor;
-
-    DcMotor armMotor;
-
-    Servo liftServo;
-    Servo pushServo;
-    Servo clawServo1;
-    Servo clawServo2;
+//    DcMotor collectorMotor;
+//    DcMotor armMotor;
+//    Servo liftServo;
+//    Servo pushServo;
+//    Servo clawServo1;
+//    Servo clawServo2;
 
     ElapsedTime timer = new ElapsedTime();
 
     double launcherPower;
     double launcherRPM;
     boolean launcherOn;
-    double collectorPower;
+//    double collectorPower;
     int armPos;
 
     // Ensures that the adjustments are made each time the gamepad buttons are pressed rather than each time through loop
@@ -48,17 +52,17 @@ public class TeleOpTest extends OpMode {
     boolean buttonReleased2;
     boolean triggerReleased;
 
-    static final double LIFT_UP_POS = 0.50;
-    static final double LIFT_DOWN_POS = 0.75;
-    static final double NOT_PUSH_POS = 0.70;
-    static final double PUSH_POS = 0.52;
+//    static final double LIFT_UP_POS = 0.50;
+//    static final double LIFT_DOWN_POS = 0.75;
+//    static final double NOT_PUSH_POS = 0.70;
+//    static final double PUSH_POS = 0.52;
 
     // TODO: test these and edit with accurate values
-    static final int ARM_SPEED = 2;
-    static final int ARM_UPPER_LIMIT = 10000;
-    static final int ARM_LOWER_LIMIT = -10000;
-    static final double CLAW_OPEN_POS = 0.7;
-    static final double CLAW_CLOSE_POS = 0.15;
+//    static final int ARM_SPEED = 2;
+//    static final int ARM_UPPER_LIMIT = 10000;
+//    static final int ARM_LOWER_LIMIT = -10000;
+//    static final double CLAW_OPEN_POS = 0.7;
+//    static final double CLAW_CLOSE_POS = 0.15;
 
 
 //    double speed = 0.0;
@@ -67,9 +71,7 @@ public class TeleOpTest extends OpMode {
 //    double strafePower = 1.0;
     boolean slowmodeOn = false;
 
-    Shooter shooter;
 
-    MecanumDrivebase drive;
     public static int shootingPositionX;
     public static int shootingPositionY;
     public static double shootingPositionHeading;
@@ -84,51 +86,47 @@ public class TeleOpTest extends OpMode {
 
     @Override
     public void init() {
-        // Chassis Motors
-
-        leftFront = hardwareMap.dcMotor.get("leftFront");
-        leftBack = hardwareMap.dcMotor.get("leftBack");
-        rightFront = hardwareMap.dcMotor.get("rightFront");
-        rightBack = hardwareMap.dcMotor.get("rightBack");
-        leftFront.setDirection(DcMotor.Direction.REVERSE);
-        leftBack.setDirection(DcMotor.Direction.REVERSE);
+        //Init Drive and set estimate
+        drive = new MecanumDrivebase(hardwareMap);
+        drive.setPoseEstimate(PoseLibrary.autoEndingPose);
 
 
-        // Attachment Motors
-        //launcherMotor = hardwareMap.dcMotor.get("launcherMotor");
-        //launcherMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        collectorMotor = hardwareMap.dcMotor.get("collectorMotor");
-        //launcherMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        liftServo = hardwareMap.servo.get("liftServo");
-        pushServo = hardwareMap.servo.get("pushServo");
+        //Init Hopper
+        hopper = new Hopper(hardwareMap);
+//        liftServo = hardwareMap.servo.get("liftServo");
+//        pushServo = hardwareMap.servo.get("pushServo");
+//        // Starting position
+//        liftServo.setPosition(LIFT_DOWN_POS);
+//        pushServo.setPosition(NOT_PUSH_POS);
 
 
-        armMotor = hardwareMap.dcMotor.get("armMotor");
-        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armMotor.setTargetPosition(0);
-        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        clawServo1 = hardwareMap.servo.get("clawServo");
-        clawServo2 = hardwareMap.servo.get("clawServo2");
+        //Init Collector
+        collector = new Collector(hardwareMap);
+//      collectorMotor = hardwareMap.dcMotor.get("collectorMotor");
+
+
+
+        //Init Wobble Arm
+        wobbleArm = new WobbleArm(hardwareMap);
+//        armMotor = hardwareMap.dcMotor.get("armMotor");
+//        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        armMotor.setTargetPosition(0);
+//        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        clawServo1 = hardwareMap.servo.get("clawServo");
+//        clawServo2 = hardwareMap.servo.get("clawServo2");
+
 
 
         // Initialization values
         launcherPower = 0.0;
         launcherRPM = -60.0;
         launcherOn = false;
-        collectorPower = 1.0;
+//        collectorPower = 1.0;
         armPos = 0;
         buttonReleased1 = true;
         buttonReleased2 = true;
         triggerReleased = true;
-
-        // Starting position
-        liftServo.setPosition(LIFT_DOWN_POS);
-        pushServo.setPosition(NOT_PUSH_POS);
-
-        //set localization
-        drive = new MecanumDrivebase(hardwareMap);
-//        robotLocalizer.setPoseEstimate(PoseStorage.autoEndingPose);
 
 
     }
@@ -147,7 +145,7 @@ public class TeleOpTest extends OpMode {
         telemetry.addData("heading", currentPose.getHeading());
 
         telemetry.addData("Launcher RPM", shooter.getRPM());
-        telemetry.addData("Arm Position", armPos);
+        telemetry.addData("Arm Position", wobbleArm.getArmPosition());
         telemetry.addData("Slowmode On", slowmodeOn);
         telemetry.addLine("--- Controls (Gamepad 1) ---");
         telemetry.addData("Turn collector on", "Button A");
@@ -206,22 +204,27 @@ public class TeleOpTest extends OpMode {
 
                 // Turns collector on/off
                 if (gamepad1.a && buttonReleased1) {
-                    collectorPower = 1.0;
-                    pushServo.setPosition(NOT_PUSH_POS);
-                    liftServo.setPosition(LIFT_DOWN_POS);
+                    collector.turnCollectorOn();
+                    hopper.setPushOutPos();
+                    hopper.setLiftDownPos();
                     buttonReleased1 = false;
+//                    collectorPower = 1.0;
+//                    pushServo.setPosition(NOT_PUSH_POS);
+//                    liftServo.setPosition(LIFT_DOWN_POS);
                 }
 
                 if (gamepad1.b && buttonReleased1) {
-                    collectorPower = 0.0;
+                    collector.turnCollectorOff();
                     buttonReleased1 = false;
+//                    collectorPower = 0.0;
                 }
 
                 // Reverses collector
 
                 if (gamepad1.x && buttonReleased1) {
-                    collectorPower = -1.0;
+                    collector.turnCollectorReverse();
                     buttonReleased1 = false;
+//                    collectorPower = -1.0;
                 }
 
                 // Turns launcher on/off
@@ -258,49 +261,57 @@ public class TeleOpTest extends OpMode {
 
                 // Pushes/retracts collector servo
                 if (gamepad2.y && buttonReleased2) {
-                    pushServo.setPosition(PUSH_POS);
+                    hopper.setPushInPos();
                     timer.reset();
                     buttonReleased2 = false;
+//                  pushServo.setPosition(PUSH_POS);
                 }
 
                 if (timer.seconds() > 1) {
-                    pushServo.setPosition(NOT_PUSH_POS);
+                    hopper.setPushOutPos();
+//                  pushServo.setPosition(NOT_PUSH_POS);
                 }
 
                 // Lifts/Lowers the collecting platform
                 if (gamepad2.left_bumper && buttonReleased2) {
-                    liftServo.setPosition(LIFT_DOWN_POS);
+                    hopper.setLiftDownPos();
+//                    liftServo.setPosition(LIFT_DOWN_POS);
                     buttonReleased2 = false;
                 }
 
                 if (gamepad2.right_bumper && buttonReleased2) {
-                    liftServo.setPosition(LIFT_UP_POS);
+                    hopper.setLiftUpPos();
+//                    liftServo.setPosition(LIFT_UP_POS);
                     buttonReleased2 = false;
                 }
 
                 // Lifts/Lowers Wobble Goal Arm
 
-                armPos += ARM_SPEED * gamepad2.left_stick_y;
-                if (armPos > ARM_UPPER_LIMIT) {
-                    armPos = ARM_UPPER_LIMIT;
-                }
-                if (armPos < ARM_LOWER_LIMIT) {
-                    armPos = ARM_LOWER_LIMIT;
-                }
-                armMotor.setTargetPosition(armPos);
-                armMotor.setPower(1.0);
+                wobbleArm.setArmPos(armPos);
+
+//                armPos += ARM_SPEED * gamepad2.left_stick_y;
+//                if (armPos > ARM_UPPER_LIMIT) {
+//                    armPos = ARM_UPPER_LIMIT;
+//                }
+//                if (armPos < ARM_LOWER_LIMIT) {
+//                    armPos = ARM_LOWER_LIMIT;
+//                }
+//                armMotor.setTargetPosition(armPos);
+//                armMotor.setPower(1.0);
 
 
                 // Opens/Closes Wobble Goal Claw
 
                 if (gamepad2.a && buttonReleased2) {
-                    clawServo1.setPosition(CLAW_OPEN_POS);
-                    clawServo2.setPosition(CLAW_OPEN_POS);
+                    wobbleArm.openClaw();
+//                    clawServo1.setPosition(CLAW_OPEN_POS);
+//                    clawServo2.setPosition(CLAW_OPEN_POS);
                     buttonReleased2 = false;
                 }
                 if (gamepad2.b && buttonReleased2) {
-                    clawServo1.setPosition(CLAW_CLOSE_POS);
-                    clawServo2.setPosition(CLAW_CLOSE_POS);
+                    wobbleArm.closeClaw();
+//                    clawServo1.setPosition(CLAW_CLOSE_POS);
+//                    clawServo2.setPosition(CLAW_CLOSE_POS);
                     buttonReleased2 = false;
                 }
 
@@ -321,7 +332,7 @@ public class TeleOpTest extends OpMode {
                 }
 
                 //launcherMotor.setPower(launcherPower);
-                collectorMotor.setPower(collectorPower);
+//                collectorMotor.setPower(collectorPower);
 
 
                 //create trajectory to shooting position on the fly
@@ -330,7 +341,7 @@ public class TeleOpTest extends OpMode {
                     // trajectory on the fly and follow it
                     // We switch the state to AUTOMATIC_CONTROL
 
-                    liftServo.setPosition(LIFT_UP_POS);
+//                    liftServo.setPosition(LIFT_UP_POS);
 
                     Trajectory driveToShootPositionPath = drive.trajectoryBuilder(currentPose)
                             .lineToLinearHeading(new Pose2d(shootingPositionX, shootingPositionY,  Math.toRadians(shootingPositionHeading)))
@@ -340,6 +351,7 @@ public class TeleOpTest extends OpMode {
 
                     currentMode = Mode.AUTOMATIC_CONTROL;
                 }
+
 
             case AUTOMATIC_CONTROL:
                 // If x is pressed, we break out of the automatic following

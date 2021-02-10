@@ -9,4 +9,17 @@ public class UtilMethods {
             Thread.currentThread().interrupt();
         }
     }
+
+    public static double ensureRange(double value, double min, double max) {
+        return Math.min(Math.max(value, min), max);
+    }
+
+    public static int ensureRange(int value, int min, int max) {
+        return Math.min(Math.max(value, min), max);
+    }
+
+
+    public static boolean inRange(double value, double min, double max) {
+        return (value>= min) && (value<= max);
+    }
 }
