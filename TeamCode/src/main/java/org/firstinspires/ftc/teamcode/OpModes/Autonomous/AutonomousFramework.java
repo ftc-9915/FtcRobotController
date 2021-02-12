@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.Common.RingPosition;
+import org.firstinspires.ftc.teamcode.Subsystems.Camera;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
 import org.firstinspires.ftc.teamcode.Subsystems.Collector;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
@@ -19,13 +20,14 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 
+
 @Autonomous(name = "AutonomousFramework", group = "test")
 public class AutonomousFramework extends LinearOpMode {
 
     int state = 1;
     boolean A = false;
     boolean B = false;
-    OpenCvCamera webcam;
+    Camera camera;
 
     RingPosition ringConfiguration;
 
@@ -66,23 +68,26 @@ public class AutonomousFramework extends LinearOpMode {
 
 
         //Initialize webcam
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-        VisionPipeline pipeline = new VisionPipeline();
-        webcam.setPipeline(pipeline);
+        VisionPipeline ringDetectPipeline = new VisionPipeline();
+        camera = new Camera(hardwareMap, ringDetectPipeline);
 
-        //opens connection to camera asynchronously
-        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
-        {
-            @Override
-            public void onOpened()
-            {
-                webcam.startStreaming(320,240, OpenCvCameraRotation.UPRIGHT);
-                FtcDashboard.getInstance().startCameraStream(webcam, 0);
-            }
-        });
+//        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+//        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+//        VisionPipeline pipeline = new VisionPipeline();
+//        webcam.setPipeline(pipeline);
+//
+//        //opens connection to camera asynchronously
+//        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+//        {
+//            @Override
+//            public void onOpened()
+//            {
+//                webcam.startStreaming(320,240, OpenCvCameraRotation.UPRIGHT);
+//                FtcDashboard.getInstance().startCameraStream(webcam, 0);
+//            }
+//        });
 
-        ringConfiguration =  pipeline.position;
+        ringConfiguration =  ringDetectPipeline.getRingPosition();
         telemetry.addLine("Waiting for start");
         telemetry.update();
 
@@ -104,10 +109,6 @@ public class AutonomousFramework extends LinearOpMode {
                 case FOUR:
                     telemetry.addLine("Go Path FOUR");
                     path = new AutonomousPathC(drive, wobbleArm, shooter, collector);
-                    break;
-
-                default:
-                    ringConfiguration = pipeline.position;
                     break;
             }
 

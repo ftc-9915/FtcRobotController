@@ -41,7 +41,6 @@ public class VisionPipeline extends OpenCvPipeline {
     private Mat ringAnalysisZone = new Mat();
 
     private int avgCbValue;
-    public volatile RingPosition position = RingPosition.UNKNOWN;
 
 
     /**
@@ -89,15 +88,6 @@ public class VisionPipeline extends OpenCvPipeline {
         avgCbValue = (int) Core.mean(ringAnalysisZone).val[0];
 
 
-        // Set position based on Cb values
-        if(avgCbValue > FOUR_RING_THRESHOLD){
-            position = RingPosition.FOUR;
-        }else if (avgCbValue > ONE_RING_THRESHOLD){
-            position = RingPosition.ONE;
-        }else {
-            position = RingPosition.NONE;
-        }
-
         //switch between rendered color spaces
         switch (COLOR_SPACES[viewfinderIndex % COLOR_SPACES.length]){
             case YcrCb:
@@ -121,6 +111,16 @@ public class VisionPipeline extends OpenCvPipeline {
     }
     public int getAnalysis(){
         return avgCbValue;
+    }
+
+    public RingPosition getRingPosition() {
+        // Set position based on Cb values
+        if(avgCbValue > FOUR_RING_THRESHOLD){
+            return RingPosition.FOUR;
+        }else if (avgCbValue > ONE_RING_THRESHOLD){
+            return RingPosition.ONE;
+        }
+        return RingPosition.NONE;
     }
 
 
