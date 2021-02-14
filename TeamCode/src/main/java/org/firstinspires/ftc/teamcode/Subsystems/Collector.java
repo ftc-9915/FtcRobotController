@@ -72,4 +72,5 @@ public class Collector implements SubsystemBase {
     public boolean isBusy() {
         return collectorMotor.isBusy();
     }
+
 }

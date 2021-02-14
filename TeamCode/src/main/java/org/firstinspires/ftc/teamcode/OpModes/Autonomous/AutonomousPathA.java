@@ -8,12 +8,14 @@ import com.acmerobotics.roadrunner.trajectory.constraints.MecanumVelocityConstra
 import com.acmerobotics.roadrunner.trajectory.constraints.MinVelocityConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.ProfileAccelerationConstraint;
 
+import org.firstinspires.ftc.teamcode.Commands.ShootCommand;
 import org.firstinspires.ftc.teamcode.Common.UtilMethods;
 import org.firstinspires.ftc.teamcode.Subsystems.Collector;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
-import org.firstinspires.ftc.teamcode.Subsystems.Shooter;
+import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Flywheel;
+import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Hopper;
 import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
 
 import java.util.Arrays;
@@ -22,22 +24,25 @@ import java.util.Arrays;
 @Config
 public class AutonomousPathA extends AutonomousPath{
 
-
+    //Treakable values for tuning
     public static int goalX = -32;
     public static int goalY = 53;
+    public static double shootingPoseAngle = -30.0;
+    public static double shootingPoseRPM = 4000;
+
 
     // shootingPose not used
-    Pose2d shootingPose = new Pose2d(0, 24, Math.toRadians(0.0));
+    public static Pose2d shootingPose = new Pose2d(0, 24, Math.toRadians(0.0));
 
-    Pose2d placeGoalAndShootingPose = new Pose2d(-5, 55, Math.toRadians(-10.0));
+    public static Pose2d placeGoalAndShootingPose = new Pose2d(-5, 55, Math.toRadians(shootingPoseAngle));
 
-    Pose2d pickUpGoalPose1 = new Pose2d(-24, goalY, Math.toRadians(180.0));
-    Pose2d pickUpGoalPose2 = new Pose2d(goalX, goalY, Math.toRadians(180.0));
-    Pose2d placeSecondGoalPose = new Pose2d(0, 57, Math.toRadians(0.0));
-    Pose2d parkingPose = new Pose2d(10, 30, Math.toRadians(0.0));
+    public static Pose2d pickUpGoalPose1 = new Pose2d(-24, goalY, Math.toRadians(180.0));
+    public static Pose2d pickUpGoalPose2 = new Pose2d(goalX, goalY, Math.toRadians(180.0));
+    public static Pose2d placeSecondGoalPose = new Pose2d(0, 57, Math.toRadians(0.0));
+    public static Pose2d parkingPose = new Pose2d(10, 30, Math.toRadians(0.0));
 
-    public AutonomousPathA(MecanumDrivebase drive, WobbleArm wobbleArm, Shooter shooter, Collector collector) {
-        super(drive, wobbleArm, shooter, collector);
+    public AutonomousPathA(MecanumDrivebase drive, WobbleArm wobbleArm, Flywheel flywheel, Collector collector, Hopper hopper) {
+        super(drive, wobbleArm, flywheel, collector, hopper);
     }
 
     public boolean followPath() {
@@ -45,13 +50,12 @@ public class AutonomousPathA extends AutonomousPath{
                 .splineTo(placeGoalAndShootingPose.vec(), placeGoalAndShootingPose.getHeading())
                 .addDisplacementMarker(() -> {
                     wobbleArm.placeGoalAuto();
+                    wobbleArm.liftArmAuto();
+                    ShootCommand.shootSyncCommand(3, shootingPoseRPM, flywheel, hopper);
                 })
                 .build();
 
         Trajectory goToPickUpGoalPose1 = drive.trajectoryBuilder(goToShootingAndPlaceGoalPose.end())
-                .addDisplacementMarker(()->{
-                    wobbleArm.liftArmAuto();
-                })
                 .lineToLinearHeading(pickUpGoalPose1)
                 .build();
 

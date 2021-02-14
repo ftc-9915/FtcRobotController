@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Subsystems;
+package org.firstinspires.ftc.teamcode.Subsystems.Shooter;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -97,6 +97,7 @@ public class Hopper implements SubsystemBase {
         return false;
     }
 
+
     public boolean togglePushInOut() {
         if (pushMode == PushMode.PUSH_OUT) {
             return setPushInPos();
@@ -109,4 +110,6 @@ public class Hopper implements SubsystemBase {
     public boolean isBusy() {
         return false;
     }
+
+
 }

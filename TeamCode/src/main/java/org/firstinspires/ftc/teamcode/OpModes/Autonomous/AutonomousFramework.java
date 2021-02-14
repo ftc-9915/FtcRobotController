@@ -1,20 +1,16 @@
 package org.firstinspires.ftc.teamcode.OpModes.Autonomous;
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.Common.RingPosition;
-import org.firstinspires.ftc.teamcode.Subsystems.Camera;
+import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Hopper;
+import org.firstinspires.ftc.teamcode.Vision.Camera;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
 import org.firstinspires.ftc.teamcode.Subsystems.Collector;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
-import org.firstinspires.ftc.teamcode.Subsystems.Shooter;
+import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Flywheel;
 import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
 import org.firstinspires.ftc.teamcode.Vision.VisionPipeline;
-import org.openftc.easyopencv.OpenCvCamera;
-import org.openftc.easyopencv.OpenCvCameraFactory;
-import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -46,8 +42,9 @@ public class AutonomousFramework extends LinearOpMode {
 
     MecanumDrivebase drive;
     WobbleArm wobbleArm;
-    Shooter shooter;
+    Flywheel flywheel;
     Collector collector;
+    Hopper hopper;
 
 
     @Override
@@ -60,11 +57,14 @@ public class AutonomousFramework extends LinearOpMode {
         //Initialize Wobble Arm
         wobbleArm = new WobbleArm(hardwareMap);
 
-        //Initialize Shooter
-        shooter = new Shooter(hardwareMap);
+        //Initialize Flywheel
+        flywheel = new Flywheel(hardwareMap);
 
         //Initialize collector
         collector = new Collector(hardwareMap);
+
+        //Initialize hopper
+        hopper = new Hopper(hardwareMap);
 
 
         //Initialize webcam
@@ -98,17 +98,16 @@ public class AutonomousFramework extends LinearOpMode {
             switch (ringConfiguration) {
                 case NONE:
                     telemetry.addLine("Go Path NONE");
-                    path = new AutonomousPathA(drive, wobbleArm, shooter, collector);
+                    path = new AutonomousPathA(drive, wobbleArm, flywheel, collector, hopper);
                     break;
 
                 case ONE:
                     telemetry.addLine("Go Path ONE");
-                    path = new AutonomousPathB(drive, wobbleArm, shooter, collector);
-                    break;
+                    path = new AutonomousPathB(drive, wobbleArm, flywheel, collector, hopper);
 
                 case FOUR:
                     telemetry.addLine("Go Path FOUR");
-                    path = new AutonomousPathC(drive, wobbleArm, shooter, collector);
+                    path = new AutonomousPathC(drive, wobbleArm, flywheel, collector, hopper);
                     break;
             }
 

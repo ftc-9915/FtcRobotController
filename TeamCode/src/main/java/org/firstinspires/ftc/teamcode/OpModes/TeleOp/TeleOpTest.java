@@ -5,16 +5,13 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Subsystems.Collector;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
-import org.firstinspires.ftc.teamcode.Subsystems.Hopper;
-import org.firstinspires.ftc.teamcode.Subsystems.Shooter;
+import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Flywheel;
+import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Hopper;
 import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
 
 
@@ -24,7 +21,7 @@ public class TeleOpTest extends OpMode {
 
     //Subsystems
     MecanumDrivebase drive;
-    Shooter shooter;
+    Flywheel flywheel;
     WobbleArm wobbleArm;
     Collector collector;
     Hopper hopper;
@@ -144,7 +141,7 @@ public class TeleOpTest extends OpMode {
         telemetry.addData("y", currentPose.getY());
         telemetry.addData("heading", currentPose.getHeading());
 
-        telemetry.addData("Launcher RPM", shooter.getRPM());
+        telemetry.addData("Launcher RPM", flywheel.getRPM());
         telemetry.addData("Arm Position", wobbleArm.getArmPosition());
         telemetry.addData("Slowmode On", slowmodeOn);
         telemetry.addLine("--- Controls (Gamepad 1) ---");
@@ -237,9 +234,9 @@ public class TeleOpTest extends OpMode {
                     }
                      */
                     if (launcherOn) {
-                        shooter.setRPM(0);
+                        flywheel.setRPM(0);
                     } else {
-                        shooter.setRPM(launcherRPM);
+                        flywheel.setRPM(launcherRPM);
                     }
                     buttonReleased2 = false;
                 }
@@ -248,14 +245,14 @@ public class TeleOpTest extends OpMode {
                 if (gamepad2.left_trigger > 0.4 && triggerReleased && launcherOn) {
                     //launcherPower += 0.05;
                     launcherRPM += 5;
-                    shooter.setRPM(launcherRPM);
+                    flywheel.setRPM(launcherRPM);
                     triggerReleased = false;
                 }
 
                 if (gamepad2.right_trigger > 0.4 && triggerReleased && launcherOn) {
                     //launcherPower -= 0.05;
                     launcherRPM -= 5;
-                    shooter.setRPM(launcherRPM);
+                    flywheel.setRPM(launcherRPM);
                     triggerReleased = false;
                 }
 

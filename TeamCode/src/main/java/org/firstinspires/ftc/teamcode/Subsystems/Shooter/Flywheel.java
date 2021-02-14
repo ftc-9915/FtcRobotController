@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Subsystems;
+package org.firstinspires.ftc.teamcode.Subsystems.Shooter;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigu
 import org.firstinspires.ftc.teamcode.Subsystems.SubsystemBase;
 
 @Config
-public class Shooter implements SubsystemBase {
+public class Flywheel implements SubsystemBase {
     private DcMotorEx flywheel;
     private int ticksPerRev = 28;
     private String name = "launcherMotor";
@@ -30,7 +30,7 @@ public class Shooter implements SubsystemBase {
 
     
     
-    public Shooter(HardwareMap hardwareMap){
+    public Flywheel(HardwareMap hardwareMap){
 
         flywheel = hardwareMap.get(DcMotorEx.class, "launcherMotor");
         flywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);

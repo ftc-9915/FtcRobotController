@@ -8,11 +8,13 @@ import com.acmerobotics.roadrunner.trajectory.constraints.MecanumVelocityConstra
 import com.acmerobotics.roadrunner.trajectory.constraints.MinVelocityConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.ProfileAccelerationConstraint;
 
+import org.firstinspires.ftc.teamcode.Commands.ShootCommand;
 import org.firstinspires.ftc.teamcode.Subsystems.Collector;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
-import org.firstinspires.ftc.teamcode.Subsystems.Shooter;
+import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Flywheel;
+import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Hopper;
 import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
 
 import java.util.Arrays;
@@ -25,23 +27,28 @@ public class AutonomousPathC extends AutonomousPath{
 
     public static int goalX = -35;
     public static int goalY = 55;
+    public static double shootingPoseAngle = -10.0;
+    public static double shootingPoseRPM = 4000;
 
     Pose2d shootingPosePt1 = new Pose2d (-24,21);
-    Pose2d shootingPosePt2 = new Pose2d(0, 24, Math.toRadians(0.0));
+    Pose2d shootingPosePt2 = new Pose2d(0, 24, Math.toRadians(shootingPoseAngle));
     Pose2d placeGoalPose = new Pose2d(48, 55, Math.toRadians(0.0));
     Pose2d pickUpGoalPose1 = new Pose2d(-24, goalY, Math.toRadians(180.0));
     Pose2d pickUpGoalPose2 = new Pose2d(goalX, goalY, Math.toRadians(180.0));
     Pose2d placeSecondGoalPose1 = new Pose2d(48, 57, Math.toRadians(0.0));
     Pose2d parkingPose = new Pose2d(12, 57, Math.toRadians(0.0));
 
-    public AutonomousPathC(MecanumDrivebase drive, WobbleArm wobbleArm, Shooter shooter, Collector collector) {
-        super(drive, wobbleArm, shooter, collector);
+    public AutonomousPathC(MecanumDrivebase drive, WobbleArm wobbleArm, Flywheel flywheel, Collector collector, Hopper hopper) {
+        super(drive, wobbleArm, flywheel, collector, hopper);
     }
 
     public boolean followPath() {
         Trajectory goToShootingPose = drive.trajectoryBuilder(PoseLibrary.START_POS_BLUE_2)
                 .splineTo(shootingPosePt1.vec(), shootingPosePt1.getHeading())
                 .splineTo(shootingPosePt2.vec(), shootingPosePt2.getHeading())
+                .addDisplacementMarker(() -> {
+                    ShootCommand.shootSyncCommand(3, shootingPoseRPM, flywheel, hopper);
+                })
                 .build();
 
         Trajectory goToPlaceGoalPose = drive.trajectoryBuilder(goToShootingPose.end())

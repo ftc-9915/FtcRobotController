@@ -65,6 +65,7 @@ public class WobbleArm implements SubsystemBase {
         return armMotor.isBusy();
     }
 
+
     //teleop methods
     public boolean liftArm() {
         if(!armMotor.isBusy()){
