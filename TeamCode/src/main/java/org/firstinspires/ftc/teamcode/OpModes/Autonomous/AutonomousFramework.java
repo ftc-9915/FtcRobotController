@@ -35,8 +35,6 @@ public class AutonomousFramework extends LinearOpMode {
     DcMotor rightBack;
     boolean pathIsFinished = false;
 
-    Servo clawServo;
-
 
     AutonomousPath path;
 
@@ -87,7 +85,8 @@ public class AutonomousFramework extends LinearOpMode {
 //            }
 //        });
 
-        ringConfiguration =  ringDetectPipeline.getRingPosition();
+//        ringConfiguration =  ringDetectPipeline.getRingPosition();
+        ringConfiguration = RingPosition.ONE;
         telemetry.addLine("Waiting for start");
         telemetry.update();
 
@@ -104,6 +103,7 @@ public class AutonomousFramework extends LinearOpMode {
                 case ONE:
                     telemetry.addLine("Go Path ONE");
                     path = new AutonomousPathB(drive, wobbleArm, flywheel, collector, hopper);
+                    break;
 
                 case FOUR:
                     telemetry.addLine("Go Path FOUR");

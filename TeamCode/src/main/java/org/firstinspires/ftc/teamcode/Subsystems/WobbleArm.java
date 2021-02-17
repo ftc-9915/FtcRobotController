@@ -16,19 +16,19 @@ import static org.firstinspires.ftc.teamcode.Common.UtilMethods.ensureRange;
 public class WobbleArm implements SubsystemBase {
 
     //Subsystem Components
-    private DcMotor armMotor;
-    private Servo clawServoLeft;
-    private Servo clawServoRight;
+    public DcMotor armMotor;
+    public Servo clawServoLeft;
+    public Servo clawServoRight;
 
     //Subsystem Component Names
-    private String armName = "armMotor";
-    private String clawServoLeftName = "clawServo";
-    private String clawServoRightName = "clawServo2";
+    public String armName = "armMotor";
+    public String clawServoLeftName = "clawServo";
+    public String clawServoRightName = "clawServo2";
 
 
     //Subsystem Constants
-    private static int ARM_POS_PLACE_GOAL = -525;
-    private static int ARM_POS_PICKUP_GOAL = -510;
+    private static int ARM_POS_PLACE_GOAL = -475;
+    private static int ARM_POS_PICKUP_GOAL = -450;
     private static int ARM_POS_LIFT_ARM = -200;
 
     private static int ARM_UPPER_LIMIT = 10000;
@@ -36,11 +36,11 @@ public class WobbleArm implements SubsystemBase {
 
     private static double DEFAULT_ARM_POWER = 0.3;
 
-    private static double LEFT_CLAW_OPEN_POS = 0.7;
-    private static double LEFT_CLAW_CLOSE_POS = 0.15;
+    private static double LEFT_CLAW_OPEN_POS = 0.4;
+    private static double LEFT_CLAW_CLOSE_POS = 0.125;
 
-    private static double RIGHT_CLAW_OPEN_POS = 0.7;
-    private static double RIGHT_CLAW_CLOSE_POS = 0.15;
+    private static double RIGHT_CLAW_OPEN_POS = 0.3;
+    private static double RIGHT_CLAW_CLOSE_POS = 0.55;
 
 
 

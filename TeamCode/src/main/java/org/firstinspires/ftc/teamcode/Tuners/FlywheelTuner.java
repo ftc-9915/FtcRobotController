@@ -11,12 +11,13 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Flywheel;
+import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Hopper;
 
 @Config
 @TeleOp(group = "drive")
 public class FlywheelTuner extends LinearOpMode {
 
-    public static double RPM = 2000;
+    public static double RPM = 0;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -24,6 +25,7 @@ public class FlywheelTuner extends LinearOpMode {
         drive.setPoseEstimate(PoseLibrary.START_POS_BLUE_2);
 
         Flywheel flywheel = new Flywheel(hardwareMap);
+        Hopper hopper = new Hopper(hardwareMap);
 
 
         waitForStart();
@@ -32,21 +34,23 @@ public class FlywheelTuner extends LinearOpMode {
             FtcDashboard dashboard = FtcDashboard.getInstance();
             Telemetry dashboardTelemetry = dashboard.getTelemetry();
 
-            flywheel.setRPM(2000);
+            hopper.setLiftUpPos();
+
+            if (gamepad1.y) {
+                hopper.setPushInPos();
+            }
+
+            if (gamepad1.x) {
+                hopper.setPushOutPos();
+            }
+
+
+            flywheel.setRPM(RPM);
 
             dashboardTelemetry.addData("Desired RPM", RPM);
             dashboardTelemetry.addData("Current RPM", flywheel.getRPM());
             dashboardTelemetry.update();
 
-            drive.setWeightedDrivePower(
-                    new Pose2d(
-                            -gamepad1.left_stick_y,
-                            -gamepad1.left_stick_x,
-                            -gamepad1.right_stick_x
-                    )
-            );
-
-            drive.update();
 
 
 

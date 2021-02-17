@@ -135,6 +135,12 @@ public class DriveVelocityPIDTuner extends LinearOpMode {
                                 motionState.getV() - velocities.get(i)
                         );
                     }
+
+                    telemetry.addData("Left Rear Raw Encoder", drive.leftRear.getVelocity());
+                    telemetry.addData("Left Front Raw Encoder", drive.leftFront.getVelocity());
+                    telemetry.addData("Right Rear Raw Encoder", drive.rightRear.getVelocity());
+                    telemetry.addData("Right Front Raw Encoder", drive.rightFront.getVelocity());
+
                     break;
                 case DRIVER_MODE:
                     if (gamepad1.a) {

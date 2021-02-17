@@ -26,10 +26,10 @@ public class AutonomousPathB extends AutonomousPath {
     //Treakable values for tuning
     public static int goalX = -30;
     public static int goalY = 59;
-    public static double shootingPoseAngle = -10.0;
-    public static double shootingPoseRPM = 4000;
+    public static double shootingPoseAngle = 7;
+    public static double shootingPoseRPM = 3350;
 
-    Pose2d shootingPose = new Pose2d(0, 24, Math.toRadians(shootingPoseAngle));
+    Pose2d shootingPose = new Pose2d(6.8066, 26.37388, Math.toRadians(shootingPoseAngle));
     Pose2d placeGoalPose = new Pose2d(22, 24, Math.toRadians(0.0));
     Pose2d pickUpGoalPose1 = new Pose2d(-24, goalY, Math.toRadians(180.0));
     Pose2d pickUpGoalPose2 = new Pose2d(goalX, goalY, Math.toRadians(180.0));
@@ -46,8 +46,26 @@ public class AutonomousPathB extends AutonomousPath {
     public boolean followPath() {
         Trajectory goToShootingPose = drive.trajectoryBuilder(PoseLibrary.START_POS_BLUE_2)
                 .splineTo(shootingPose.vec(), shootingPose.getHeading())
-                .addDisplacementMarker(() -> {
-                    ShootCommand.shootSyncCommand(3, shootingPoseRPM, flywheel, hopper);
+                .addTemporalMarker(2, () -> {
+                    flywheel.setRPM(shootingPoseRPM);
+                })
+                .addTemporalMarker(3, () -> {
+                    hopper.setPushInPos();
+                })
+                .addTemporalMarker(4, () -> {
+                    hopper.setPushOutPos();
+                })
+                .addTemporalMarker(5, () -> {
+                    hopper.setPushInPos();
+                })
+                .addTemporalMarker(6, () -> {
+                    hopper.setPushOutPos();
+                })
+                .addTemporalMarker(7, () -> {
+                    hopper.setPushInPos();
+                })
+                .addTemporalMarker(8, () -> {
+                    hopper.setPushOutPos();
                 })
                 .build();
 

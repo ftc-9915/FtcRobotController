@@ -22,19 +22,19 @@ public class DriveConstants {
      */
     public static final double TICKS_PER_REV = 537.6;
     public static final double MAX_RPM = 312;
-    public static final double ENCODER_OFFSET = 1.02146212;
+    public static final double ENCODER_OFFSET = 1.024998954;
 
     /*
      * Set RUN_USING_ENCODER to true to enable built-in hub velocity control using drive encoders.
      * Set this flag to false if drive encoders are not present and an alternative localization
      * method is in use (e.g., tracking wheels).
-     *
+
      * If using the built-in motor velocity PID, update MOTOR_VELO_PID with the tuned coefficients
      * from DriveVelocityPIDTuner.
      */
     public static final boolean RUN_USING_ENCODER = true;
-    public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(15, 0, 1,
-            getMotorVelocityF(MAX_RPM / 60 * TICKS_PER_REV));
+    public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(13, 0, 4,
+            13.2);
 
     /*
      * These are physical constants that can be determined from your robot (including the track
@@ -46,7 +46,7 @@ public class DriveConstants {
      */
     public static double WHEEL_RADIUS = 1.889; // in
     public static double GEAR_RATIO = 1 * ENCODER_OFFSET; // output (wheel) speed / input (motor) speed
-    public static double TRACK_WIDTH = 15.25; // in
+    public static double TRACK_WIDTH = 10.25; // in
 
     /*
      * These are the feedforward parameters used to model the drive motor behavior. If you are using
@@ -65,7 +65,7 @@ public class DriveConstants {
      * small and gradually increase them later after everything is working. All distance units are
      * inches.
      */
-    public static double MAX_VEL = 62.3; // Value given by MaxVelocityTuner: 62.6
+    public static double MAX_VEL = 58.75; // Value given by MaxVelocityTuner: 62.6
     public static double MAX_ACCEL = 75;
     public static double MAX_ANG_VEL = Math.toRadians(180);
     public static double MAX_ANG_ACCEL = Math.toRadians(180);

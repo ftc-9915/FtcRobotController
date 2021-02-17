@@ -9,6 +9,7 @@ import com.acmerobotics.roadrunner.trajectory.constraints.MinVelocityConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.ProfileAccelerationConstraint;
 
 import org.firstinspires.ftc.teamcode.Commands.ShootCommand;
+import org.firstinspires.ftc.teamcode.Common.UtilMethods;
 import org.firstinspires.ftc.teamcode.Subsystems.Collector;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants;
@@ -27,11 +28,11 @@ public class AutonomousPathC extends AutonomousPath{
 
     public static int goalX = -35;
     public static int goalY = 55;
-    public static double shootingPoseAngle = -10.0;
-    public static double shootingPoseRPM = 4000;
+    public static double shootingPoseAngle = 7;
+    public static double shootingPoseRPM = 3350;
 
     Pose2d shootingPosePt1 = new Pose2d (-24,21);
-    Pose2d shootingPosePt2 = new Pose2d(0, 24, Math.toRadians(shootingPoseAngle));
+    Pose2d shootingPosePt2 = new Pose2d(6.8066, 26.37388, Math.toRadians(shootingPoseAngle));
     Pose2d placeGoalPose = new Pose2d(48, 55, Math.toRadians(0.0));
     Pose2d pickUpGoalPose1 = new Pose2d(-24, goalY, Math.toRadians(180.0));
     Pose2d pickUpGoalPose2 = new Pose2d(goalX, goalY, Math.toRadians(180.0));
@@ -47,7 +48,19 @@ public class AutonomousPathC extends AutonomousPath{
                 .splineTo(shootingPosePt1.vec(), shootingPosePt1.getHeading())
                 .splineTo(shootingPosePt2.vec(), shootingPosePt2.getHeading())
                 .addDisplacementMarker(() -> {
-                    ShootCommand.shootSyncCommand(3, shootingPoseRPM, flywheel, hopper);
+                    flywheel.setRPM(shootingPoseRPM);
+                    UtilMethods.sleep(1000);
+                    hopper.setPushInPos();
+                    UtilMethods.sleep(500);
+                    hopper.setPushOutPos();
+                    UtilMethods.sleep(1000);
+                    hopper.setPushInPos();
+                    UtilMethods.sleep(500);
+                    hopper.setPushOutPos();
+                    UtilMethods.sleep(1000);
+                    hopper.setPushInPos();
+                    UtilMethods.sleep(500);
+                    hopper.setPushOutPos();
                 })
                 .build();
 

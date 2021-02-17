@@ -141,7 +141,7 @@ public class TeleOpTest extends OpMode {
         telemetry.addData("y", currentPose.getY());
         telemetry.addData("heading", currentPose.getHeading());
 
-        telemetry.addData("Launcher RPM", flywheel.getRPM());
+//        telemetry.addData("Launcher RPM", flywheel.getRPM());
         telemetry.addData("Arm Position", wobbleArm.getArmPosition());
         telemetry.addData("Slowmode On", slowmodeOn);
         telemetry.addLine("--- Controls (Gamepad 1) ---");

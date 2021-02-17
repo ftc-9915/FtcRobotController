@@ -60,10 +60,10 @@ import static org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants.kV;
  */
 @Config
 public class MecanumDrivebase extends com.acmerobotics.roadrunner.drive.MecanumDrive {
-    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(3.5, 0, 0);
+    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(3, 0, 0);
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(6, 0, 0);
 
-    public static double LATERAL_MULTIPLIER = 1.14071963;
+    public static double LATERAL_MULTIPLIER = 1.176699029;
 
     public static double VX_WEIGHT = 1;
     public static double VY_WEIGHT = 1;
@@ -92,7 +92,7 @@ public class MecanumDrivebase extends com.acmerobotics.roadrunner.drive.MecanumD
 
     private LinkedList<Pose2d> poseHistory;
 
-    private DcMotorEx leftFront, leftRear, rightRear, rightFront;
+    public DcMotorEx leftFront, leftRear, rightRear, rightFront;
     private List<DcMotorEx> motors;
     private BNO055IMU imu;
 

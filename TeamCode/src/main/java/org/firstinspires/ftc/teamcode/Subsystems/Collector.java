@@ -17,7 +17,7 @@ public class Collector implements SubsystemBase {
     private DcMotor collectorMotor;
 
     //Subsystem Component Names
-    private String collectorName = "collectorName";
+    private String collectorName = "collectorMotor";
 
     //Subsystem Constants
     public static double COLLECTOR_ON_SPEED = 1.0;

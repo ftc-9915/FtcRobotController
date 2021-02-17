@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.Vision;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.Common.RingPosition;
@@ -14,10 +15,18 @@ import org.openftc.easyopencv.OpenCvPipeline;
 
 public class Camera {
 
+    //Editable Constants
+    public static double RING_STACK_POSITION = 10;
+
     OpenCvCamera webcam;
     OpenCvPipeline pipeline;
 
-    public Camera(HardwareMap hardwareMap, OpenCvPipeline pipeline) {
+    Servo cameraServo;
+
+    public Camera(HardwareMap hardwareMap, OpenCvPipeline pipeline)
+    {
+//        cameraServo.setPosition(RING_STACK_POSITION);
+
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
         this.pipeline = pipeline;

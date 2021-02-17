@@ -3,16 +3,17 @@ package org.firstinspires.ftc.teamcode.Tests;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp(name = "Arm Test", group = "test")
 public class ArmTest extends OpMode {
     DcMotor armMotor;
 
-    DcMotor leftFront;
-    DcMotor leftBack;
-    DcMotor rightFront;
-    DcMotor rightBack;
+    DcMotorEx leftFront;
+    DcMotorEx leftBack;
+    DcMotorEx rightFront;
+    DcMotorEx rightBack;
 
     Servo clawServo;
 
@@ -36,12 +37,36 @@ public class ArmTest extends OpMode {
         armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         // Chassis Motors
-        leftFront = hardwareMap.dcMotor.get("leftFront");
-        leftBack = hardwareMap.dcMotor.get("leftBack");
-        rightFront = hardwareMap.dcMotor.get("rightFront");
-        rightBack = hardwareMap.dcMotor.get("rightBack");
+        leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
+        leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
+        rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
+        rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
+
         leftFront.setDirection(DcMotor.Direction.REVERSE);
         leftBack.setDirection(DcMotor.Direction.REVERSE);
+
+        leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+
+        leftFront.setTargetPosition(0);
+        leftBack.setTargetPosition(0);
+        rightFront.setTargetPosition(0);
+        rightBack.setTargetPosition(0);
+
+        leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+
+        leftFront.setPower(1.0);
+        leftBack.setPower(1.0);
+        rightFront.setPower(1.0);
+        rightBack.setPower(1.0);
+
 
         // Claw Servo
         clawServo = hardwareMap.servo.get("clawServo");
@@ -50,6 +75,20 @@ public class ArmTest extends OpMode {
 
     @Override
     public void loop() {
+        telemetry.addData("Left Front encoder", leftFront.getVelocity());
+        telemetry.addData("Left Back encoder", leftBack.getVelocity());
+
+        telemetry.addData("Right Front encoder", rightFront.getVelocity());
+
+        telemetry.addData("Right Back encoder", rightBack.getVelocity());
+
+        telemetry.addData("Left Front position", leftFront.getCurrentPosition());
+        telemetry.addData("Left Back position", leftBack.getCurrentPosition());
+
+        telemetry.addData("Right Front position", rightFront.getCurrentPosition());
+
+        telemetry.addData("Right Back position", rightBack.getCurrentPosition());
+
         telemetry.addLine("Controls:");
         telemetry.addData("Open Claw","button A");
         telemetry.addData("Close Claw", "button B");

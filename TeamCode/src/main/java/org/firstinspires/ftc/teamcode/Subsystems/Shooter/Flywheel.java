@@ -3,7 +3,9 @@ package org.firstinspires.ftc.teamcode.Subsystems.Shooter;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
@@ -12,14 +14,14 @@ import org.firstinspires.ftc.teamcode.Subsystems.SubsystemBase;
 @Config
 public class Flywheel implements SubsystemBase {
     private DcMotorEx flywheel;
-    private int ticksPerRev = 28;
-    private String name = "launcherMotor";
+    private static int ticksPerRev = 28;
+    private static String name = "launcherMotor";
 
     PIDFCoefficients PIDF;
-    private double kP = 0;
-    private double kI = 0;
-    private double kD = 0;
-    private double kF = 0;
+    public static double kP = 0;
+    public static double kI = 0;
+    public static double kD = 0;
+    public static double kF = 15.75;
 
     //in degrees
     private double shooterAngle;
@@ -29,22 +31,21 @@ public class Flywheel implements SubsystemBase {
     private double  wheelRadius;
 
     
-    
     public Flywheel(HardwareMap hardwareMap){
 
         flywheel = hardwareMap.get(DcMotorEx.class, "launcherMotor");
+        flywheel.setDirection(DcMotor.Direction.REVERSE);
         flywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         //remove rpm limit
-        MotorConfigurationType motorConfigurationType = flywheel.getMotorType().clone();
-        motorConfigurationType.setAchieveableMaxRPMFraction(1.0);
-        flywheel.setMotorType(motorConfigurationType);
+//        MotorConfigurationType motorConfigurationType = flywheel.getMotorType().clone();
+//        motorConfigurationType.setAchieveableMaxRPMFraction(1.0);
+//        flywheel.setMotorType(motorConfigurationType);
 
-        PIDFCoefficients PIDF = new PIDFCoefficients(kP,  kI,   kD,  kF);
+        PIDFCoefficients PIDF = new PIDFCoefficients(kP,  kI,   kD,   kF);
         flywheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
         flywheel.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, PIDF);
-        flywheel.setVelocity(0);
+
     }
 
     @Override
@@ -54,25 +55,19 @@ public class Flywheel implements SubsystemBase {
 
 
     public boolean setRPM (double rpm){
-        if(!isBusy()) {
-            //respond to active updates
-            PIDFCoefficients PIDF = new PIDFCoefficients(kP,  kI,   kD,  kF);
-            flywheel.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, PIDF);
 
-            double rotationsPerSecond = rpm / 60;
-            double ticksPerSecond = rotationsPerSecond * ticksPerRev;
-            flywheel.setVelocity(ticksPerSecond);
+        double rotationsPerSecond = rpm / 60;
+        double ticksPerSecond = rotationsPerSecond * ticksPerRev;
+        flywheel.setVelocity(ticksPerSecond);
 
-            return true;
-        }
-        return false;
+        return true;
     }
 
 
     public double getRPM () {
         double ticksPerSecond = flywheel.getVelocity();
         double rotationsPerSecond = ticksPerSecond / ticksPerRev;
-        double rpm = rotationsPerSecond * 60;
+        double rpm = Math.abs(rotationsPerSecond * 60);
 
         return rpm;
     }

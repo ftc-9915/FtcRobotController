@@ -49,9 +49,21 @@ public class AutonomousPathA extends AutonomousPath{
         Trajectory goToShootingAndPlaceGoalPose = drive.trajectoryBuilder(PoseLibrary.START_POS_BLUE_2)
                 .splineTo(placeGoalAndShootingPose.vec(), placeGoalAndShootingPose.getHeading())
                 .addDisplacementMarker(() -> {
+                    flywheel.setRPM(shootingPoseRPM);
                     wobbleArm.placeGoalAuto();
                     wobbleArm.liftArmAuto();
-                    ShootCommand.shootSyncCommand(3, shootingPoseRPM, flywheel, hopper);
+                    UtilMethods.sleep(500);
+                    hopper.setPushInPos();
+                    UtilMethods.sleep(200);
+                    hopper.setPushOutPos();
+                    UtilMethods.sleep(500);
+                    hopper.setPushInPos();
+                    UtilMethods.sleep(200);
+                    hopper.setPushOutPos();
+                    UtilMethods.sleep(500);
+                    hopper.setPushInPos();
+                    UtilMethods.sleep(200);
+                    hopper.setPushOutPos();
                 })
                 .build();
 

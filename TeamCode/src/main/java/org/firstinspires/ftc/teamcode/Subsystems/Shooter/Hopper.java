@@ -11,15 +11,15 @@ public class Hopper implements SubsystemBase {
 
 
     //Subsystem Components
-    private Servo liftServo;
-    private Servo pushServo;
+    public Servo liftServo;
+    public Servo pushServo;
 
     //Subsystem Component Names
-    private String liftName = "liftServo";
-    private String pushName = "liftServo";
+    public String liftName = "liftServo";
+    public String pushName = "pushServo";
 
     //Subsystem Constants
-    static final double LIFT_UP_POS = 0.50;
+    static final double LIFT_UP_POS = 0.49;
     static final double LIFT_DOWN_POS = 0.75;
 
     static final double PUSH_OUT_POS = 0.70;
@@ -45,7 +45,7 @@ public class Hopper implements SubsystemBase {
         liftServo = hardwareMap.servo.get(liftName);
         pushServo = hardwareMap.servo.get(pushName);
 
-        liftServo.setPosition(LIFT_DOWN_POS);
+        liftServo.setPosition(LIFT_UP_POS);
         pushServo.setPosition(PUSH_OUT_POS);
     }
 
