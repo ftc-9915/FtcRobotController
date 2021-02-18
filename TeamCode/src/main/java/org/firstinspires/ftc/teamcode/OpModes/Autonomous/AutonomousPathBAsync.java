@@ -137,22 +137,26 @@ public class AutonomousPathBAsync extends AutonomousPathAsync {
             case SHOOT:
                 flywheel.setRPM(shootingPoseRPM);
                 hopper.setLiftUpPos();
-                if (rings > 0 && UtilMethods.inRange(shootingPoseRPM, shootingPoseRPM - RPM_FORGIVENESS, shootingPoseRPM + RPM_FORGIVENESS)){
-                    hopper.setPushInPos();
-                    UtilMethods.sleep(500);
-                    hopper.setPushOutPos();
-                    rings--;
+                if (rings > 0){
+                    if (UtilMethods.inRange(shootingPoseRPM, shootingPoseRPM - RPM_FORGIVENESS, shootingPoseRPM + RPM_FORGIVENESS)) {
+                        hopper.setPushInPos();
+                        UtilMethods.sleep(500);
+                        hopper.setPushOutPos();
+                        rings--;
+                    }
                 } else {
                     currentState = State.DRIVE_TO_PLACE_GOAL;
                     drive.followTrajectoryAsync(goToPlaceGoalPose);
                 }
                 break;
+
             case DRIVE_TO_PLACE_GOAL:
                 if (!drive.isBusy()) {
                     currentState = State.PLACE_GOAL;
                     timer.reset();
                 }
                 break;
+                
             case PLACE_GOAL:
                 //Trigger action depending on timer using else if logic
                 if (timer.seconds() > 2) {
