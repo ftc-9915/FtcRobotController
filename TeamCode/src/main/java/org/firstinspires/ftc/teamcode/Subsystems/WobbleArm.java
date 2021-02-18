@@ -128,6 +128,7 @@ public class WobbleArm implements SubsystemBase {
             armMotor.setPower(DEFAULT_ARM_POWER);
             UtilMethods.sleep(500);
             clawServoLeft.setPosition(LEFT_CLAW_CLOSE_POS);
+            UtilMethods.sleep(500);
 
             return true;
         }
@@ -138,9 +139,10 @@ public class WobbleArm implements SubsystemBase {
 
     public boolean placeGoalAuto() {
         if (!isBusy()) {
+            UtilMethods.sleep(200);
             armMotor.setTargetPosition(ARM_POS_PLACE_GOAL);
             armMotor.setPower(DEFAULT_ARM_POWER);
-            UtilMethods.sleep(600);
+            UtilMethods.sleep(500);
             clawServoLeft.setPosition(LEFT_CLAW_OPEN_POS);
             UtilMethods.sleep(500);
 
@@ -154,8 +156,10 @@ public class WobbleArm implements SubsystemBase {
     public boolean liftArmAuto() {
 
         if (!isBusy()) {
+            UtilMethods.sleep(200);
             armMotor.setTargetPosition(ARM_POS_LIFT_ARM);
             armMotor.setPower(DEFAULT_ARM_POWER);
+            UtilMethods.sleep(500);
             return true;
         }
 

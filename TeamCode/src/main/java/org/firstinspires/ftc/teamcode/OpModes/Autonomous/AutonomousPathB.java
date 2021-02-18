@@ -46,40 +46,13 @@ public class AutonomousPathB extends AutonomousPath {
     public boolean followPath() {
         Trajectory goToShootingPose = drive.trajectoryBuilder(PoseLibrary.START_POS_BLUE_2)
                 .splineTo(shootingPose.vec(), shootingPose.getHeading())
-                .addTemporalMarker(2, () -> {
-                    flywheel.setRPM(shootingPoseRPM);
-                })
-                .addTemporalMarker(3, () -> {
-                    hopper.setPushInPos();
-                })
-                .addTemporalMarker(4, () -> {
-                    hopper.setPushOutPos();
-                })
-                .addTemporalMarker(5, () -> {
-                    hopper.setPushInPos();
-                })
-                .addTemporalMarker(6, () -> {
-                    hopper.setPushOutPos();
-                })
-                .addTemporalMarker(7, () -> {
-                    hopper.setPushInPos();
-                })
-                .addTemporalMarker(8, () -> {
-                    hopper.setPushOutPos();
-                })
                 .build();
 
         Trajectory goToPlaceGoalPose = drive.trajectoryBuilder(goToShootingPose.end())
                 .splineTo(placeGoalPose.vec(), placeGoalPose.getHeading())
-                .addDisplacementMarker(() -> {
-                    wobbleArm.placeGoalAuto();
-                })
                 .build();
 
         Trajectory goToPickUpGoalPose1 = drive.trajectoryBuilder(goToPlaceGoalPose.end())
-                .addDisplacementMarker(()->{
-                    wobbleArm.liftArmAuto();
-                })
                 .lineToLinearHeading(pickUpGoalPose1)
                 .build();
 
@@ -91,24 +64,15 @@ public class AutonomousPathB extends AutonomousPath {
                                 )
                         ),
                         new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL))
-                .addDisplacementMarker(() -> {
-                    wobbleArm.pickupGoalAuto();
-                })
                 .build();
 
 
         Trajectory goToPlaceSecondGoalPart1 = drive.trajectoryBuilder(goToPickUpGoalPose2.end())
-                .addDisplacementMarker(() -> {
-                    wobbleArm.liftArmAuto();
-                })
                 .lineToSplineHeading(placeSecondGoalPose1)
                 .build();
 
         Trajectory goToPlaceSecondGoalPart2 = drive.trajectoryBuilder(goToPlaceSecondGoalPart1.end())
                 .lineToConstantHeading(placeSecondGoalPose2.vec())
-                .addDisplacementMarker(()->{
-                    wobbleArm.placeGoalAuto();
-                })
                 .build();
 
         Trajectory goToParkingPose = drive.trajectoryBuilder(goToPlaceSecondGoalPart2.end())
@@ -116,24 +80,30 @@ public class AutonomousPathB extends AutonomousPath {
                 .build();
 
 
+        //shoot
         drive.followTrajectory(goToShootingPose);
-
-        drive.followTrajectory(goToPlaceGoalPose);
-
+        ShootCommand.shootSyncCommand(3, shootingPoseRPM, flywheel, hopper);
         UtilMethods.sleep(1000);
 
+        //place goal
+        drive.followTrajectory(goToPlaceGoalPose);
+        wobbleArm.placeGoalAuto();
+        wobbleArm.liftArmAuto();
+        UtilMethods.sleep(1000);
+
+        //pickup second goal
         drive.followTrajectory(goToPickUpGoalPose1);
         drive.followTrajectory(goToPickUpGoalPose2);
-
+        wobbleArm.pickupGoalAuto();
+        wobbleArm.liftArmAuto();
         UtilMethods.sleep(1000);
 
+        //place second goal
         drive.followTrajectory(goToPlaceSecondGoalPart1);
         drive.followTrajectory(goToPlaceSecondGoalPart2);
-        drive.followTrajectory(goToParkingPose);
-
-        UtilMethods.sleep(1000);
-
+        wobbleArm.placeGoalAuto();
         wobbleArm.liftArmAuto();
+        drive.followTrajectory(goToParkingPose);
 
         return true;
     }

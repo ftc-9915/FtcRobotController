@@ -27,13 +27,21 @@ public class ShootCommand extends Command {
 
     public static boolean shootSyncCommand(int rings, double targetRpm, Flywheel flywheel, Hopper hopper){
 
+        ShootCommand command = new ShootCommand(3, targetRpm, flywheel, hopper);
+        while (!command.isFinished()) {
+            command.update();
+        }
 
         return true;
+
     }
 
 
     //asynchronous command when paired with update() function to shoot rings
     public ShootCommand(int rings, double targetRpm, Flywheel flywheel, Hopper hopper) {
+        //set isFinished to false
+        super();
+
         //set rpm speed and hopper
         flywheel.setRPM(targetRpm);
         hopper.setLiftUpPos();
@@ -46,11 +54,11 @@ public class ShootCommand extends Command {
 
 
     //checks on every call if there are rings ready to shoot, sets command as finished if no rings are left
-    @Override
     public void update() {
         if (rings > 0){
             if (UtilMethods.inRange(targetRpm, targetRpm - RPM_FORGIVENESS, targetRpm + RPM_FORGIVENESS)){
                 hopper.setPushInPos();
+                UtilMethods.sleep(500);
                 hopper.setPushOutPos();
                 rings--;
             }
@@ -60,6 +68,8 @@ public class ShootCommand extends Command {
            isFinished = true;
         }
     }
+
+
 
 
 }
