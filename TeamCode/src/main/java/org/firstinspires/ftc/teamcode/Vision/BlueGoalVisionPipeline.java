@@ -129,7 +129,7 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
 
         //TODO: Set these with logitech camera
         //Field of View (angle)
-        fov = 120;
+        fov = 90;
 
         // (angles)
         cameraPitchOffset = 0;
@@ -183,7 +183,7 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
         //Pinhole Camera Variables
         CAMERA_HEIGHT = 8.25; //camera height inches for distance calculation
         HIGH_GOAL_HEIGHT = 35.875; //camera height inches for distance calculation
-        fov = 120;
+        fov = 90;
 
         imageWidth = mat.width();
         imageHeight = mat.height();
