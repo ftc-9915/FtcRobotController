@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Subsystems;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.util.MathUtil;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -16,7 +17,7 @@ import static org.firstinspires.ftc.teamcode.Common.UtilMethods.ensureRange;
 public class WobbleArm implements SubsystemBase {
 
     //Subsystem Components
-    public DcMotor armMotor;
+    public DcMotorEx armMotor;
     public Servo clawServoLeft;
     public Servo clawServoRight;
 
@@ -27,14 +28,14 @@ public class WobbleArm implements SubsystemBase {
 
 
     //Subsystem Constants
-    private static int ARM_POS_PLACE_GOAL = -475;
-    private static int ARM_POS_PICKUP_GOAL = -450;
+    private static int ARM_POS_PLACE_GOAL = -450;
+    private static int ARM_POS_PICKUP_GOAL = -480;
     private static int ARM_POS_LIFT_ARM = -200;
 
     private static int ARM_UPPER_LIMIT = 10000;
     private static int ARM_LOWER_LIMIT = -10000;
 
-    private static double DEFAULT_ARM_POWER = 0.3;
+    private static double DEFAULT_ARM_POWER = 0.4;
 
     private static double LEFT_CLAW_OPEN_POS = 0.4;
     private static double LEFT_CLAW_CLOSE_POS = 0.125;
@@ -47,7 +48,8 @@ public class WobbleArm implements SubsystemBase {
 
 
     public WobbleArm(HardwareMap hardwareMap){
-        armMotor = hardwareMap.dcMotor.get(armName);
+        armMotor = hardwareMap.get(DcMotorEx.class, armName);
+        armMotor.setTargetPositionTolerance(25);
         clawServoLeft = hardwareMap.servo.get(clawServoLeftName);
         clawServoRight = hardwareMap.servo.get(clawServoRightName);
 
@@ -77,8 +79,18 @@ public class WobbleArm implements SubsystemBase {
         return false;
     }
 
-    public boolean lowerArm() {
+    public boolean placeGoal() {
         if(!armMotor.isBusy()){
+            armMotor.setTargetPosition(ARM_POS_PLACE_GOAL);
+            armMotor.setPower(DEFAULT_ARM_POWER);
+
+            return true;
+        }
+        return false;
+    }
+
+    public boolean pickUpSecondGoal() {
+        if(!armMotor.isBusy()) {
             armMotor.setTargetPosition(ARM_POS_PICKUP_GOAL);
             armMotor.setPower(DEFAULT_ARM_POWER);
 
@@ -121,51 +133,51 @@ public class WobbleArm implements SubsystemBase {
 
 
     //auto methods
-    public boolean pickupGoalAuto() {
-        if (!isBusy()) {
-            UtilMethods.sleep(200);
-            armMotor.setTargetPosition(ARM_POS_PICKUP_GOAL);
-            armMotor.setPower(DEFAULT_ARM_POWER);
-            UtilMethods.sleep(500);
-            clawServoLeft.setPosition(LEFT_CLAW_CLOSE_POS);
-            UtilMethods.sleep(500);
+//    public boolean pickupGoalAuto() {
+//        if (!isBusy()) {
+//            UtilMethods.sleep(200);
+//            armMotor.setTargetPosition(ARM_POS_PICKUP_GOAL);
+//            armMotor.setPower(DEFAULT_ARM_POWER);
+//            UtilMethods.sleep(500);
+//            clawServoLeft.setPosition(LEFT_CLAW_CLOSE_POS);
+//            UtilMethods.sleep(500);
+//
+//            return true;
+//        }
+//
+//        return false;
+//
+//    }
 
-            return true;
-        }
+//    public boolean placeGoalAuto() {
+//        if (!isBusy()) {
+//            UtilMethods.sleep(200);
+//            armMotor.setTargetPosition(ARM_POS_PLACE_GOAL);
+//            armMotor.setPower(DEFAULT_ARM_POWER);
+//            UtilMethods.sleep(500);
+//            clawServoLeft.setPosition(LEFT_CLAW_OPEN_POS);
+//            UtilMethods.sleep(500);
+//
+//            return true;
+//        }
+//
+//        return false;
+//
+//    }
 
-        return false;
-
-    }
-
-    public boolean placeGoalAuto() {
-        if (!isBusy()) {
-            UtilMethods.sleep(200);
-            armMotor.setTargetPosition(ARM_POS_PLACE_GOAL);
-            armMotor.setPower(DEFAULT_ARM_POWER);
-            UtilMethods.sleep(500);
-            clawServoLeft.setPosition(LEFT_CLAW_OPEN_POS);
-            UtilMethods.sleep(500);
-
-            return true;
-        }
-
-        return false;
-
-    }
-
-    public boolean liftArmAuto() {
-
-        if (!isBusy()) {
-            UtilMethods.sleep(200);
-            armMotor.setTargetPosition(ARM_POS_LIFT_ARM);
-            armMotor.setPower(DEFAULT_ARM_POWER);
-            UtilMethods.sleep(500);
-            return true;
-        }
-
-        return false;
-
-    }
+//    public boolean liftArmAuto() {
+//
+//        if (!isBusy()) {
+//            UtilMethods.sleep(200);
+//            armMotor.setTargetPosition(ARM_POS_LIFT_ARM);
+//            armMotor.setPower(DEFAULT_ARM_POWER);
+//            UtilMethods.sleep(500);
+//            return true;
+//        }
+//
+//        return false;
+//
+//    }
 
 
 }
