@@ -29,14 +29,6 @@ public class AlignToGoalTest extends OpMode {
     BlueGoalVisionPipeline pipeline;
     MecanumDrivebase drive;
 
-    public static double kP = 0.02;
-    public static double kD = 0;
-
-    //in degrees
-    public static double setPoint = 0;
-    public static double tolerance = 5;
-
-    PDController pd;
     private PIDFController headingController = new PIDFController(MecanumDrivebase.HEADING_PID);
     // Declare a target vector you'd like your bot to align with
     // Can be any x/y coordinate of your choosing
@@ -46,9 +38,6 @@ public class AlignToGoalTest extends OpMode {
     Mode mode;
 
 
-
-
-
     @Override
     public void init() {
         drive = new MecanumDrivebase(hardwareMap);
@@ -56,10 +45,6 @@ public class AlignToGoalTest extends OpMode {
 
         pipeline = new BlueGoalVisionPipeline(telemetry);
         camera = new Camera(hardwareMap, pipeline);
-
-        pd = new PDController(kP, kD);
-        pd.setSetPoint(setPoint);
-        pd.setTolerance(tolerance);
 
         mode = Mode.DRIVER_MODE;
 
@@ -72,12 +57,7 @@ public class AlignToGoalTest extends OpMode {
 
         Pose2d driveDirection = new Pose2d();
 
-
-        //for tuning purposes
-        pd.setP(kP);
-        pd.setD(kD);
-        pd.setSetPoint(setPoint);
-        pd.setTolerance(tolerance);
+        double headingInput = 0;
 
         telemetry.addData("Mode:", mode);
 
@@ -105,40 +85,27 @@ public class AlignToGoalTest extends OpMode {
                     mode = Mode.DRIVER_MODE;
                 }
 
+                double current_heading = poseEstimate.getHeading();
+
                 if(pipeline.isGoalVisible()){
-                    double heading_error = pipeline.getYaw();
-                    double steering_adjust;
 
-                    //when yaw is positive, turn clockwise
-                    if (heading_error > 0){
-                        steering_adjust = -pd.calculate();
-                    //when yaw is negative, turn counter-clockwise
-                    } else {
-                        steering_adjust = pd.calculate();
-                    }
-
-                    telemetry.addData("Heading error", heading_error);
-                    telemetry.addData("Steering adjust", steering_adjust);
-
-                    driveDirection = new Pose2d(
-                            -gamepad1.left_stick_y,
-                            -gamepad1.left_stick_x,
-                            steering_adjust
-                    );
-                    //need to turn clockwisse to see goal
-                } else if (UtilMethods.inRange(Math.toDegrees(poseEstimate.getHeading()),1, 179)){
-                    driveDirection = new Pose2d(
-                            -gamepad1.left_stick_y,
-                            -gamepad1.left_stick_x,
-                            -0.5
-                    );
-                } else { //need to turn counter clockwise to see goal
-                    driveDirection = new Pose2d(
-                            -gamepad1.left_stick_y,
-                            -gamepad1.left_stick_x,
-                            0.5
-                    );
+                    double heading_error = Math.toRadians(pipeline.getYaw());
+                    headingController.setTargetPosition(current_heading - heading_error);
+                } else {
+                    headingController.setTargetPosition(0);
                 }
+
+                headingInput = (headingController.update(current_heading)
+                        * DriveConstants.kV)
+                        * DriveConstants.TRACK_WIDTH;
+
+                driveDirection = new Pose2d(
+                        -gamepad1.left_stick_y,
+                        -gamepad1.left_stick_x,
+                        headingInput
+                );
+
+                break;
 
             case ALIGN_TO_GOAL_ENCODER_MODE:
 
@@ -156,7 +123,7 @@ public class AlignToGoalTest extends OpMode {
 
                 // Set desired angular velocity to the heading controller output + angular
                 // velocity feedforward
-                double headingInput = (headingController.update(poseEstimate.getHeading())
+                headingInput = (headingController.update(poseEstimate.getHeading())
                         * DriveConstants.kV)
                         * DriveConstants.TRACK_WIDTH;
 
@@ -177,6 +144,7 @@ public class AlignToGoalTest extends OpMode {
         telemetry.addData("x", poseEstimate.getX());
         telemetry.addData("y", poseEstimate.getY());
         telemetry.addData("heading", poseEstimate.getHeading());
+        telemetry.addData("heading input", headingInput);
         telemetry.update();
 
 
