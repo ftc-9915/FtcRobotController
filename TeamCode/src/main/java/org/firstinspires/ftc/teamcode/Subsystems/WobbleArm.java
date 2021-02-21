@@ -28,20 +28,20 @@ public class WobbleArm implements SubsystemBase {
 
 
     //Subsystem Constants
-    private static int ARM_POS_PLACE_GOAL = -450;
-    private static int ARM_POS_PICKUP_GOAL = -480;
-    private static int ARM_POS_LIFT_ARM = -200;
+    public static int ARM_POS_PLACE_GOAL = -450;
+    public static int ARM_POS_PICKUP_GOAL = -480;
+    public static int ARM_POS_LIFT_ARM = -200;
 
-    private static int ARM_UPPER_LIMIT = 10000;
-    private static int ARM_LOWER_LIMIT = -10000;
+    public static int ARM_UPPER_LIMIT = 10000;
+    public static int ARM_LOWER_LIMIT = -10000;
 
-    private static double DEFAULT_ARM_POWER = 0.4;
+    public static double DEFAULT_ARM_POWER = 0.4;
 
-    private static double LEFT_CLAW_OPEN_POS = 0.4;
-    private static double LEFT_CLAW_CLOSE_POS = 0.125;
+    public static double LEFT_CLAW_OPEN_POS = 0.4;
+    public static double LEFT_CLAW_CLOSE_POS = 0.125;
 
-    private static double RIGHT_CLAW_OPEN_POS = 0.3;
-    private static double RIGHT_CLAW_CLOSE_POS = 0.55;
+    public static double RIGHT_CLAW_OPEN_POS = 0.3;
+    public static double RIGHT_CLAW_CLOSE_POS = 0.55;
 
 
 

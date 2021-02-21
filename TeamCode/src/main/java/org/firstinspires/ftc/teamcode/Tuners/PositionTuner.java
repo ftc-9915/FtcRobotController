@@ -14,16 +14,19 @@ import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Flywheel;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Hopper;
 import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
 import org.firstinspires.ftc.teamcode.Vision.Camera;
+import org.firstinspires.ftc.teamcode.Vision.VisionPipeline;
 
 @Config
 @TeleOp(group = "drive")
 public class PositionTuner extends LinearOpMode {
 
     public static double flywheelRpm = 0;
-    public static double liftServoPosition = 0;
-    public static double pushServoPosition = 0;
-    public static double leftClawPosition = 0;
-    public static double rightClawPosition = 0;
+    public static double liftServoPosition = Hopper.LIFT_UP_POS;
+    public static double pushServoPosition = Hopper.PUSH_OUT_POS;
+    public static double leftClawPosition = WobbleArm.LEFT_CLAW_OPEN_POS;
+    public static double rightClawPosition = WobbleArm.RIGHT_CLAW_OPEN_POS;
+    public static int wobbleArmPosition = WobbleArm.ARM_POS_PICKUP_GOAL;
+    public static double cameraServoPosition = 0;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -32,7 +35,7 @@ public class PositionTuner extends LinearOpMode {
         Hopper hopper = new Hopper(hardwareMap);
         Collector collector = new Collector(hardwareMap);
         WobbleArm wobbleArm = new WobbleArm(hardwareMap);
-
+        Camera camera = new Camera (hardwareMap, new VisionPipeline());
 
         waitForStart();
 
@@ -41,8 +44,10 @@ public class PositionTuner extends LinearOpMode {
             flywheel.setRPM(flywheelRpm);
             hopper.liftServo.setPosition(liftServoPosition);
             hopper.pushServo.setPosition(pushServoPosition);
+            wobbleArm.setArmPos(wobbleArmPosition);
             wobbleArm.clawServoLeft.setPosition(leftClawPosition);
             wobbleArm.clawServoRight.setPosition(rightClawPosition);
+            camera.cameraServo.setPosition(cameraServoPosition);
 
 
             drive.setWeightedDrivePower(

@@ -62,9 +62,7 @@ public class AutonomousPathBAsync extends AutonomousPathAsync {
         //Trajectories
         goToShootingPosePt1 = drive.trajectoryBuilder(PoseLibrary.START_POS_BLUE_2)
                 .splineTo(shootingPosePt1.vec(), shootingPosePt1.getHeading())
-                .addDisplacementMarker(() -> {
-                    drive.followTrajectoryAsync(goToShootingPosePt2);
-                })
+                .addDisplacementMarker(() -> drive.followTrajectoryAsync(goToShootingPosePt2))
                 .build();
 
         goToShootingPosePt2 = drive.trajectoryBuilder(goToShootingPosePt1.end())

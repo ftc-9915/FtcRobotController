@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Hopper;
 
 import java.util.Timer;
 
-public class ShootCommand extends Command {
+public class ShootCommand  {
 
     //constants
     public static double RPM_FORGIVENESS = 200;
@@ -25,22 +25,10 @@ public class ShootCommand extends Command {
     Flywheel flywheel;
     Hopper hopper;
 
-    public static boolean shootSyncCommand(int rings, double targetRpm, Flywheel flywheel, Hopper hopper){
-
-        ShootCommand command = new ShootCommand(3, targetRpm, flywheel, hopper);
-        while (!command.isFinished()) {
-            command.update();
-        }
-
-        return true;
-
-    }
 
 
     //asynchronous command when paired with update() function to shoot rings
     public ShootCommand(int rings, double targetRpm, Flywheel flywheel, Hopper hopper) {
-        //set isFinished to false
-        super();
 
         //set rpm speed and hopper
         flywheel.setRPM(targetRpm);
@@ -64,9 +52,6 @@ public class ShootCommand extends Command {
             }
         }
 
-        else {
-           isFinished = true;
-        }
     }
 
 

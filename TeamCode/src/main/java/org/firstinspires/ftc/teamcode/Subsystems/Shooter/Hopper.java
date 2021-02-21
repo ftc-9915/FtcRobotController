@@ -19,11 +19,11 @@ public class Hopper implements SubsystemBase {
     public String pushName = "pushServo";
 
     //Subsystem Constants
-    static final double LIFT_UP_POS = 0.49;
-    static final double LIFT_DOWN_POS = 0.75;
+    public static  double LIFT_UP_POS = 0.49;
+    public static  double LIFT_DOWN_POS = 0.75;
 
-    static final double PUSH_OUT_POS = 0.70;
-    static final double PUSH_IN_POS = 0.52;
+    public static  double PUSH_OUT_POS = 0.70;
+    public static  double PUSH_IN_POS = 0.52;
 
     //Subsystem State
     enum LiftMode {

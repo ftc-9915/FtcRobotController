@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Vision;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoController;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.Common.RingPosition;
@@ -15,17 +16,23 @@ import org.openftc.easyopencv.OpenCvPipeline;
 
 public class Camera {
 
-    //Editable Constants
-    public static double RING_STACK_POSITION = 10;
 
+    //Subsystem Components
     OpenCvCamera webcam;
     OpenCvPipeline pipeline;
+    public Servo cameraServo;
 
-    Servo cameraServo;
+    //Subsystem Component Names
+    public static String cameraServoName = "cameraServo";
+
+    //Editable Constants
+    public static double RING_STACK_POSITION = 0;
+    public static double HIGH_GOAL_POSITION = 0;
 
     public Camera(HardwareMap hardwareMap, OpenCvPipeline pipeline)
     {
-//        cameraServo.setPosition(RING_STACK_POSITION);
+        cameraServo = hardwareMap.servo.get(cameraServoName);
+        cameraServo.setPosition(RING_STACK_POSITION);
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -41,6 +48,14 @@ public class Camera {
                 FtcDashboard.getInstance().startCameraStream(webcam, 0);
             }
         });
+    }
+
+    public void setRingStackPosition() {
+        cameraServo.setPosition(RING_STACK_POSITION);
+    }
+
+    public void setHighGoalPosition() {
+        cameraServo.setPosition(HIGH_GOAL_POSITION);
     }
 
 
