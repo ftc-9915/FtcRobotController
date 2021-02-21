@@ -26,8 +26,8 @@ public class Camera {
     public static String cameraServoName = "cameraServo";
 
     //Editable Constants
-    public static double RING_STACK_POSITION = 0;
-    public static double HIGH_GOAL_POSITION = 0;
+    public static double RING_STACK_POSITION = 0.09;
+    public static double HIGH_GOAL_POSITION = 0.14;
 
     public Camera(HardwareMap hardwareMap, OpenCvPipeline pipeline)
     {

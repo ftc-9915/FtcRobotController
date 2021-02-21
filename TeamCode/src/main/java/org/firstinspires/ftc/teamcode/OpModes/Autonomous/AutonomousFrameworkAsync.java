@@ -22,7 +22,7 @@ public class AutonomousFrameworkAsync extends OpMode {
     Camera camera;
     VisionPipeline ringDetectPipeline;
 
-    RingPosition ringConfiguration = RingPosition.NONE;
+    RingPosition ringConfiguration;
 
 
 
@@ -68,11 +68,11 @@ public class AutonomousFrameworkAsync extends OpMode {
         //Check ring and set path
 //        ringConfiguration = ringDetectPipeline.getRingPosition();
         //TODO Implement path NONE and FOUR
-        ringConfiguration = ringConfiguration.ONE;
+        ringConfiguration = ringConfiguration.NONE;
         switch (ringConfiguration) {
             case NONE:
                 telemetry.addLine("Go Path NONE");
-//                path = new AutonomousPathAAsync(drive, wobbleArm, flywheel, collector, hopper);
+                path = new AutonomousPathAAsync(drive, wobbleArm, flywheel, collector, hopper);
                 break;
 
             case ONE:
@@ -82,7 +82,7 @@ public class AutonomousFrameworkAsync extends OpMode {
 
             case FOUR:
                 telemetry.addLine("Go Path FOUR");
-//                path = new AutonomousPathCAsync(drive, wobbleArm, flywheel, collector, hopper);
+                path = new AutonomousPathCAsync(drive, wobbleArm, flywheel, collector, hopper);
                 break;
         }
 

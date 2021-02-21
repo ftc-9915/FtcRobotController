@@ -41,7 +41,7 @@ public class AlignToGoalTest extends OpMode {
     @Override
     public void init() {
         drive = new MecanumDrivebase(hardwareMap);
-        drive.setPoseEstimate(PoseLibrary.START_POS_BLUE_2);
+        drive.setPoseEstimate(PoseLibrary.autoEndingPose);
 
         pipeline = new BlueGoalVisionPipeline(telemetry);
         camera = new Camera(hardwareMap, pipeline);

@@ -113,11 +113,11 @@ public class TeleOpTest extends OpMode {
 //        clawServo1 = hardwareMap.servo.get("clawServo");
 //        clawServo2 = hardwareMap.servo.get("clawServo2");
 
-
+        flywheel = new Flywheel(hardwareMap);
 
         // Initialization values
         launcherPower = 0.0;
-        launcherRPM = -60.0;
+        launcherRPM = 3300;
         launcherOn = false;
 //        collectorPower = 1.0;
         armPos = 0;

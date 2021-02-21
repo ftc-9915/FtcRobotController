@@ -10,6 +10,8 @@ are then used to determine the most accurate Ring Position.
 
 package org.firstinspires.ftc.teamcode.Vision;
 
+import com.acmerobotics.dashboard.config.Config;
+
 import org.apache.commons.math3.fraction.Fraction;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Common.UtilMethods;
@@ -34,7 +36,7 @@ import java.util.stream.Collectors;
  * Determine distance, yaw, and pitch
  *
  */
-
+@Config
 public class BlueGoalVisionPipeline extends OpenCvPipeline {
 
 

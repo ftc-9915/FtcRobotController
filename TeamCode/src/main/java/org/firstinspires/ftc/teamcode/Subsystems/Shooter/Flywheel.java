@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
 import org.firstinspires.ftc.teamcode.Subsystems.SubsystemBase;
@@ -18,10 +19,10 @@ public class Flywheel implements SubsystemBase {
     private static String name = "launcherMotor";
 
     PIDFCoefficients PIDF;
-    public static double kP = 0;
+    public static double kP = 10;
     public static double kI = 0;
     public static double kD = 0;
-    public static double kF = 15.75;
+    public static double kF = 15.85;
 
     //in degrees
     private double shooterAngle;
@@ -30,8 +31,13 @@ public class Flywheel implements SubsystemBase {
     private double goalHeight = 0.9017;
     private double  wheelRadius;
 
+    private VoltageSensor batteryVoltageSensor;
+
     
     public Flywheel(HardwareMap hardwareMap){
+
+        batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
+
 
         flywheel = hardwareMap.get(DcMotorEx.class, "launcherMotor");
         flywheel.setDirection(DcMotor.Direction.REVERSE);
@@ -42,7 +48,7 @@ public class Flywheel implements SubsystemBase {
 //        motorConfigurationType.setAchieveableMaxRPMFraction(1.0);
 //        flywheel.setMotorType(motorConfigurationType);
 
-        PIDFCoefficients PIDF = new PIDFCoefficients(kP,  kI,   kD,   kF);
+        PIDFCoefficients PIDF = new PIDFCoefficients(kP,  kI,   kD,   kF * 12 / batteryVoltageSensor.getVoltage());
         flywheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         flywheel.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, PIDF);
 
