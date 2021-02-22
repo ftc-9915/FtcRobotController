@@ -18,7 +18,7 @@ public class VisionPipeline extends OpenCvPipeline {
     public boolean viewportPaused = false;
 
     //ringAnalysisZone location, b2 (60, 140)
-    public static Point ZONE_CENTER = new Point(57, 135);
+    public static Point ZONE_CENTER = new Point(45, 135);
     public static final int ZONE_WIDTH = 45;
     public static final int ZONE_HEIGHT = 50;
 

@@ -62,10 +62,10 @@ public class TeleOpTest extends OpMode {
 //    static final double CLAW_CLOSE_POS = 0.15;
 
 
-//    double speed = 0.0;
-//    double strafe = 0.0;
-//    double rotation = 0.0;
-//    double strafePower = 1.0;
+    double speed = 0.0;
+    double strafe = 0.0;
+    double rotation = 0.0;
+    double strafePower = 1.0;
     boolean slowmodeOn = false;
 
 
@@ -105,6 +105,7 @@ public class TeleOpTest extends OpMode {
 
 
         //Init Wobble Arm
+        // TODO: Do not initialize the arm to the current position after autonomous because it would not be in the starting position at the end of autonomous
         wobbleArm = new WobbleArm(hardwareMap);
 //        armMotor = hardwareMap.dcMotor.get("armMotor");
 //        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -139,10 +140,13 @@ public class TeleOpTest extends OpMode {
         telemetry.addData("Drive Mode: ", currentMode);
         telemetry.addData("x", currentPose.getX());
         telemetry.addData("y", currentPose.getY());
-        telemetry.addData("heading", currentPose.getHeading());
+        telemetry.addData("heading", Math.toDegrees(currentPose.getHeading()));
 
-//        telemetry.addData("Launcher RPM", flywheel.getRPM());
-        telemetry.addData("Arm Position", wobbleArm.getArmPosition());
+        telemetry.addData("Launcher RPM", launcherRPM);
+        telemetry.addData("Actual RPM", flywheel.getRPM());
+        telemetry.addData("Arm Position", armPos);
+        telemetry.addData("Gamepad2 Left Stick Y", gamepad2.left_stick_y);
+        telemetry.addData("Actual Arm Position", wobbleArm.getArmPosition());
         telemetry.addData("Slowmode On", slowmodeOn);
         telemetry.addLine("--- Controls (Gamepad 1) ---");
         telemetry.addData("Turn collector on", "Button A");
@@ -157,6 +161,9 @@ public class TeleOpTest extends OpMode {
         telemetry.addData("Open Claw", "Button A");
         telemetry.addData("Close Claw", "Button B");
         telemetry.addData("Move Arm", "Left Stick Up/Down");
+        telemetry.addData("Arm Up", "Dpad Up");
+        telemetry.addData("Arm Down", "Dpad Down");
+        telemetry.addData("Arm Over Wall", "Dpad Right");
         telemetry.addData("Turn launcher on/off", "Button X");
         telemetry.addData("Push/retract collector servo", "Button Y");
         telemetry.addData("Lower collector platform", "Left Bumper");
@@ -168,32 +175,38 @@ public class TeleOpTest extends OpMode {
             case DRIVER_CONTROL:
 
                 // Chassis code
-//                speed = -gamepad1.left_stick_y * strafePower;
-//                strafe = gamepad1.left_stick_x * strafePower;
-//                rotation = gamepad1.right_stick_x * strafePower;
-//
-//
+                speed = -gamepad1.left_stick_y * strafePower;
+                strafe = gamepad1.left_stick_x * strafePower;
+                rotation = gamepad1.right_stick_x * strafePower;
+
+
 //                leftFront.setPower(speed + strafe + rotation);
 //                leftBack.setPower(speed - strafe + rotation);
 //                rightBack.setPower(speed + strafe - rotation);
 //                rightFront.setPower(speed - strafe - rotation);
-
-                drive.setWeightedDrivePower(
-                        new Pose2d(
-                                -gamepad1.left_stick_y,
-                                -gamepad1.left_stick_x,
-                                -gamepad1.right_stick_x
-                        )
-                );
+                drive.setMotorPowers(speed + strafe + rotation, speed - strafe + rotation, speed + strafe - rotation, speed - strafe - rotation);
+//                drive.setWeightedDrivePower(
+//                        new Pose2d(
+//                                -gamepad1.left_stick_y * MecanumDrivebase.VY_WEIGHT,
+//                                -gamepad1.left_stick_x * MecanumDrivebase.VX_WEIGHT,
+//                                -gamepad1.right_stick_x * MecanumDrivebase.OMEGA_WEIGHT
+//                        )
+//                );
 
                 // Slowmode
 
                 if (gamepad1.y && buttonReleased1) {
                     if (slowmodeOn) {
-                        MecanumDrivebase.VY_WEIGHT = 1.0;
+//                        MecanumDrivebase.VX_WEIGHT = 1.0;
+//                        MecanumDrivebase.VY_WEIGHT = 1.0;
+//                        MecanumDrivebase.OMEGA_WEIGHT = 1.0;
+                        strafePower = 1.0;
                         slowmodeOn = false;
                     } else {
-                        MecanumDrivebase.VY_WEIGHT = 0.5;
+//                        MecanumDrivebase.VX_WEIGHT = 0.5;
+//                        MecanumDrivebase.VY_WEIGHT = 0.5;
+//                        MecanumDrivebase.OMEGA_WEIGHT = 0.5;
+                        strafePower = 0.5;
                         slowmodeOn = true;
                     }
                     buttonReleased1 = false;
@@ -235,8 +248,10 @@ public class TeleOpTest extends OpMode {
                      */
                     if (launcherOn) {
                         flywheel.setRPM(0);
+                        launcherOn = false;
                     } else {
                         flywheel.setRPM(launcherRPM);
+                        launcherOn = true;
                     }
                     buttonReleased2 = false;
                 }
@@ -244,14 +259,14 @@ public class TeleOpTest extends OpMode {
                 // Adjusts launcher speed every time trigger goes below 0.4
                 if (gamepad2.left_trigger > 0.4 && triggerReleased && launcherOn) {
                     //launcherPower += 0.05;
-                    launcherRPM += 5;
+                    launcherRPM += 50;
                     flywheel.setRPM(launcherRPM);
                     triggerReleased = false;
                 }
 
                 if (gamepad2.right_trigger > 0.4 && triggerReleased && launcherOn) {
                     //launcherPower -= 0.05;
-                    launcherRPM -= 5;
+                    launcherRPM -= 50;
                     flywheel.setRPM(launcherRPM);
                     triggerReleased = false;
                 }
@@ -264,7 +279,7 @@ public class TeleOpTest extends OpMode {
 //                  pushServo.setPosition(PUSH_POS);
                 }
 
-                if (timer.seconds() > 1) {
+                if (timer.seconds() > 0.75) {
                     hopper.setPushOutPos();
 //                  pushServo.setPosition(NOT_PUSH_POS);
                 }
@@ -284,31 +299,35 @@ public class TeleOpTest extends OpMode {
 
                 // Lifts/Lowers Wobble Goal Arm
 
+                armPos += 4 * gamepad2.left_stick_y;
+                if (armPos < wobbleArm.ARM_LOWER_LIMIT) {
+                    armPos = wobbleArm.ARM_LOWER_LIMIT;
+                }
+                if (armPos > wobbleArm.ARM_UPPER_LIMIT) {
+                    armPos = wobbleArm.ARM_UPPER_LIMIT;
+                }
+
+                // Arm Presets
+
+                if (gamepad2.dpad_up && buttonReleased2) {
+                    armPos = wobbleArm.ARM_POS_LIFT_ARM;
+                }
+                if (gamepad2.dpad_down && buttonReleased2) {
+                    armPos = wobbleArm.ARM_POS_PICKUP_GOAL;
+                }
+                if (gamepad2.dpad_right && buttonReleased2) {
+                    armPos = wobbleArm.ARM_POS_OVER_WALL;
+                }
                 wobbleArm.setArmPos(armPos);
-
-//                armPos += ARM_SPEED * gamepad2.left_stick_y;
-//                if (armPos > ARM_UPPER_LIMIT) {
-//                    armPos = ARM_UPPER_LIMIT;
-//                }
-//                if (armPos < ARM_LOWER_LIMIT) {
-//                    armPos = ARM_LOWER_LIMIT;
-//                }
-//                armMotor.setTargetPosition(armPos);
-//                armMotor.setPower(1.0);
-
 
                 // Opens/Closes Wobble Goal Claw
 
                 if (gamepad2.a && buttonReleased2) {
                     wobbleArm.openClaw();
-//                    clawServo1.setPosition(CLAW_OPEN_POS);
-//                    clawServo2.setPosition(CLAW_OPEN_POS);
                     buttonReleased2 = false;
                 }
                 if (gamepad2.b && buttonReleased2) {
                     wobbleArm.closeClaw();
-//                    clawServo1.setPosition(CLAW_CLOSE_POS);
-//                    clawServo2.setPosition(CLAW_CLOSE_POS);
                     buttonReleased2 = false;
                 }
 
@@ -320,7 +339,7 @@ public class TeleOpTest extends OpMode {
                     buttonReleased1 = true;
                 }
 
-                if(!gamepad2.left_bumper && !gamepad2.right_bumper && !gamepad2.a && !gamepad2.b && !gamepad2.x && !gamepad2.y) {
+                if(!gamepad2.left_bumper && !gamepad2.right_bumper && !gamepad2.a && !gamepad2.b && !gamepad2.x && !gamepad2.y && !gamepad2.dpad_up && !gamepad2.dpad_right && !gamepad2.dpad_down) {
                     buttonReleased2 = true;
                 }
 

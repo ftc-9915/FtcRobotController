@@ -19,7 +19,7 @@ public class Flywheel implements SubsystemBase {
     private static String name = "launcherMotor";
 
     PIDFCoefficients PIDF;
-    public static double kP = 10;
+    public static double kP = 15;
     public static double kI = 0;
     public static double kD = 0;
     public static double kF = 15.85;

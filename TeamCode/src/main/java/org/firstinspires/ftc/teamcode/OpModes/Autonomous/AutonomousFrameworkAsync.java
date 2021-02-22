@@ -66,9 +66,8 @@ public class AutonomousFrameworkAsync extends OpMode {
     @Override
     public void init_loop() {
         //Check ring and set path
-//        ringConfiguration = ringDetectPipeline.getRingPosition();
-        //TODO Implement path NONE and FOUR
-        ringConfiguration = ringConfiguration.NONE;
+        ringConfiguration = ringDetectPipeline.getRingPosition();
+//        ringConfiguration = ringConfiguration.NONE;
         switch (ringConfiguration) {
             case NONE:
                 telemetry.addLine("Go Path NONE");
