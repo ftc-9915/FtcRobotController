@@ -258,15 +258,15 @@ public class TeleOpTest extends OpMode {
 
                 // Adjusts launcher speed every time trigger goes below 0.4
                 if (gamepad2.left_trigger > 0.4 && triggerReleased && launcherOn) {
-                    //launcherPower += 0.05;
-                    launcherRPM += 50;
+                    //launcherPower -= 0.05;
+                    launcherRPM -= 50;
                     flywheel.setRPM(launcherRPM);
                     triggerReleased = false;
                 }
 
                 if (gamepad2.right_trigger > 0.4 && triggerReleased && launcherOn) {
-                    //launcherPower -= 0.05;
-                    launcherRPM -= 50;
+                    //launcherPower += 0.05;
+                    launcherRPM += 50;
                     flywheel.setRPM(launcherRPM);
                     triggerReleased = false;
                 }
@@ -314,6 +314,7 @@ public class TeleOpTest extends OpMode {
                 }
                 if (gamepad2.dpad_down && buttonReleased2) {
                     armPos = wobbleArm.ARM_POS_PICKUP_GOAL;
+                    wobbleArm.openClaw();
                 }
                 if (gamepad2.dpad_right && buttonReleased2) {
                     armPos = wobbleArm.ARM_POS_OVER_WALL;
