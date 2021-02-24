@@ -228,7 +228,8 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
         blueContours = blueContours.stream().filter(i -> {
             boolean appropriateAspect = ((double) Imgproc.boundingRect(i).width / Imgproc.boundingRect(i).height > CONTOUR_ASPECT_RATIO_MIN)
                     && ((double) Imgproc.boundingRect(i).width / Imgproc.boundingRect(i).height < CONTOUR_ASPECT_RATIO_MAX);
-            return filterContours(i) && appropriateAspect;
+            boolean aboveBoundaryLine = Imgproc.boundingRect(i).y + Imgproc.boundingRect(i).height > BOUNDARY;
+            return aboveBoundaryLine && filterContours(i) && appropriateAspect;
         }).collect(Collectors.toList());
 
 
@@ -256,6 +257,9 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
 
 
         if(isGoalVisible()){
+
+            //draw boundary line
+            Imgproc.line(input, new Point(0, BOUNDARY), new Point(this.imageWidth, BOUNDARY), new Scalar(0, 0, 255));
             //draw contours
             Imgproc.drawContours(input, blueContours, -1, new Scalar(255, 255, 0));
 

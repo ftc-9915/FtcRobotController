@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.control.PIDFController;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -90,7 +91,8 @@ public class AlignToGoalTest extends OpMode {
                 if(pipeline.isGoalVisible()){
 
                     double heading_error = Math.toRadians(pipeline.getYaw());
-                    headingController.setTargetPosition(current_heading - heading_error);
+                    double targetAngle = Angle.normDelta(current_heading - heading_error);
+                    headingController.setTargetPosition(targetAngle);
                 } else {
                     headingController.setTargetPosition(0);
                 }
@@ -117,7 +119,9 @@ public class AlignToGoalTest extends OpMode {
                 // Difference between the target vector and the bot's position
                 Vector2d difference = targetPosition.minus(poseEstimate.vec());
                 // Obtain the target angle for feedback and derivative for feedforward
-                double theta = difference.angle();
+                double theta = Angle.normDelta(difference.angle());
+
+
                 // Set the target heading for the heading controller to our desired angle
                 headingController.setTargetPosition(theta);
 

@@ -354,7 +354,7 @@ public class TeleOpTest extends OpMode {
 
                 //create trajectory to shooting position on the fly
                 if (gamepad1.dpad_up) {
-                    // If the D-pad up button is pressed on gamepad1, we generate a splineTo()
+                    // If the D-pad up button is pressed on gamepad1, we generate a lineTo()
                     // trajectory on the fly and follow it
                     // We switch the state to AUTOMATIC_CONTROL
 

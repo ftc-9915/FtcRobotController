@@ -33,13 +33,13 @@ public class AutonomousPathBAsync extends AutonomousPathAsync {
 
     //Pre declare trajectories
     Trajectory goToShootingPosePt1;
-    Trajectory goToShootingPosePt2;
     Trajectory goToPlaceGoalPose;
     Trajectory goToPickUpGoalPose1;
     Trajectory goToPickUpGoalPose2;
     Trajectory goToPlaceSecondGoalPart1;
     Trajectory goToPlaceSecondGoalPart2;
     Trajectory goToParkingPose;
+
     //Set starting state and rings to shoot and timer
     State currentState = State.DRIVE_TO_SHOOT;
     int rings = 3;
@@ -63,14 +63,10 @@ public class AutonomousPathBAsync extends AutonomousPathAsync {
         //Trajectories
         goToShootingPosePt1 = drive.trajectoryBuilder(PoseLibrary.START_POS_BLUE_2)
                 .splineTo(shootingPosePt1.vec(), shootingPosePt1.getHeading())
-                .addDisplacementMarker(() -> drive.followTrajectoryAsync(goToShootingPosePt2))
-                .build();
-
-        goToShootingPosePt2 = drive.trajectoryBuilder(goToShootingPosePt1.end())
                 .splineTo(shootingPosePt2.vec(), shootingPosePt2.getHeading())
                 .build();
 
-        goToPlaceGoalPose = drive.trajectoryBuilder(goToShootingPosePt2.end())
+        goToPlaceGoalPose = drive.trajectoryBuilder(goToShootingPosePt1.end())
                 .splineTo(placeGoalPose.vec(), placeGoalPose.getHeading())
                 .build();
 

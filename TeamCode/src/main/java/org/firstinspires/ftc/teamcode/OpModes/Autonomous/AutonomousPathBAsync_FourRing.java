@@ -22,17 +22,25 @@ import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
 import java.util.Arrays;
 
 @Config
-public class AutonomousPathCAsync extends AutonomousPathAsync {
+public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
+    //Treakable values for tuning
 
+    private static final double RPM_FORGIVENESS = 125;
+    public static int goalX = -26;
+    public static int goalY = 36;
+    public static double goalAngle = 150.0;
+    public static double shootingPoseAngle = -5;
+    public static double shootingPoseRPM = 3400;
 
     //Pre declare trajectories
     Trajectory goToShootingPosePt1;
     Trajectory goToPlaceGoalPose;
+    Trajectory goToPickupRingPose1;
+    Trajectory goToPickupRingPose2;
     Trajectory goToPickUpGoalPose1;
-    Trajectory goToPickUpGoalPose2;
     Trajectory goToPlaceSecondGoalPart1;
+    Trajectory goToPlaceSecondGoalPart2;
     Trajectory goToParkingPose;
-
 
     //Set starting state and rings to shoot and timer
     State currentState = State.DRIVE_TO_SHOOT;
@@ -40,24 +48,19 @@ public class AutonomousPathCAsync extends AutonomousPathAsync {
     ElapsedTime timer = new ElapsedTime();
     boolean hopperPositionIn = false;
 
-    //Treakable values for tuning
-    private static final double RPM_FORGIVENESS = 125;
-    public static int goalX = -25;
-    public static int goalY = 57;
-    public static double shootingPoseAngle = -5;
-    public static double shootingPoseRPM = 3400;
-
     //Poses
     Pose2d shootingPosePt1 = new Pose2d (-24,21);
     Pose2d shootingPosePt2 = new Pose2d(6.8066, 26.37388, Math.toRadians(shootingPoseAngle));
-    Pose2d placeGoalPose = new Pose2d(48, 52, Math.toRadians(-0.1));
-    Pose2d pickUpGoalPose1 = new Pose2d(-24, goalY, Math.toRadians(180.0));
-    Pose2d pickUpGoalPose2 = new Pose2d(goalX, goalY, Math.toRadians(180.0));
-    Pose2d placeSecondGoalPose1 = new Pose2d(48, 55, Math.toRadians(0.0));
-    Pose2d parkPose = new Pose2d(19, 50, Math.toRadians(0.0));
+    Pose2d placeGoalPose = new Pose2d(22, 25, Math.toRadians(0.0));
+    Pose2d pickUpRingPosePt1 = new Pose2d(-22, 36, Math.toRadians(180.0));
+    Pose2d pickUpRingPosePt2 = new Pose2d(-25, 36, Math.toRadians(180.0));
+    Pose2d pickUpGoalPose = new Pose2d(goalX, goalY, Math.toRadians(goalAngle));
+    Pose2d placeSecondGoalPose1 = new Pose2d(27, 57, Math.toRadians(0.0));
+    Pose2d placeSecondGoalPose2 = new Pose2d(23, 33, Math.toRadians(0.0));
+    Pose2d parkPose = new Pose2d(17, 27, Math.toRadians(0.0));
 
     //build trajectories on construction
-    public AutonomousPathCAsync(MecanumDrivebase drive, WobbleArm wobbleArm, Flywheel flywheel, Collector collector, Hopper hopper) {
+    public AutonomousPathBAsync_FourRing(MecanumDrivebase drive, WobbleArm wobbleArm, Flywheel flywheel, Collector collector, Hopper hopper) {
         super(drive, wobbleArm, flywheel, collector, hopper);
 
         //Trajectories
@@ -70,13 +73,26 @@ public class AutonomousPathCAsync extends AutonomousPathAsync {
                 .splineTo(placeGoalPose.vec(), placeGoalPose.getHeading())
                 .build();
 
-        goToPickUpGoalPose1 = drive.trajectoryBuilder(goToPlaceGoalPose.end())
-                .lineToLinearHeading(pickUpGoalPose1)
-                .addDisplacementMarker(() -> drive.followTrajectoryAsync(goToPickUpGoalPose2))
+        goToPickupRingPose1 = drive.trajectoryBuilder(goToPlaceGoalPose.end())
+                .lineToLinearHeading(pickUpRingPosePt1)
+                .addDisplacementMarker(collector::turnCollectorOn)
+                .addDisplacementMarker(()->drive.followTrajectoryAsync(goToPickupRingPose2))
                 .build();
 
-        goToPickUpGoalPose2 = drive.trajectoryBuilder(goToPickUpGoalPose1.end())
-                .lineToConstantHeading(pickUpGoalPose2.vec(), new MinVelocityConstraint(
+        goToPickupRingPose2 = drive.trajectoryBuilder(goToPickUpGoalPose1.end())
+                .lineToConstantHeading(pickUpRingPosePt2.vec(), new MinVelocityConstraint(
+                                Arrays.asList(
+                                        new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
+                                        new MecanumVelocityConstraint(8, DriveConstants.TRACK_WIDTH)
+                                )
+                        ),
+                        new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                .addDisplacementMarker(collector::turnCollectorOff)
+                .build();
+
+
+        goToPickUpGoalPose1 = drive.trajectoryBuilder(goToPickupRingPose2.end())
+                .splineTo(pickUpGoalPose.vec(), pickUpGoalPose.getHeading(), new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
                                         new MecanumVelocityConstraint(8, DriveConstants.TRACK_WIDTH)
@@ -86,11 +102,18 @@ public class AutonomousPathCAsync extends AutonomousPathAsync {
                 .build();
 
 
-        goToPlaceSecondGoalPart1 = drive.trajectoryBuilder(goToPickUpGoalPose2.end())
+        goToPlaceSecondGoalPart1 = drive.trajectoryBuilder(goToPickUpGoalPose1.end())
                 .lineToSplineHeading(placeSecondGoalPose1)
+                .addDisplacementMarker(() -> {
+                    drive.followTrajectoryAsync(goToPlaceSecondGoalPart2);
+                })
                 .build();
 
-        goToParkingPose = drive.trajectoryBuilder(goToPlaceSecondGoalPart1.end())
+        goToPlaceSecondGoalPart2 = drive.trajectoryBuilder(goToPlaceSecondGoalPart1.end())
+                .lineToConstantHeading(placeSecondGoalPose2.vec())
+                .build();
+
+        goToParkingPose = drive.trajectoryBuilder(goToPlaceSecondGoalPart2.end())
                 .lineToConstantHeading(parkPose.vec())
                 .build();
     }
@@ -114,7 +137,6 @@ public class AutonomousPathCAsync extends AutonomousPathAsync {
                 break;
             case SHOOT:
                 if (!drive.isBusy()) {
-                    flywheel.setRPM(shootingPoseRPM);
                     hopper.setLiftUpPos();
                     if (rings > 0) {
                         if (UtilMethods.inRange(flywheel.getRPM(), shootingPoseRPM - RPM_FORGIVENESS, shootingPoseRPM + RPM_FORGIVENESS) && !hopperPositionIn && timer.seconds() > 0.5) {
@@ -147,21 +169,30 @@ public class AutonomousPathCAsync extends AutonomousPathAsync {
                 //Trigger action depending on timer using else if logic
                 if (timer.seconds() > 2) {
                     currentState = State.DRIVE_TO_SECOND_GOAL;
-                    wobbleArm.setArmPos(-100);
-                    //will drive to pose 1 and pose 2 using displacement marker
-                    drive.followTrajectoryAsync(goToPickUpGoalPose1);
+                    wobbleArm.liftArm();
+                    //triggers pickup ring pose 1 and 2 with collector input
+                    drive.followTrajectoryAsync(goToPickupRingPose1);
                 } else if (timer.seconds() > 1.5) {
                     wobbleArm.openClaw();
                 } else if (timer.seconds() > 0.5) {
                     wobbleArm.placeGoal();
                 }
                 break;
+
+            case DRIVE_TO_PICKUP_RING:
+                if(!drive.isBusy()) {
+                    drive.followTrajectoryAsync(goToPickUpGoalPose1);
+                    currentState = State.DRIVE_TO_SECOND_GOAL;
+                }
+                break;
+
             case DRIVE_TO_SECOND_GOAL:
                 if (!drive.isBusy()) {
                     currentState = State.PICKUP_SECOND_GOAL;
                     timer.reset();
                 }
                 break;
+
             case PICKUP_SECOND_GOAL:
                 //Trigger action depending on timer using else if logic
                 if (timer.seconds() > 2) {
@@ -172,6 +203,7 @@ public class AutonomousPathCAsync extends AutonomousPathAsync {
                     wobbleArm.pickUpSecondGoal();
                 }
                 break;
+
             case DRIVE_TO_PLACE_SECOND_GOAL:
                 if(!wobbleArm.isBusy()) {
                     wobbleArm.liftArm();
@@ -231,7 +263,6 @@ public class AutonomousPathCAsync extends AutonomousPathAsync {
         telemetry.addData("heading", poseEstimate.getHeading());
         telemetry.addData("Current State", currentState);
         telemetry.addData("Rings", rings);
-        telemetry.addData("RPM", flywheel.getRPM());
         telemetry.addData("In Range", UtilMethods.inRange(flywheel.getRPM(), shootingPoseRPM - RPM_FORGIVENESS, shootingPoseRPM + RPM_FORGIVENESS));
         telemetry.update();
 
@@ -244,7 +275,8 @@ public class AutonomousPathCAsync extends AutonomousPathAsync {
         DRIVE_TO_SHOOT,
         SHOOT,   // First, follow a splineTo() trajectory
         DRIVE_TO_PLACE_GOAL,   // Then, follow a lineTo() trajectory
-        PLACE_GOAL,         // Then we want to do a point turn
+        PLACE_GOAL,
+        DRIVE_TO_PICKUP_RING, // Then we want to do a point turn
         DRIVE_TO_SECOND_GOAL,   // Then, we follow another lineTo() trajectory
         PICKUP_SECOND_GOAL,         // Then we're gonna wait a second
         DRIVE_TO_PLACE_SECOND_GOAL,         // Finally, we're gonna turn again
