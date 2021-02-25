@@ -5,6 +5,7 @@ import android.text.format.Time;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Common.UtilMethods;
+import org.firstinspires.ftc.teamcode.OpModes.Autonomous.AutonomousPathBAsync;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Flywheel;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Hopper;
 
@@ -26,6 +27,22 @@ public class ShootCommand  {
     Hopper hopper;
 
 
+    //returns true if a ring was shot, return false otherwise
+    public static boolean shootCommandAsync(double targetRpm, double RPM_FORGIVENESS,  ElapsedTime timer, Flywheel flywheel, Hopper hopper) {
+        hopper.setLiftUpPos();
+        if (UtilMethods.inRange(flywheel.getRPM(), targetRpm - RPM_FORGIVENESS, targetRpm + RPM_FORGIVENESS)
+                &&  hopper.getPushMode() == Hopper.PushMode.PUSH_OUT && timer.seconds() > 0.5) {
+            hopper.setPushInPos();
+            timer.reset();
+        }
+        if (hopper.getPushMode() == Hopper.PushMode.PUSH_IN && timer.seconds() > 0.5) {
+            hopper.setPushOutPos();
+            timer.reset();
+            return true;
+        }
+        return false;
+
+    }
 
     //asynchronous command when paired with update() function to shoot rings
     public ShootCommand(int rings, double targetRpm, Flywheel flywheel, Hopper hopper) {

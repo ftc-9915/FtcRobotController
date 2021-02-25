@@ -26,12 +26,12 @@ public class Hopper implements SubsystemBase {
     public static  double PUSH_IN_POS = 0.52;
 
     //Subsystem State
-    enum LiftMode {
+    public enum LiftMode {
         LIFT_UP,
         LIFT_DOWN
     }
 
-    enum PushMode {
+    public enum PushMode {
         PUSH_IN,
         PUSH_OUT
     }
@@ -103,6 +103,14 @@ public class Hopper implements SubsystemBase {
             return setPushInPos();
         }
         return setPushOutPos();
+    }
+
+    public LiftMode getLiftMode() {
+        return liftMode;
+    }
+
+    public PushMode getPushMode() {
+        return pushMode;
     }
 
 

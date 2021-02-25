@@ -255,7 +255,7 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
         Pose2d poseEstimate = drive.getPoseEstimate();
 
         // Continually write pose to `PoseStorage`
-        PoseLibrary.autoEndingPose = poseEstimate;
+        PoseLibrary.AUTO_ENDING_POSE = poseEstimate;
 
         // Print pose to telemetry
         telemetry.addData("x", poseEstimate.getX());

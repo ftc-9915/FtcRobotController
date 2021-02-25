@@ -8,8 +8,6 @@ import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.Common.PDController;
-import org.firstinspires.ftc.teamcode.Common.UtilMethods;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
@@ -42,7 +40,7 @@ public class AlignToGoalTest extends OpMode {
     @Override
     public void init() {
         drive = new MecanumDrivebase(hardwareMap);
-        drive.setPoseEstimate(PoseLibrary.autoEndingPose);
+        drive.setPoseEstimate(PoseLibrary.AUTO_ENDING_POSE);
 
         pipeline = new BlueGoalVisionPipeline(telemetry);
         camera = new Camera(hardwareMap, pipeline);

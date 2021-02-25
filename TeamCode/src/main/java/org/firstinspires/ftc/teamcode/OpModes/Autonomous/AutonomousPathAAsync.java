@@ -21,6 +21,8 @@ import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
 
 import java.util.Arrays;
 
+import static org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary.SHOOTING_POSE_A;
+
 @Config
 public class AutonomousPathAAsync extends AutonomousPathAsync {
 
@@ -45,11 +47,11 @@ public class AutonomousPathAAsync extends AutonomousPathAsync {
     public static int goalX = -25;
     public static int goalY = 57;
     public static double shootingPoseAngle = -27.5;
-    public static double shootingPoseRPM = 3150;
+    public static double shootingPoseRPM = PoseLibrary.SHOOTING_POSE_A.getRPM();
 
     //Poses
     public static Pose2d placeGoalAndShootingPose1 = new Pose2d(-5, 55, Math.toRadians(shootingPoseAngle));
-    public static Pose2d placeGoalAndShootingPose2 = new Pose2d(-4, 55, Math.toRadians(-8));
+    public static Pose2d placeGoalAndShootingPose2 = PoseLibrary.SHOOTING_POSE_A.getPose2d();
     public static Pose2d pickUpGoalPose1 = new Pose2d(-24, goalY, Math.toRadians(180.0));
     public static Pose2d pickUpGoalPose2 = new Pose2d(goalX, goalY, Math.toRadians(180.0));
     public static Pose2d placeSecondGoalPose = new Pose2d(0, 57, Math.toRadians(0.0));
@@ -230,7 +232,7 @@ public class AutonomousPathAAsync extends AutonomousPathAsync {
         Pose2d poseEstimate = drive.getPoseEstimate();
 
         // Continually write pose to `PoseStorage`
-        PoseLibrary.autoEndingPose = poseEstimate;
+        PoseLibrary.AUTO_ENDING_POSE = poseEstimate;
 
         // Print pose to telemetry
         telemetry.addData("x", poseEstimate.getX());

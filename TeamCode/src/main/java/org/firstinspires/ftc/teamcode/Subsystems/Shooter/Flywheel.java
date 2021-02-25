@@ -33,6 +33,10 @@ public class Flywheel implements SubsystemBase {
 
     private VoltageSensor batteryVoltageSensor;
 
+
+    //Common Shooting RPMs
+    public static double powerShotRPM;
+
     
     public Flywheel(HardwareMap hardwareMap){
 

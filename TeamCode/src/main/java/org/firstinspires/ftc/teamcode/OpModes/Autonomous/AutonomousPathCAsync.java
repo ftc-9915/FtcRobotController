@@ -45,11 +45,11 @@ public class AutonomousPathCAsync extends AutonomousPathAsync {
     public static int goalX = -25;
     public static int goalY = 57;
     public static double shootingPoseAngle = -5;
-    public static double shootingPoseRPM = 3400;
+    public static double shootingPoseRPM = PoseLibrary.SHOOTING_POSE_BC.getRPM();
 
     //Poses
     Pose2d shootingPosePt1 = new Pose2d (-24,21);
-    Pose2d shootingPosePt2 = new Pose2d(6.8066, 26.37388, Math.toRadians(shootingPoseAngle));
+    Pose2d shootingPosePt2 = PoseLibrary.SHOOTING_POSE_BC.getPose2d();
     Pose2d placeGoalPose = new Pose2d(48, 52, Math.toRadians(-0.1));
     Pose2d pickUpGoalPose1 = new Pose2d(-24, goalY, Math.toRadians(180.0));
     Pose2d pickUpGoalPose2 = new Pose2d(goalX, goalY, Math.toRadians(180.0));
@@ -223,7 +223,7 @@ public class AutonomousPathCAsync extends AutonomousPathAsync {
         Pose2d poseEstimate = drive.getPoseEstimate();
 
         // Continually write pose to `PoseStorage`
-        PoseLibrary.autoEndingPose = poseEstimate;
+        PoseLibrary.AUTO_ENDING_POSE = poseEstimate;
 
         // Print pose to telemetry
         telemetry.addData("x", poseEstimate.getX());

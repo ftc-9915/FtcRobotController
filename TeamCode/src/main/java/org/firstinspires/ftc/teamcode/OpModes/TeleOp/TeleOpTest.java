@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.Commands.ShootCommand;
 import org.firstinspires.ftc.teamcode.Subsystems.Collector;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
@@ -62,6 +63,9 @@ public class TeleOpTest extends OpMode {
 //    static final double CLAW_CLOSE_POS = 0.15;
 
 
+    int rings = 0;
+    int powerShotState = 0;
+
     double speed = 0.0;
     double strafe = 0.0;
     double rotation = 0.0;
@@ -69,13 +73,14 @@ public class TeleOpTest extends OpMode {
     boolean slowmodeOn = false;
 
 
-    public static int shootingPositionX;
-    public static int shootingPositionY;
-    public static double shootingPositionHeading;
 
     enum Mode {
         DRIVER_CONTROL,
-        AUTOMATIC_CONTROL
+        LINE_TO_POINT,
+        SHOOT_RINGS,
+        GENERATE_NEXT_POWERSHOT_PATH,
+        DRIVE_NEXT_POWERSHOT_PATH,
+        SHOOT_RINGS_POWERSHOT;
     }
 
     Mode currentMode = Mode.DRIVER_CONTROL;
@@ -85,7 +90,7 @@ public class TeleOpTest extends OpMode {
     public void init() {
         //Init Drive and set estimate
         drive = new MecanumDrivebase(hardwareMap);
-        drive.setPoseEstimate(PoseLibrary.autoEndingPose);
+        drive.setPoseEstimate(PoseLibrary.AUTO_ENDING_POSE);
 
 
 
@@ -351,6 +356,8 @@ public class TeleOpTest extends OpMode {
                 //launcherMotor.setPower(launcherPower);
 //                collectorMotor.setPower(collectorPower);
 
+                //EXPERIMENTAL CONTROLS
+
 
                 //create trajectory to shooting position on the fly
                 if (gamepad1.dpad_up) {
@@ -361,25 +368,101 @@ public class TeleOpTest extends OpMode {
 //                    liftServo.setPosition(LIFT_UP_POS);
 
                     Trajectory driveToShootPositionPath = drive.trajectoryBuilder(currentPose)
-                            .lineToLinearHeading(new Pose2d(shootingPositionX, shootingPositionY,  Math.toRadians(shootingPositionHeading)))
+                            .lineToLinearHeading(PoseLibrary.SHOOTING_POSE_BC.getPose2d())
                             .build();
 
+                    flywheel.setRPM(PoseLibrary.SHOOTING_POSE_BC.getRPM());
                     drive.followTrajectoryAsync(driveToShootPositionPath);
 
-                    currentMode = Mode.AUTOMATIC_CONTROL;
+                    currentMode = Mode.LINE_TO_POINT;
+                }
+
+                //reset encoders to powershot starting pose, set powershot state to zero
+                if (gamepad1.dpad_right) {
+                    //set starting position at left wall
+                    drive.setPoseEstimate(PoseLibrary.POWER_SHOT_START_POSE.getPose2d());
+                    powerShotState = 0;
+                    currentMode = Mode.GENERATE_NEXT_POWERSHOT_PATH;
+                }
+
+                //shoot three rings with wait for rpm logic
+                if (gamepad1.dpad_down) {
+                    rings = 3;
+                    timer.reset();
+                    currentMode = Mode.SHOOT_RINGS;
+                }
+
+                // generate a trajectory based on powershot state and move to stop and aim state
+            case GENERATE_NEXT_POWERSHOT_PATH:
+                if (gamepad1.dpad_right) {
+                    drive.cancelFollowing();
+                    currentMode = Mode.DRIVER_CONTROL;
+                } else if (powerShotState < PoseLibrary.POWER_SHOT_POSES.length - 2) {
+                    Trajectory driveToPowerShotPose = drive.trajectoryBuilder(PoseLibrary.POWER_SHOT_POSES[powerShotState].getPose2d())
+                            .lineToSplineHeading(PoseLibrary.POWER_SHOT_POSES[powerShotState + 1].getPose2d())
+                            .build();
+
+                    drive.followTrajectoryAsync(driveToPowerShotPose);
+
+                    powerShotState++;
+                    currentMode = Mode.DRIVE_NEXT_POWERSHOT_PATH;
+                } else {
+                    currentMode = Mode.DRIVER_CONTROL;
                 }
 
 
-            case AUTOMATIC_CONTROL:
+            //when robot has reached the end of it's generated trajectory, reset timer and rings to 1, then move to shoot rings state
+            case DRIVE_NEXT_POWERSHOT_PATH:
+
+                if (!drive.isBusy()) {
+                    rings = 1;
+                    timer.reset();
+                    currentMode = Mode.SHOOT_RINGS_POWERSHOT;
+                }
+
+                //set rings to shoot and reset timer required before moving to this state
+            case SHOOT_RINGS_POWERSHOT:
+                if (rings > 0) {
+                    if (ShootCommand.shootCommandAsync(PoseLibrary.POWER_SHOT_POSES[powerShotState].getRPM(), 150, timer, flywheel, hopper)){
+                        rings--;
+                    }
+                } else {
+                    currentMode = Mode.GENERATE_NEXT_POWERSHOT_PATH;
+                }
+
+                break;
+
+
+            //set rings to shoot and reset timer required before moving to this state
+            case SHOOT_RINGS:
+                if (rings > 0) {
+                    if (ShootCommand.shootCommandAsync(launcherRPM, 150, timer, flywheel, hopper)){
+                        rings--;
+                    }
+                } else {
+                    flywheel.setRPM(0);
+                    currentMode = Mode.DRIVER_CONTROL;
+                }
+
+                break;
+
+
+
+
+
+
+            case LINE_TO_POINT:
                 // If x is pressed, we break out of the automatic following
-                if (gamepad1.dpad_down) {
+                if (gamepad1.dpad_up) {
                     drive.cancelFollowing();
                     currentMode = Mode.DRIVER_CONTROL;
                 }
 
-                // If drive finishes its task, cede control to the driver
+                // If drive finishes its task, shoot rings
                 if (!drive.isBusy()) {
-                    currentMode = Mode.DRIVER_CONTROL;
+                    rings = 3;
+                    timer.reset();
+                    currentMode = Mode.SHOOT_RINGS;
                 }
                 break;
 
