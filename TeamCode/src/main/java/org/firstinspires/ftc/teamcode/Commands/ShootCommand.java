@@ -31,11 +31,11 @@ public class ShootCommand  {
     public static boolean shootCommandAsync(double targetRpm, double RPM_FORGIVENESS,  ElapsedTime timer, Flywheel flywheel, Hopper hopper) {
         hopper.setLiftUpPos();
         if (UtilMethods.inRange(flywheel.getRPM(), targetRpm - RPM_FORGIVENESS, targetRpm + RPM_FORGIVENESS)
-                &&  hopper.getPushMode() == Hopper.PushMode.PUSH_OUT && timer.seconds() > 0.5) {
+                &&  hopper.getPushMode() == Hopper.PushMode.PUSH_OUT && timer.seconds() > 2) {
             hopper.setPushInPos();
             timer.reset();
         }
-        if (hopper.getPushMode() == Hopper.PushMode.PUSH_IN && timer.seconds() > 0.5) {
+        if (hopper.getPushMode() == Hopper.PushMode.PUSH_IN && timer.seconds() > 2) {
             hopper.setPushOutPos();
             timer.reset();
             return true;

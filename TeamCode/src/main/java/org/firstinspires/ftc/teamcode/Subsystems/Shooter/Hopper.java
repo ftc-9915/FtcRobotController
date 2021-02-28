@@ -36,8 +36,8 @@ public class Hopper implements SubsystemBase {
         PUSH_OUT
     }
 
-    LiftMode liftMode = LiftMode.LIFT_DOWN;
-    PushMode pushMode = PushMode.PUSH_OUT;
+    public LiftMode liftMode = LiftMode.LIFT_DOWN;
+    public PushMode pushMode = PushMode.PUSH_OUT;
 
 
 
@@ -77,33 +77,16 @@ public class Hopper implements SubsystemBase {
         return setLiftDownPos();
     }
 
-    public boolean setPushOutPos(){
+    public void setPushOutPos(){
         pushServo.setPosition(PUSH_OUT_POS);
-
-        if (pushServo.getPosition() == PUSH_OUT_POS){
-            PushMode pushMode = PushMode.PUSH_OUT;
-            return true;
-        }
-        return false;
+        pushMode = PushMode.PUSH_OUT;
     }
 
-    public boolean setPushInPos(){
+    public void setPushInPos(){
         pushServo.setPosition(PUSH_IN_POS);
-
-        if (pushServo.getPosition() == PUSH_IN_POS){
-            PushMode pushMode = PushMode.PUSH_IN;
-            return true;
-        }
-        return false;
+        pushMode = PushMode.PUSH_IN;
     }
 
-
-    public boolean togglePushInOut() {
-        if (pushMode == PushMode.PUSH_OUT) {
-            return setPushInPos();
-        }
-        return setPushOutPos();
-    }
 
     public LiftMode getLiftMode() {
         return liftMode;
