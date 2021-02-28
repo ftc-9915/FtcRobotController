@@ -146,6 +146,8 @@ public class TeleOpTest extends OpMode {
         telemetry.addData("x", currentPose.getX());
         telemetry.addData("y", currentPose.getY());
         telemetry.addData("heading", Math.toDegrees(currentPose.getHeading()));
+        telemetry.addData("raw heading", Math.toDegrees(drive.getRawExternalHeading()));
+
 
         telemetry.addData("Launcher RPM", launcherRPM);
         telemetry.addData("Actual RPM", flywheel.getRPM());
@@ -357,7 +359,10 @@ public class TeleOpTest extends OpMode {
 //                collectorMotor.setPower(collectorPower);
 
                 //EXPERIMENTAL CONTROLS
-
+                // DPAD UP - Drive to BC shooting position
+                //DPAD RIGHT - Reset pose estimate and auto power shots
+                //DPAD DOWN - shoot based on wait logic
+                // DPAD LEFT - turn to 90 degrees
 
                 //create trajectory to shooting position on the fly
                 if (gamepad1.dpad_up) {
@@ -392,6 +397,10 @@ public class TeleOpTest extends OpMode {
                     currentMode = Mode.SHOOT_RINGS;
                 }
 
+                if (gamepad1.dpad_left) {
+                    drive.turnAsync(Math.toRadians(0.0));
+                }
+
                 // generate a trajectory based on powershot state and move to stop and aim state
             case GENERATE_NEXT_POWERSHOT_PATH:
                 if (gamepad1.dpad_right) {
@@ -413,8 +422,10 @@ public class TeleOpTest extends OpMode {
 
             //when robot has reached the end of it's generated trajectory, reset timer and rings to 1, then move to shoot rings state
             case DRIVE_NEXT_POWERSHOT_PATH:
-
-                if (!drive.isBusy()) {
+                if (gamepad1.dpad_right) {
+                    drive.cancelFollowing();
+                    currentMode = Mode.DRIVER_CONTROL;
+                } else if (!drive.isBusy()) {
                     rings = 1;
                     timer.reset();
                     currentMode = Mode.SHOOT_RINGS_POWERSHOT;
@@ -422,7 +433,10 @@ public class TeleOpTest extends OpMode {
 
                 //set rings to shoot and reset timer required before moving to this state
             case SHOOT_RINGS_POWERSHOT:
-                if (rings > 0) {
+                if (gamepad1.dpad_right) {
+                    drive.cancelFollowing();
+                    currentMode = Mode.DRIVER_CONTROL;
+                } else if (rings > 0) {
                     if (ShootCommand.shootCommandAsync(PoseLibrary.POWER_SHOT_POSES[powerShotState].getRPM(), 150, timer, flywheel, hopper)){
                         rings--;
                     }
@@ -435,6 +449,10 @@ public class TeleOpTest extends OpMode {
 
             //set rings to shoot and reset timer required before moving to this state
             case SHOOT_RINGS:
+                if (gamepad1.dpad_down) {
+                    rings = 0;
+                    currentMode = Mode.DRIVER_CONTROL;
+                }
                 if (rings > 0) {
                     if (ShootCommand.shootCommandAsync(launcherRPM, 150, timer, flywheel, hopper)){
                         rings--;
@@ -445,8 +463,6 @@ public class TeleOpTest extends OpMode {
                 }
 
                 break;
-
-
 
 
 

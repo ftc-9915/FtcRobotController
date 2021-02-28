@@ -8,8 +8,8 @@ public class PoseLibrary {
     public static Pose2d START_POS_BLUE_2 = new Pose2d(-55, 26.5, Math.toRadians(0.0));
     public static Pose2d START_POS_BLUE_1 = new Pose2d(-55, 48, Math.toRadians(0.0));
 
-    //transfer pose between opmodes
-    public static Pose2d AUTO_ENDING_POSE = new Pose2d(72, 60, 0);
+    //transfer pose between opmodes, defaults to auto starting pose for testing
+    public static Pose2d AUTO_ENDING_POSE = new Pose2d(-55, 26.5, Math.toRadians(0.0));
 
     //common shooting poses
     public static Pose2d_RPM SHOOTING_POSE_A = new Pose2d_RPM(-5, 55, Math.toRadians(-27.5), 3150); //used in auto path A
