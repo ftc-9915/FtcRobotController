@@ -67,10 +67,10 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
     //---------------- EDITABLE CONSTANTS --------------
 
     //PID Controller
-    public static double kP = 0.03;
-    public static double kI = 0;
-    public static double kD = 0;
-    public static double TOLERANCE = 5.0;
+    public static double kP = 0.015;
+    public static double kI = 0.01;
+    public static double kD = 0.0001;
+    public static double TOLERANCE = 1.0;
 
     public PIDController headingController = new PIDController(kP, kI, kD);
 
@@ -80,8 +80,7 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
     public static int CAMERA_PITCH_OFFSET = 0;
     public static int CAMERA_YAW_OFFSET = 0;
 
-    //TODO: Set this with shooter
-    public static double CENTER_X_OFFSET = 10;
+    public static double CENTER_X_OFFSET = 0;
     public static double CENTER_Y_OFFSET = 0;
 
 
@@ -89,7 +88,7 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
 
 
     //Boundary Line (Only detects above this to eliminate field tape)
-    public static int BOUNDARY = 160;
+    public static int BOUNDARY = 160    ;
 
 
     //Mask constants to isolate blue coloured subjects
@@ -101,6 +100,10 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
     public static double CONTOUR_AREA_MIN = 30;
     public static double CONTOUR_ASPECT_RATIO_MIN  = 1;
     public static double CONTOUR_ASPECT_RATIO_MAX = 2;
+
+    //degrees
+    public static double SETPOINT= -19.2;
+    public static double minimumMotorPower = 0.05;
 
 
 
@@ -147,6 +150,8 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
     //Viewfinder tracker
     public int viewfinderIndex = 0;
     private Telemetry telemetry;
+
+
 
 
     public BlueGoalVisionPipeline (Telemetry telemetry) {
@@ -274,20 +279,20 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
         }
 
 
-        telemetry.addData("Goal Visibility", isGoalVisible());
-        telemetry.addData("Distance (in)", getXDistance());
-//        telemetry.addData("Goal Height (px)", getGoalHeight());
-//        telemetry.addData("Goal Pitch (degrees)", getPitch());
-        telemetry.addData("Goal Yaw (degrees)", getYaw());
-//        telemetry.addData("Width:", input.width());
-//        telemetry.addData("Height:", input.height());
-        telemetry.addData("Motor Power", getMotorPower());
-        telemetry.addData("At Set Point", isGoalCentered());
+//        telemetry.addData("Goal Visibility", isGoalVisible());
+//        telemetry.addData("Distance (in)", getXDistance());
+////        telemetry.addData("Goal Height (px)", getGoalHeight());
+////        telemetry.addData("Goal Pitch (degrees)", getPitch());
+//        telemetry.addData("Goal Yaw (degrees)", getYaw());
+////        telemetry.addData("Width:", input.width());
+////        telemetry.addData("Height:", input.height());
+//        telemetry.addData("Motor Power", getMotorPower());
+//        telemetry.addData("At Set Point", isGoalCentered());
 
 
 
 
-        telemetry.update();
+//        telemetry.update();
 
 
         //Return MaskFrame for tuning purposes
@@ -327,6 +332,7 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
         return (3386/getGoalHeight()) - 7.56;
     }
 
+
     //    "Real Height" gives returns an accurate goal height in pixels even when goal is viewed at an angle by calculating distance between middle two points
     public double getGoalHeight(){
         if (!isGoalVisible() && isCornersVisible()){
@@ -362,10 +368,17 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
 
     public double getMotorPower() {
         //set heading controller
-        headingController.setSetPoint(0.0);
+        headingController.setSetPoint(SETPOINT);
         headingController.setTolerance(TOLERANCE);
         headingController.setPID(kP, kI, kD);
-        return org.firstinspires.ftc.teamcode.Common.UtilMethods.ensureRange(headingController.calculate(getYaw()), -1.0, 1.0);
+        double motorPower = headingController.calculate(getYaw());
+
+        if (motorPower > 0 && motorPower < minimumMotorPower)
+            motorPower += minimumMotorPower;
+        else if (motorPower < 0 && motorPower > -minimumMotorPower)
+            motorPower -= minimumMotorPower;
+
+        return UtilMethods.ensureRange(motorPower, -1.0, 1.0);
     }
 
 

@@ -215,6 +215,7 @@ public class AutonomousPathCAsync extends AutonomousPathAsync {
                 break;
             case IDLE:
                 flywheel.setRPM(0);
+                wobbleArm.setArmPos(1);
                 break;
         }
 

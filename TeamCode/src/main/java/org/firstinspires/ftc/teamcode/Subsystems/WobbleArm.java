@@ -34,7 +34,7 @@ public class WobbleArm implements SubsystemBase {
     public static int ARM_POS_OVER_WALL = -350;
 
     public static int ARM_UPPER_LIMIT = 0;
-    public static int ARM_LOWER_LIMIT = -500;
+    public static int ARM_LOWER_LIMIT = -550;
 
     public static double DEFAULT_ARM_POWER = 0.4;
 
@@ -70,45 +70,27 @@ public class WobbleArm implements SubsystemBase {
 
 
     //teleop methods
-    public boolean liftArm() {
-        if(!armMotor.isBusy()){
+    public void liftArm() {
             armMotor.setTargetPosition(ARM_POS_LIFT_ARM);
             armMotor.setPower(DEFAULT_ARM_POWER);
 
-            return true;
-        }
-        return false;
     }
 
-    public boolean placeGoal() {
-        if(!armMotor.isBusy()){
-            armMotor.setTargetPosition(ARM_POS_PLACE_GOAL);
+    public void placeGoal() {
+          armMotor.setTargetPosition(ARM_POS_PLACE_GOAL);
             armMotor.setPower(DEFAULT_ARM_POWER);
 
-            return true;
-        }
-        return false;
     }
 
-    public boolean pickUpSecondGoal() {
-        if(!armMotor.isBusy()) {
+    public void pickUpSecondGoal() {
             armMotor.setTargetPosition(ARM_POS_PICKUP_GOAL);
             armMotor.setPower(DEFAULT_ARM_POWER);
-
-            return true;
-        }
-        return false;
     }
 
-    public boolean setArmPos(int position) {
-        if(!armMotor.isBusy()) {
-            int normalizedPosition = UtilMethods.ensureRange(position, ARM_LOWER_LIMIT, ARM_UPPER_LIMIT);
-            armMotor.setTargetPosition(normalizedPosition);
-            armMotor.setPower(DEFAULT_ARM_POWER);
-
-            return true;
-        }
-        return false;
+    public void setArmPos(int position) {
+        int normalizedPosition = UtilMethods.ensureRange(position, ARM_LOWER_LIMIT, ARM_UPPER_LIMIT);
+        armMotor.setTargetPosition(normalizedPosition);
+        armMotor.setPower(DEFAULT_ARM_POWER);
     }
 
     public double getArmPosition() {

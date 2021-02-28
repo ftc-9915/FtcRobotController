@@ -89,12 +89,15 @@ public class AlignToGoalTest extends OpMode {
 
             case ALIGN_TO_GOAL_VISION_MODE:
 
+
+
                 //won't auto exit for debug purposes
                 if (gamepad1.left_bumper)
+                    telemetry.addLine("Left Bumper Pushed");
                     mode = Mode.DRIVER_MODE;
 
                 if(pipeline.isGoalVisible() && !pipeline.isGoalCentered()) {
-                    //returns positve if robot needs to turn counterclockwise
+                    //returns posiptve if robot needs to turn counterclockwise
                     double motorPower = pipeline.getMotorPower();
 
                     drive.leftFront.setPower(-motorPower);
