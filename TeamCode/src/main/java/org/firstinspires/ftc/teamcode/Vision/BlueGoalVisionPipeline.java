@@ -12,8 +12,8 @@ package org.firstinspires.ftc.teamcode.Vision;
 
 import com.acmerobotics.dashboard.config.Config;
 
-import org.apache.commons.math3.fraction.Fraction;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.Common.PIDController;
 import org.firstinspires.ftc.teamcode.Common.UtilMethods;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -36,17 +36,79 @@ import java.util.stream.Collectors;
  * Determine distance, yaw, and pitch
  *
  */
+
 @Config
 public class BlueGoalVisionPipeline extends OpenCvPipeline {
 
+    static class Fraction {
+        private int numerator, denominator;
 
+        Fraction(long a, long b) {
+            numerator = (int) (a / gcd(a, b));
+            denominator = (int) (b / gcd(a, b));
+        }
+
+        /**
+         * @return the greatest common denominator
+         */
+        private long gcd(long a, long b) {
+            return b == 0 ? a : gcd(b, a % b);
+        }
+
+        public int getNumerator() {
+            return numerator;
+        }
+
+        public int getDenominator() {
+            return denominator;
+        }
+    }
+
+    //---------------- EDITABLE CONSTANTS --------------
+
+    //PID Controller
+    public static double kP = 0.03;
+    public static double kI = 0;
+    public static double kD = 0;
+    public static double TOLERANCE = 5.0;
+
+    public PIDController headingController = new PIDController(kP, kI, kD);
+
+    public static double CAMERA_HEIGHT = 8.25; //camera height inches for distance calculation
+    public static double HIGH_GOAL_HEIGHT = 35.875; //camera height inches for distance calculation
+
+    public static int CAMERA_PITCH_OFFSET = 0;
+    public static int CAMERA_YAW_OFFSET = 0;
+
+    //TODO: Set this with shooter
+    public static double CENTER_X_OFFSET = 10;
+    public static double CENTER_Y_OFFSET = 0;
+
+
+    public static double FOV = 90;
+
+
+    //Boundary Line (Only detects above this to eliminate field tape)
+    public static int BOUNDARY = 160;
+
+
+    //Mask constants to isolate blue coloured subjects
+    public static double UPPER_BLUE_THRESH = 200;
+    public static double LOWER_BLUE_THRESH = 155;
+
+
+    //Countour Filter Constants
+    public static double CONTOUR_AREA_MIN = 30;
+    public static double CONTOUR_ASPECT_RATIO_MIN  = 1;
+    public static double CONTOUR_ASPECT_RATIO_MAX = 2;
+
+
+
+    // --------------- WORKING VARIBALES -----------------------
 
     //Pinhole Camera Variables
     protected double centerX;
     protected double centerY;
-
-    public static  double CAMERA_HEIGHT; //camera height inches for distance calculation
-    public static  double HIGH_GOAL_HEIGHT; //camera height inches for distance calculation
 
     public int imageWidth;
     public int imageHeight;
@@ -56,29 +118,8 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
     public static int verticalRatio;
 
 
-    private double fov;
     private double horizontalFocalLength;
     private double verticalFocalLength;
-
-    public static int cameraPitchOffset;
-    public static int cameraYawOffset;
-    public static double centerXOffset;
-    public static double centerYOffset;
-
-
-
-    //Boundary Line (Only detects above this to eliminate field tape)
-    public static int BOUNDARY;
-
-
-    //Mask constants to isolate blue coloured subjects
-    public static double upperBlueThreshhold;
-    public static double lowerBlueThreshhold;
-
-    //Countour Filter Constants
-    public static double CONTOUR_AREA_MIN;
-    public static double CONTOUR_ASPECT_RATIO_MIN;
-    public static double CONTOUR_ASPECT_RATIO_MAX;
 
 
     //working mat variables
@@ -104,57 +145,14 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
     Point rightMiddle;
 
     //Viewfinder tracker
-    public int viewfinderIndex;
-
+    public int viewfinderIndex = 0;
     private Telemetry telemetry;
 
 
     public BlueGoalVisionPipeline (Telemetry telemetry) {
 
-        class Fraction {
-            private int numerator, denominator;
-
-            Fraction(long a, long b) {
-                numerator = (int) (a / gcd(a, b));
-                denominator = (int) (b / gcd(a, b));
-            }
-
-            private long gcd(long a, long b) {
-                return b == 0 ? a : gcd(b, a % b);
-            }
-        }
 
         this.telemetry = telemetry;
-
-
-        //camera calculation offsets
-
-        //TODO: Set these with logitech camera
-        //Field of View (angle)
-        fov = 90;
-
-        // (angles)
-        cameraPitchOffset = 0;
-        cameraYawOffset = 0;
-
-        //TODO: Set these with shooter
-        // (pixels)
-        centerXOffset = 0;
-        centerYOffset = 0;
-
-        //Boundary Line (Only detects above this to eliminate field tape)
-        BOUNDARY = 160;
-
-
-        //Mask constants to isolate blue coloured subjects
-        upperBlueThreshhold = 200;
-        lowerBlueThreshhold = 140;
-
-        //Countour Filter Constants
-        CONTOUR_AREA_MIN = 30;
-        CONTOUR_ASPECT_RATIO_MIN = 1;
-        CONTOUR_ASPECT_RATIO_MAX = 2;
-
 
         YCrCbFrame = new Mat();
         CbFrame = new Mat();
@@ -175,17 +173,11 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
         leftMiddle = new Point();
         rightMiddle = new Point();
 
-        viewfinderIndex = 0;
-
     }
 
     @Override
     public void init(Mat mat) {
         super.init(mat);
-        //Pinhole Camera Variables
-        CAMERA_HEIGHT = 8.25; //camera height inches for distance calculation
-        HIGH_GOAL_HEIGHT = 35.875; //camera height inches for distance calculation
-        fov = 90;
 
         imageWidth = mat.width();
         imageHeight = mat.height();
@@ -196,7 +188,7 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
 
 
         // pinhole model calculations
-        double diagonalView = Math.toRadians(this.fov);
+        double diagonalView = Math.toRadians(this.FOV);
         Fraction aspectFraction = new Fraction(this.imageWidth, this.imageHeight);
         int horizontalRatio = aspectFraction.getNumerator();
         int verticalRatio = aspectFraction.getDenominator();
@@ -218,7 +210,7 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
         Core.extractChannel(YCrCbFrame, CbFrame, 2);
 
         //Threshhold using Cb channel
-        Imgproc.threshold(CbFrame, MaskFrame, lowerBlueThreshhold, upperBlueThreshhold, Imgproc.THRESH_BINARY);
+        Imgproc.threshold(CbFrame, MaskFrame, LOWER_BLUE_THRESH, UPPER_BLUE_THRESH, Imgproc.THRESH_BINARY);
 
         //clear previous contours to remove false positives if goal isn't in frame
         blueContours.clear();
@@ -228,7 +220,7 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
         blueContours = blueContours.stream().filter(i -> {
             boolean appropriateAspect = ((double) Imgproc.boundingRect(i).width / Imgproc.boundingRect(i).height > CONTOUR_ASPECT_RATIO_MIN)
                     && ((double) Imgproc.boundingRect(i).width / Imgproc.boundingRect(i).height < CONTOUR_ASPECT_RATIO_MAX);
-            boolean aboveBoundaryLine = Imgproc.boundingRect(i).y + Imgproc.boundingRect(i).height > BOUNDARY;
+            boolean aboveBoundaryLine = Imgproc.boundingRect(i).y + Imgproc.boundingRect(i).height < BOUNDARY;
             return aboveBoundaryLine && filterContours(i) && appropriateAspect;
         }).collect(Collectors.toList());
 
@@ -252,19 +244,20 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
         Imgproc.line(input, new Point(centerX+5, centerY), new Point(centerX-5, centerY), new Scalar(0,0,0));  //crosshair horizontal
 
         //draw center offset (where you want the goal to be)
-        Imgproc.line(input, new Point(centerX + centerXOffset, centerY + centerYOffset + 5), new Point(centerX + centerXOffset, centerY + centerYOffset-5), new Scalar(255,0,0));  //crosshair vertical
-        Imgproc.line(input, new Point(centerX + centerXOffset + 5, centerY + centerYOffset), new Point(centerX + centerXOffset - 5, centerY + centerYOffset), new Scalar(255,0,0));  //crosshair horizontal
+        Imgproc.line(input, new Point(centerX + CENTER_X_OFFSET, centerY + CENTER_Y_OFFSET + 5), new Point(centerX + CENTER_X_OFFSET, centerY + CENTER_Y_OFFSET -5), new Scalar(255,0,0));  //crosshair vertical
+        Imgproc.line(input, new Point(centerX + CENTER_X_OFFSET + 5, centerY + CENTER_Y_OFFSET), new Point(centerX + CENTER_X_OFFSET - 5, centerY + CENTER_Y_OFFSET), new Scalar(255,0,0));  //crosshair horizontal
 
+        //draw boundary line
+        Imgproc.line(input, new Point(0, BOUNDARY), new Point(this.imageWidth, BOUNDARY), new Scalar(0, 0, 255));
 
         if(isGoalVisible()){
 
-            //draw boundary line
-            Imgproc.line(input, new Point(0, BOUNDARY), new Point(this.imageWidth, BOUNDARY), new Scalar(0, 0, 255));
+
             //draw contours
-            Imgproc.drawContours(input, blueContours, -1, new Scalar(255, 255, 0));
+//            Imgproc.drawContours(input, blueContours, -1, new Scalar(255, 255, 0));
 
             //draw bounding box
-            Imgproc.rectangle(input, blueRect, new Scalar(0,255,0), 1);
+//            Imgproc.rectangle(input, blueRect, new Scalar(0,255,0), 1);
 
             //Draw Corners and Middle
             Imgproc.circle(input, upperLeftCorner,2, new Scalar(0,255,0),2);
@@ -283,11 +276,14 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
 
         telemetry.addData("Goal Visibility", isGoalVisible());
         telemetry.addData("Distance (in)", getXDistance());
-        telemetry.addData("Goal Height (px)", getGoalHeight());
-        telemetry.addData("Goal Pitch (degrees)", getPitch());
+//        telemetry.addData("Goal Height (px)", getGoalHeight());
+//        telemetry.addData("Goal Pitch (degrees)", getPitch());
         telemetry.addData("Goal Yaw (degrees)", getYaw());
-        telemetry.addData("Width:", input.width());
-        telemetry.addData("Height:", input.height());
+//        telemetry.addData("Width:", input.width());
+//        telemetry.addData("Height:", input.height());
+        telemetry.addData("Motor Power", getMotorPower());
+        telemetry.addData("At Set Point", isGoalCentered());
+
 
 
 
@@ -311,6 +307,13 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
     //helper method to check if rect is found
     public boolean isGoalVisible(){
         return blueRect != null;
+    }
+
+    public boolean isGoalCentered() {
+        if (!isGoalVisible()) {
+            return false;
+        }
+        return headingController.atSetPoint();
     }
 
     public boolean isCornersVisible(){
@@ -340,7 +343,7 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
         double targetCenterX = getCenterofRect(blueRect).x;
 
         return Math.toDegrees(
-                Math.atan((targetCenterX - (centerX + centerXOffset)) / horizontalFocalLength)
+                Math.atan((targetCenterX - (centerX + CENTER_X_OFFSET)) / horizontalFocalLength)
         );
     }
 
@@ -353,8 +356,16 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
         double targetCenterY = getCenterofRect(blueRect).y;
 
         return -Math.toDegrees(
-                Math.atan((targetCenterY - (centerY + centerYOffset)) / verticalFocalLength)
+                Math.atan((targetCenterY - (centerY + CENTER_Y_OFFSET)) / verticalFocalLength)
         );
+    }
+
+    public double getMotorPower() {
+        //set heading controller
+        headingController.setSetPoint(0.0);
+        headingController.setTolerance(TOLERANCE);
+        headingController.setPID(kP, kI, kD);
+        return org.firstinspires.ftc.teamcode.Common.UtilMethods.ensureRange(headingController.calculate(getYaw()), -1.0, 1.0);
     }
 
 

@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.Tests;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.control.PIDFController;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
@@ -8,6 +10,7 @@ import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.OpModes.TeleOp.TeleOpTest;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
@@ -44,19 +47,20 @@ public class AlignToGoalTest extends OpMode {
 
         pipeline = new BlueGoalVisionPipeline(telemetry);
         camera = new Camera(hardwareMap, pipeline);
-
+        camera.setHighGoalPosition();
         mode = Mode.DRIVER_MODE;
+
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
 
     }
 
     @Override
     public void loop() {
 
-        Pose2d poseEstimate = drive.getLocalizer().getPoseEstimate();
+
 
         Pose2d driveDirection = new Pose2d();
-
-        double headingInput = 0;
 
         telemetry.addData("Mode:", mode);
 
@@ -70,83 +74,83 @@ public class AlignToGoalTest extends OpMode {
                         -gamepad1.left_stick_x,
                         -gamepad1.right_stick_x
                 );
-                if(gamepad1.a) {
-                    mode = Mode.ALIGN_TO_GOAL_VISION_MODE;
+
+                if(gamepad1.right_bumper) {
+                    //turn to zero degrees
+                    drive.turnAsync(Math.toRadians(0.0));
+
+                    if (!drive.isBusy())
+                    {
+                        mode = Mode.ALIGN_TO_GOAL_VISION_MODE;
+                    }
                 }
-                if(gamepad1.b) {
-                    mode = Mode.ALIGN_TO_GOAL_ENCODER_MODE;
-                }
+
                 break;
 
             case ALIGN_TO_GOAL_VISION_MODE:
 
-                if(gamepad1.a) {
+                //won't auto exit for debug purposes
+                if (gamepad1.left_bumper)
                     mode = Mode.DRIVER_MODE;
+
+                if(pipeline.isGoalVisible() && !pipeline.isGoalCentered()) {
+                    //returns positve if robot needs to turn counterclockwise
+                    double motorPower = pipeline.getMotorPower();
+
+                    drive.leftFront.setPower(-motorPower);
+                    drive.leftRear.setPower(-motorPower);
+                    drive.rightFront.setPower(motorPower);
+                    drive.rightRear.setPower(motorPower);
                 }
 
-                double current_heading = poseEstimate.getHeading();
-
-                if(pipeline.isGoalVisible()){
-
-                    double heading_error = Math.toRadians(pipeline.getYaw());
-                    double targetAngle = Angle.normDelta(current_heading - heading_error);
-                    headingController.setTargetPosition(targetAngle);
-                } else {
-                    headingController.setTargetPosition(0);
+                //for logging and tuning purposes
+                if(pipeline.isGoalVisible()) {
+                    telemetry.addData("Motor Power", pipeline.getMotorPower());
+                    telemetry.addData("Error", pipeline.headingController.getPositionError());
+                    telemetry.addData("Yaw", pipeline.getYaw());
                 }
-
-                headingInput = (headingController.update(current_heading)
-                        * DriveConstants.kV)
-                        * DriveConstants.TRACK_WIDTH;
-
-                driveDirection = new Pose2d(
-                        -gamepad1.left_stick_y,
-                        -gamepad1.left_stick_x,
-                        headingInput
-                );
 
                 break;
 
-            case ALIGN_TO_GOAL_ENCODER_MODE:
-
-                // Switch back into normal driver control mode if `b` is pressed
-                if (gamepad1.b) {
-                    mode = Mode.DRIVER_MODE;
-                }
-
-                // Difference between the target vector and the bot's position
-                Vector2d difference = targetPosition.minus(poseEstimate.vec());
-                // Obtain the target angle for feedback and derivative for feedforward
-                double theta = Angle.normDelta(difference.angle());
-
-
-                // Set the target heading for the heading controller to our desired angle
-                headingController.setTargetPosition(theta);
-
-                // Set desired angular velocity to the heading controller output + angular
-                // velocity feedforward
-                headingInput = (headingController.update(poseEstimate.getHeading())
-                        * DriveConstants.kV)
-                        * DriveConstants.TRACK_WIDTH;
-
-                driveDirection = new Pose2d(
-                        -gamepad1.left_stick_y,
-                        -gamepad1.left_stick_x,
-                        headingInput
-                );
-
-                break;
+//            case ALIGN_TO_GOAL_ENCODER_MODE:
+//
+//                // Switch back into normal driver control mode if `b` is pressed
+//                if (gamepad1.b) {
+//                    mode = Mode.DRIVER_MODE;
+//                }
+//
+//                // Difference between the target vector and the bot's position
+//                Vector2d difference = targetPosition.minus(poseEstimate.vec());
+//                // Obtain the target angle for feedback and derivative for feedforward
+//                double theta = Angle.normDelta(difference.angle());
+//
+//
+//                // Set the target heading for the heading controller to our desired angle
+//                headingController.setTargetPosition(theta);
+//
+//                // Set desired angular velocity to the heading controller output + angular
+//                // velocity feedforward
+//                headingInput = (headingController.update(poseEstimate.getHeading())
+//                        * DriveConstants.kV)
+//                        * DriveConstants.TRACK_WIDTH;
+//
+//                driveDirection = new Pose2d(
+//                        -gamepad1.left_stick_y,
+//                        -gamepad1.left_stick_x,
+//                        headingInput
+//                );
+//
+//                break;
         }
 
+        //Press a to toggle between mask and output
+        if (gamepad1.a) {
+            pipeline.onViewportTapped();
+        }
 
         drive.setWeightedDrivePower(driveDirection);
-        headingController.update(poseEstimate.getHeading());
-        drive.getLocalizer().update();
+        drive.update();
 
-        telemetry.addData("x", poseEstimate.getX());
-        telemetry.addData("y", poseEstimate.getY());
-        telemetry.addData("heading", poseEstimate.getHeading());
-        telemetry.addData("heading input", headingInput);
         telemetry.update();
 
 

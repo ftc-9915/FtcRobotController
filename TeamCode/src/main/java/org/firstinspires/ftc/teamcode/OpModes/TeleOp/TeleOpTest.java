@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.OpModes.TeleOp;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -15,6 +16,8 @@ import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Flywheel;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Hopper;
 import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
+import org.firstinspires.ftc.teamcode.Vision.BlueGoalVisionPipeline;
+import org.firstinspires.ftc.teamcode.Vision.Camera;
 
 
 @Config
@@ -27,6 +30,9 @@ public class TeleOpTest extends OpMode {
     WobbleArm wobbleArm;
     Collector collector;
     Hopper hopper;
+
+    Camera camera;
+    BlueGoalVisionPipeline pipeline;
 
 
 
@@ -81,7 +87,8 @@ public class TeleOpTest extends OpMode {
         SHOOT_RINGS,
         GENERATE_NEXT_POWERSHOT_PATH,
         PREPARE_TO_SHOOT_POWERSHOTS,
-        SHOOT_RINGS_POWERSHOT;
+        SHOOT_RINGS_POWERSHOT,
+        ALIGN_TO_GOAL;
     }
 
     Mode currentMode = Mode.DRIVER_CONTROL;
@@ -122,6 +129,11 @@ public class TeleOpTest extends OpMode {
 
         flywheel = new Flywheel(hardwareMap);
 
+        //Init Camera
+        pipeline = new BlueGoalVisionPipeline(telemetry);
+        camera = new Camera(hardwareMap, pipeline);
+        camera.setHighGoalPosition();
+
         // Initialization values
         launcherPower = 0.0;
         launcherRPM = 3300;
@@ -148,9 +160,6 @@ public class TeleOpTest extends OpMode {
         telemetry.addData("y", currentPose.getY());
         telemetry.addData("heading", Math.toDegrees(currentPose.getHeading()));
         telemetry.addData("raw heading", Math.toDegrees(drive.getRawExternalHeading()));
-        telemetry.addData("Push Mode", hopper.getPushMode());
-        telemetry.addData("Powershot state", powerShotState + " to " + (powerShotState + 1));
-
 
 
 
@@ -367,7 +376,9 @@ public class TeleOpTest extends OpMode {
                 // DPAD UP - Drive to BC shooting position
                 //DPAD RIGHT - Reset pose estimate and auto power shots
                 //DPAD DOWN - shoot based on wait logic
-                // DPAD LEFT - turn to 90 degrees
+                // DPAD LEFT - Set pose estimate to powershot start pose
+                //LEFT BUMPER - return to driver controll mode
+                //RIGHT BUMPER - ALIGN TO GOAL
 
                 //create trajectory to shooting position on the fly
                 if (gamepad1.dpad_up) {
@@ -406,6 +417,35 @@ public class TeleOpTest extends OpMode {
                 if (gamepad1.dpad_left) {
                     drive.setPoseEstimate(PoseLibrary.POWER_SHOT_START_POSE.getPose2d());
                 }
+
+                if(gamepad1.right_bumper) {
+                    //turn to zero degrees
+                    drive.turnAsync(Angle.normDelta(Math.toRadians(0.0) - currentPose.getHeading()));
+
+                    if (!drive.isBusy())
+                    {
+                        currentMode = Mode.ALIGN_TO_GOAL;
+                    }
+
+                }
+
+                break;
+
+
+            case ALIGN_TO_GOAL:
+                if (gamepad1.left_bumper || pipeline.isGoalCentered())
+                    currentMode = Mode.DRIVER_CONTROL;
+
+                if(pipeline.isGoalVisible() && !pipeline.isGoalCentered()) {
+                    //returns positve if robot needs to turn counterclockwise
+                    double motorPower = pipeline.getMotorPower();
+
+                    drive.leftFront.setPower(-motorPower);
+                    drive.leftRear.setPower(-motorPower);
+                    drive.rightFront.setPower(motorPower);
+                    drive.rightRear.setPower(motorPower);
+                }
+
                 break;
                 // generate a trajectory based on powershot state and move to stop and aim state
             case GENERATE_NEXT_POWERSHOT_PATH:
@@ -440,6 +480,8 @@ public class TeleOpTest extends OpMode {
                     currentMode = Mode.SHOOT_RINGS_POWERSHOT;
                 }
                 break;
+
+
                 //set rings to shoot and reset timer required before moving to this state
             case SHOOT_RINGS_POWERSHOT:
                 //emergency exit
@@ -497,7 +539,7 @@ public class TeleOpTest extends OpMode {
 
 
             case LINE_TO_POINT:
-                // If x is pressed, we break out of the automatic following
+                // If left bumper is pressed, we break out of the automatic following
                 if (gamepad1.left_bumper) {
                     drive.cancelFollowing();
                     currentMode = Mode.DRIVER_CONTROL;
