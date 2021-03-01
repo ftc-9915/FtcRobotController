@@ -73,7 +73,7 @@ public class TeleOpTest extends OpMode {
 
 
     int rings = 0;
-    int powerShotState = 0;
+    int powerShotState = 1; // *** changed from 0 to 1 ***
 
     double speed = 0.0;
     double strafe = 0.0;
@@ -158,6 +158,9 @@ public class TeleOpTest extends OpMode {
 
         // Retrieve pose
         Pose2d currentPose = drive.getPoseEstimate();
+
+        telemetry.addData("Current Robot Position", pipeline.getFieldPositionFromGoal().toString());
+        telemetry.addData("Distance to Goal", pipeline.getXDistance());
 
         telemetry.addData("Goal Visibility", pipeline.isGoalVisible());
         telemetry.addData("Distance (in)", pipeline.getXDistance());
@@ -439,7 +442,8 @@ public class TeleOpTest extends OpMode {
                 //reset encoders to powershot starting pose, set powershot state to zero
                 if (gamepad1.dpad_right) {
                     //set starting position at left wall
-                    drive.setPoseEstimate(PoseLibrary.POWER_SHOT_START_POSE.getPose2d());
+//                    drive.setPoseEstimate(PoseLibrary.POWER_SHOT_START_POSE.getPose2d());
+                    drive.setPoseEstimate(pipeline.getFieldPositionFromGoal());
                     powerShotState = 0;
                     currentMode = Mode.GENERATE_NEXT_POWERSHOT_PATH;
                 }

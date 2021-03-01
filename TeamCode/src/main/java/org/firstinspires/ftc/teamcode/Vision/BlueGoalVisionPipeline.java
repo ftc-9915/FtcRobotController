@@ -15,6 +15,7 @@ import com.acmerobotics.dashboard.config.Config;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Common.PIDController;
 import org.firstinspires.ftc.teamcode.Common.UtilMethods;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -93,7 +94,7 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
 
     //Mask constants to isolate blue coloured subjects
     public static double UPPER_BLUE_THRESH = 200;
-    public static double LOWER_BLUE_THRESH = 155;
+    public static double LOWER_BLUE_THRESH = 144;
 
 
     //Countour Filter Constants
@@ -148,7 +149,7 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
     Point rightMiddle;
 
     //Viewfinder tracker
-    public int viewfinderIndex = 0;
+    public static int viewfinderIndex = 1;
     private Telemetry telemetry;
 
 
@@ -308,6 +309,11 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
     public boolean filterContours(MatOfPoint contour) {
         return Imgproc.contourArea(contour) > CONTOUR_AREA_MIN;
     }
+
+    public Pose2d getFieldPositionFromGoal() {
+        return new Pose2d(70.5 - getXDistance(), 35.25 + 4 - getXDistance() / Math.tan(Math.toRadians(90 + getYaw())));
+    }
+
 
     //helper method to check if rect is found
     public boolean isGoalVisible(){
