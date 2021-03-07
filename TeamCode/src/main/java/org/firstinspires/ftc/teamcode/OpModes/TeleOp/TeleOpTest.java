@@ -5,12 +5,10 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.Commands.ShootCommand;
 import org.firstinspires.ftc.teamcode.Common.UtilMethods;
 import org.firstinspires.ftc.teamcode.Subsystems.Collector;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
@@ -159,49 +157,52 @@ public class TeleOpTest extends OpMode {
         // Retrieve pose
         Pose2d currentPose = drive.getPoseEstimate();
 
-        telemetry.addData("Current Robot Position", pipeline.getFieldPositionFromGoal().toString());
-        telemetry.addData("Distance to Goal", pipeline.getXDistance());
-
         telemetry.addData("Goal Visibility", pipeline.isGoalVisible());
-        telemetry.addData("Distance (in)", pipeline.getXDistance());
-//        telemetry.addData("Goal Height (px)", getGoalHeight());
-//        telemetry.addData("Goal Pitch (degrees)", getPitch());
         telemetry.addData("Goal Yaw (degrees)",pipeline.getYaw());
-//        telemetry.addData("Width:", input.width());
-//        telemetry.addData("Height:", input.height());
-        telemetry.addData("Motor Power", pipeline.getMotorPower());
-        telemetry.addData("At Set Point", pipeline.isGoalCentered());
-        telemetry.addData("Real motor power", drive.leftFront.getPower());
-        telemetry.addData("Timer", timer.seconds());
-
-        // Controls and Information
-        telemetry.addData("Drive Mode: ", currentMode);
-        telemetry.addData("x", currentPose.getX());
-        telemetry.addData("y", currentPose.getY());
-        telemetry.addData("heading", Math.toDegrees(currentPose.getHeading()));
-        telemetry.addData("raw heading", Math.toDegrees(drive.getRawExternalHeading()));
-
-
-
         telemetry.addData("Launcher RPM", launcherRPM);
         telemetry.addData("Actual RPM", flywheel.getRPM());
-        telemetry.addData("Arm Position", armPos);
-        telemetry.addData("Gamepad2 Left Stick Y", gamepad2.left_stick_y);
-        telemetry.addData("Actual Arm Position", wobbleArm.getArmPosition());
-        telemetry.addData("Slowmode On", slowmodeOn);
-        telemetry.addLine("--- Controls (Gamepad 1) ---");
-        telemetry.addData("Turn collector on", "Button A");
-        telemetry.addData("Turn collector off", "Button B");
-        telemetry.addData("Reverse collector direction", "Button X");
-        telemetry.addData("Slowmode", "Button Y");
-        telemetry.addData("Dpad Up", "Drive to shoot");
-        telemetry.addData("Dpad Down", "Cancel Auto");
-        telemetry.addLine("--- Experimental ---");
-        telemetry.addLine("DPAD UP - Drive to BC shooting position");
-        telemetry.addLine("DPAD RIGHT - Reset pose estimate and auto power shots\n");
-        telemetry.addLine("DPAD LEFT - Set pose estimate to powershot start pose\n");
-        telemetry.addLine("LEFT BUMPER - return to driver control mode");
-        telemetry.addLine("RIGHT BUMPER - ALIGN TO GOAL");
+//        telemetry.addData("Actual Arm Position", wobbleArm.getArmPosition());
+//        telemetry.addData("Arm Position", armPos);
+
+//
+//        telemetry.addData("Goal Height", pipeline.getGoalHeight());
+//        telemetry.addData("Current Robot Position", pipeline.getFieldPositionFromGoal().toString());
+//        telemetry.addData("Distance to Goal", pipeline.getDistanceToGoalWall());
+//        telemetry.addData("Distance (in)", pipeline.getDistanceToGoalWall());
+//        telemetry.addData("Goal Height (px)", getGoalHeight());
+//        telemetry.addData("Goal Pitch (degrees)", getPitch());
+//        telemetry.addData("Width:", input.width());
+//        telemetry.addData("Height:", input.height());
+//        telemetry.addData("Motor Power", pipeline.getMotorPower());
+//        telemetry.addData("At Set Point", pipeline.isGoalCentered());
+//        telemetry.addData("Real motor power", drive.leftFront.getPower());
+//        telemetry.addData("Timer", timer.seconds());
+
+//        // Controls and Information
+//        telemetry.addData("Drive Mode: ", currentMode);
+//        telemetry.addData("x", currentPose.getX());
+//        telemetry.addData("y", currentPose.getY());
+//        telemetry.addData("heading", Math.toDegrees(currentPose.getHeading()));
+//        telemetry.addData("raw heading", Math.toDegrees(drive.getRawExternalHeading()));
+
+
+
+
+//        telemetry.addData("Gamepad2 Left Stick Y", gamepad2.left_stick_y);
+//        telemetry.addData("Slowmode On", slowmodeOn);
+//        telemetry.addLine("--- Controls (Gamepad 1) ---");
+//        telemetry.addData("Turn collector on", "Button A");
+//        telemetry.addData("Turn collector off", "Button B");
+//        telemetry.addData("Reverse collector direction", "Button X");
+//        telemetry.addData("Slowmode", "Button Y");
+//        telemetry.addData("Dpad Up", "Drive to shoot");
+//        telemetry.addData("Dpad Down", "Cancel Auto");
+//        telemetry.addLine("--- Experimental ---");
+//        telemetry.addLine("DPAD UP - Drive to BC shooting position");
+//        telemetry.addLine("DPAD RIGHT - Reset pose estimate and auto power shots\n");
+//        telemetry.addLine("DPAD LEFT - Set pose estimate to powershot start pose\n");
+//        telemetry.addLine("LEFT BUMPER - return to driver control mode");
+//        telemetry.addLine("RIGHT BUMPER - ALIGN TO GOAL");
 
 
         //DPAD RIGHT - Reset pose estimate and auto power shots
@@ -212,19 +213,19 @@ public class TeleOpTest extends OpMode {
 
 
         telemetry.addLine();
-        telemetry.addLine("--- Controls (Gamepad 2) ---");
-        telemetry.addData("Open Claw", "Button A");
-        telemetry.addData("Close Claw", "Button B");
-        telemetry.addData("Move Arm", "Left Stick Up/Down");
-        telemetry.addData("Arm Up", "Dpad Up");
-        telemetry.addData("Arm Down", "Dpad Down");
-        telemetry.addData("Arm Over Wall", "Dpad Right");
-        telemetry.addData("Turn launcher on/off", "Button X");
-        telemetry.addData("Push/retract collector servo", "Button Y");
-        telemetry.addData("Lower collector platform", "Left Bumper");
-        telemetry.addData("Lift collector platform", "Right Bumper");
-        telemetry.addData("Decrease Launcher Speed", "Left Trigger");
-        telemetry.addData("Increase Launcher Speed", "Right Trigger");
+//        telemetry.addLine("--- Controls (Gamepad 2) ---");
+//        telemetry.addData("Open Claw", "Button A");
+//        telemetry.addData("Close Claw", "Button B");
+//        telemetry.addData("Move Arm", "Left Stick Up/Down");
+//        telemetry.addData("Arm Up", "Dpad Up");
+//        telemetry.addData("Arm Down", "Dpad Down");
+//        telemetry.addData("Arm Over Wall", "Dpad Right");
+//        telemetry.addData("Turn launcher on/off", "Button X");
+//        telemetry.addData("Push/retract collector servo", "Button Y");
+//        telemetry.addData("Lower collector platform", "Left Bumper");
+//        telemetry.addData("Lift collector platform", "Right Bumper");
+//        telemetry.addData("Decrease Launcher Speed", "Left Trigger");
+//        telemetry.addData("Increase Launcher Speed", "Right Trigger");
 
         switch (currentMode){
             case DRIVER_CONTROL:
@@ -488,7 +489,7 @@ public class TeleOpTest extends OpMode {
 
                 if(pipeline.isGoalVisible()) {
                     //returns positive if robot needs to turn counterclockwise
-                    double motorPower = pipeline.getMotorPower();
+                    double motorPower = pipeline.getMotorPower(BlueGoalVisionPipeline.HIGH_GOAL_SETPOINT);
 
                     drive.leftFront.setPower(-motorPower);
                     drive.leftRear.setPower(-motorPower);

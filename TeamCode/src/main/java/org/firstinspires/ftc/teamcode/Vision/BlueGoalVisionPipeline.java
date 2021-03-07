@@ -103,7 +103,7 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
     public static double CONTOUR_ASPECT_RATIO_MAX = 2;
 
     //degrees
-    public static double SETPOINT= -19.2;
+    public static double HIGH_GOAL_SETPOINT = -19.2;
     public static double minimumMotorPower = 0.05;
 
 
@@ -260,7 +260,7 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
 
 
             //draw contours
-//            Imgproc.drawContours(input, blueContours, -1, new Scalar(255, 255, 0));
+            Imgproc.drawContours(input, blueContours, -1, new Scalar(255, 255, 0));
 
             //draw bounding box
 //            Imgproc.rectangle(input, blueRect, new Scalar(0,255,0), 1);
@@ -311,9 +311,13 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
     }
 
     public Pose2d getFieldPositionFromGoal() {
-        return new Pose2d(70.5 - getXDistance(), 35.25 + 4 - getXDistance() / Math.tan(Math.toRadians(90 + getYaw())));
+        return new Pose2d(72 - getDistanceToGoalWall(), 35.25 + 4 - getDistanceToGoalWall() / Math.tan(Math.toRadians(90 + getYaw())));
     }
 
+
+    public double getDistanceFromGoalCenter() {
+        return getDistanceToGoalWall() / Math.tan(Math.toRadians(90 + getYaw()));
+    }
 
     //helper method to check if rect is found
     public boolean isGoalVisible(){
@@ -331,11 +335,26 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
         return upperLeftCorner != null && upperRightCorner != null && lowerLeftCorner != null && lowerRightCorner != null && upperMiddle != null && lowerMiddle != null;
     }
 
-    public double getXDistance(){
+    public double getDistanceToGoalWall(){
         if (!isGoalVisible()){
             return 0;
         }
-        return (3386/getGoalHeight()) - 7.56;
+        return (3869/getGoalHeight()) + -12.1;
+    }
+
+    public double[] getPowerShotAngles() {
+        double distanceFromFirstPowerShot = 16 - getDistanceFromGoalCenter();
+        double distanceFromSecondPowerShot = 7.5 + 16 - getDistanceFromGoalCenter();
+        double distanceFromThirdPowerShot = 7.5 + 7.5 + 16 - getDistanceFromGoalCenter();
+
+        double angleToFirstPowerShot = Math.toDegrees(Math.atan(distanceFromFirstPowerShot / getDistanceToGoalWall()));
+        double angleToSecondPowerShot = Math.toDegrees(Math.atan(distanceFromFirstPowerShot / getDistanceToGoalWall()));
+        double angleToThirdPowerShot = Math.toDegrees(Math.atan(distanceFromFirstPowerShot / getDistanceToGoalWall()));
+
+        double[] result = {-angleToFirstPowerShot, -angleToSecondPowerShot, -angleToThirdPowerShot};
+
+        return result;
+
     }
 
 
@@ -372,9 +391,9 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
         );
     }
 
-    public double getMotorPower() {
+    public double getMotorPower(double setpoint) {
         //set heading controller
-        headingController.setSetPoint(SETPOINT);
+        headingController.setSetPoint(HIGH_GOAL_SETPOINT);
         headingController.setTolerance(TOLERANCE);
         headingController.setPID(kP, kI, kD);
         double motorPower = headingController.calculate(getYaw());

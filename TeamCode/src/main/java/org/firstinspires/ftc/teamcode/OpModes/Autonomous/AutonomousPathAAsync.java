@@ -44,14 +44,13 @@ public class AutonomousPathAAsync extends AutonomousPathAsync {
 
     //Treakable values for tuning
     private static final double RPM_FORGIVENESS = 125;
-    public static int goalX = -25;
-    public static int goalY = 57;
-    public static double shootingPoseAngle = -27.5;
+    public static int goalX = -26;
+    public static int goalY = 59;
     public static double shootingPoseRPM = PoseLibrary.SHOOTING_POSE_A.getRPM();
 
     //Poses
-    public static Pose2d placeGoalAndShootingPose1 = new Pose2d(-5, 55, Math.toRadians(shootingPoseAngle));
-    public static Pose2d placeGoalAndShootingPose2 = PoseLibrary.SHOOTING_POSE_A.getPose2d();
+    public static Pose2d placeGoalAndShootingPose1 = PoseLibrary.SHOOTING_POSE_A.getPose2d();
+    public static Pose2d placeGoalAndShootingPose2 = new Pose2d(-5, 55, Math.toRadians(-0.1));
     public static Pose2d pickUpGoalPose1 = new Pose2d(-24, goalY, Math.toRadians(180.0));
     public static Pose2d pickUpGoalPose2 = new Pose2d(goalX, goalY, Math.toRadians(180.0));
     public static Pose2d placeSecondGoalPose = new Pose2d(0, 57, Math.toRadians(0.0));
@@ -155,10 +154,11 @@ public class AutonomousPathAAsync extends AutonomousPathAsync {
                         //will drive to pose 1 and pose 2 using displacement marker
                         currentState = State.DRIVE_TO_SECOND_GOAL;
                         drive.followTrajectoryAsync(goToPickUpGoalPose1);
+                        timer.reset();
                     }
                     else if (timer.seconds() > 2) {
                         wobbleArm.setArmPos(-100);
-                    } else if (timer.seconds() > 1.5) {
+                    } else if (timer.seconds() > 1.8) {
                         wobbleArm.openClaw();
                     } else if (timer.seconds() > 0.5) {
                         wobbleArm.placeGoal();
@@ -166,6 +166,9 @@ public class AutonomousPathAAsync extends AutonomousPathAsync {
                 }
                 break;
             case DRIVE_TO_SECOND_GOAL:
+                if (timer.seconds() > 0.5){
+                    wobbleArm.pickUpSecondGoal();
+                }
                 if (!drive.isBusy()) {
                     currentState = State.PICKUP_SECOND_GOAL;
                     timer.reset();
