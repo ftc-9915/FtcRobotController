@@ -19,6 +19,8 @@ import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
 import org.firstinspires.ftc.teamcode.Vision.BlueGoalVisionPipeline;
 import org.firstinspires.ftc.teamcode.Vision.Camera;
 
+import java.util.Arrays;
+
 
 @Config
 @TeleOp(name="TeleOp Test", group="test")
@@ -71,7 +73,10 @@ public class TeleOpTest extends OpMode {
 
 
     int rings = 0;
-    int powerShotState = 1; // *** changed from 0 to 1 ***
+    int powerShotState = 0;
+    double distanceFromGoalCenter;
+    double distanceToGoalWall;
+    double[] powerShotAngles;
 
     double speed = 0.0;
     double strafe = 0.0;
@@ -161,13 +166,17 @@ public class TeleOpTest extends OpMode {
         telemetry.addData("Goal Yaw (degrees)",pipeline.getYaw());
         telemetry.addData("Launcher RPM", launcherRPM);
         telemetry.addData("Actual RPM", flywheel.getRPM());
+
+        telemetry.addData("Power Shot Angles", Arrays.toString(pipeline.getPowerShotAngles(pipeline.getDistanceFromGoalCenter(), pipeline.getDistanceToGoalWall())));
+
 //        telemetry.addData("Actual Arm Position", wobbleArm.getArmPosition());
 //        telemetry.addData("Arm Position", armPos);
 
 //
 //        telemetry.addData("Goal Height", pipeline.getGoalHeight());
 //        telemetry.addData("Current Robot Position", pipeline.getFieldPositionFromGoal().toString());
-//        telemetry.addData("Distance to Goal", pipeline.getDistanceToGoalWall());
+        telemetry.addData("Distance to Goal", pipeline.getDistanceToGoalWall());
+        telemetry.addData("Distance from Goal Center", pipeline.getDistanceFromGoalCenter());
 //        telemetry.addData("Distance (in)", pipeline.getDistanceToGoalWall());
 //        telemetry.addData("Goal Height (px)", getGoalHeight());
 //        telemetry.addData("Goal Pitch (degrees)", getPitch());
@@ -446,6 +455,9 @@ public class TeleOpTest extends OpMode {
 //                    drive.setPoseEstimate(PoseLibrary.POWER_SHOT_START_POSE.getPose2d());
                     drive.setPoseEstimate(pipeline.getFieldPositionFromGoal());
                     powerShotState = 0;
+                    distanceFromGoalCenter = pipeline.getDistanceFromGoalCenter();
+                    distanceToGoalWall = pipeline.getDistanceToGoalWall();
+                    powerShotAngles = pipeline.getPowerShotAngles(distanceFromGoalCenter, distanceToGoalWall);
                     currentMode = Mode.GENERATE_NEXT_POWERSHOT_PATH;
                 }
 
@@ -488,7 +500,7 @@ public class TeleOpTest extends OpMode {
                     currentMode = Mode.DRIVER_CONTROL;
 
                 if(pipeline.isGoalVisible()) {
-                    //returns positive if robot needs to turn counterclockwise
+                    //returns positive if robot needs to turn counterclockwise           // -19.2
                     double motorPower = pipeline.getMotorPower(BlueGoalVisionPipeline.HIGH_GOAL_SETPOINT);
 
                     drive.leftFront.setPower(-motorPower);
@@ -506,17 +518,23 @@ public class TeleOpTest extends OpMode {
                     drive.cancelFollowing();
                     currentMode = Mode.DRIVER_CONTROL;
                     // 0 1 2
-                } else if (powerShotState < PoseLibrary.POWER_SHOT_POSES.length - 1) {
+                } else if (powerShotState < /*PoseLibrary.POWER_SHOT_POSES.length - 1*/ 3) {
+                        //returns positive if robot needs to turn counterclockwise
+                        double motorPower = pipeline.getMotorPower(powerShotAngles[powerShotState]);
+
+                        drive.leftFront.setPower(-motorPower);
+                        drive.leftRear.setPower(-motorPower);
+                        drive.rightFront.setPower(motorPower);
+                        drive.rightRear.setPower(motorPower);
                                                                                                         //0 1 2
-                    Trajectory driveToPowerShotPose = drive.trajectoryBuilder(PoseLibrary.POWER_SHOT_POSES[powerShotState].getPose2d())
+//                    Trajectory driveToPowerShotPose = drive.trajectoryBuilder(PoseLibrary.POWER_SHOT_POSES[powerShotState].getPose2d())
                                                                                 //1 2 3
-                            .lineToSplineHeading(PoseLibrary.POWER_SHOT_POSES[powerShotState + 1].getPose2d())
-                            .build();
+//                            .lineToSplineHeading(PoseLibrary.POWER_SHOT_POSES[powerShotState + 1].getPose2d())
+//                            .build();
 
-                    drive.followTrajectoryAsync(driveToPowerShotPose);
-
-                    powerShotState++;
-                    currentMode = Mode.PREPARE_TO_SHOOT_POWERSHOTS;
+//                    drive.followTrajectoryAsync(driveToPowerShotPose);
+                        powerShotState++;
+                        currentMode = Mode.PREPARE_TO_SHOOT_POWERSHOTS;
                 } else {
                     flywheel.setRPM(0);
                     currentMode = Mode.DRIVER_CONTROL;
