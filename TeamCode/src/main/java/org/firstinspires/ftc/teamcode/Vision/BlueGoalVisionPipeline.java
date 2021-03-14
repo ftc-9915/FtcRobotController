@@ -343,9 +343,9 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
     }
 
     public double[] getPowerShotAngles(double distanceFromGoalCenter, double distanceToGoalWall) {
-        double distanceFromFirstPowerShot = 16.0 - distanceFromGoalCenter;
-        double distanceFromSecondPowerShot = 7.5 + 16.0 - distanceFromGoalCenter;
-        double distanceFromThirdPowerShot = 7.5 + 7.5 + 16.0 - distanceFromGoalCenter;
+        double distanceFromFirstPowerShot = 16.0 - distanceFromGoalCenter - HIGH_GOAL_SETPOINT;
+        double distanceFromSecondPowerShot = 7.5 + 16.0 - distanceFromGoalCenter - HIGH_GOAL_SETPOINT;
+        double distanceFromThirdPowerShot = 7.5 + 7.5 + 16.0 - distanceFromGoalCenter - HIGH_GOAL_SETPOINT;
 
         double angleToFirstPowerShot = Math.toDegrees(Math.atan(distanceFromFirstPowerShot / distanceToGoalWall));
         double angleToSecondPowerShot = Math.toDegrees(Math.atan(distanceFromSecondPowerShot / distanceToGoalWall));
@@ -391,9 +391,9 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
         );
     }
 
-    public double getMotorPower(double setpoint) {
+    public double getMotorPower() {
         //set heading controller
-        headingController.setSetPoint(setpoint);
+        headingController.setSetPoint(HIGH_GOAL_SETPOINT);
         headingController.setTolerance(TOLERANCE);
         headingController.setPID(kP, kI, kD);
         double motorPower = headingController.calculate(getYaw());
@@ -405,6 +405,7 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
 
         return UtilMethods.ensureRange(motorPower, -1.0, 1.0);
     }
+
 
 //    public double getShotMotorPower(double degree) {
 //        double motorPower = headingController.calculate(degree);

@@ -98,7 +98,7 @@ public class AlignToGoalTest extends OpMode {
 
                 if(pipeline.isGoalVisible() && !pipeline.isGoalCentered()) {
                     //returns posiptve if robot needs to turn counterclockwise
-                    double motorPower = pipeline.getMotorPower(BlueGoalVisionPipeline.HIGH_GOAL_SETPOINT);
+                    double motorPower = pipeline.getMotorPower();
 
                     drive.leftFront.setPower(-motorPower);
                     drive.leftRear.setPower(-motorPower);
@@ -108,7 +108,7 @@ public class AlignToGoalTest extends OpMode {
 
                 //for logging and tuning purposes
                 if(pipeline.isGoalVisible()) {
-                    telemetry.addData("Motor Power", pipeline.getMotorPower(BlueGoalVisionPipeline.HIGH_GOAL_SETPOINT));
+                    telemetry.addData("Motor Power", pipeline.getMotorPower());
                     telemetry.addData("Error", pipeline.headingController.getPositionError());
                     telemetry.addData("Yaw", pipeline.getYaw());
                 }

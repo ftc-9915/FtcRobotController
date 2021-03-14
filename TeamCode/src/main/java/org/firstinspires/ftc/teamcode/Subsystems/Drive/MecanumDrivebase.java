@@ -35,6 +35,8 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
+import org.firstinspires.ftc.teamcode.Common.PIDController;
+import org.firstinspires.ftc.teamcode.Common.UtilMethods;
 import org.firstinspires.ftc.teamcode.util.DashboardUtil;
 import org.firstinspires.ftc.teamcode.util.LynxModuleUtil;
 
@@ -62,6 +64,13 @@ import static org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants.kV;
 public class MecanumDrivebase extends com.acmerobotics.roadrunner.drive.MecanumDrive {
     public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(3, 0, 0);
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(6, 0, 0);
+
+    public static double kPTurn = 0.0;
+    public static double kITurn = 0.0;
+    public static double kDTurn = 0.0;
+
+    public static PIDController TURN_CONTROLLER = new PIDController(kPTurn, kITurn, kDTurn);
+
 
     public static double LATERAL_MULTIPLIER = 1.176699029;
 
@@ -398,6 +407,23 @@ public class MecanumDrivebase extends com.acmerobotics.roadrunner.drive.MecanumD
         leftRear.setPower(v1);
         rightRear.setPower(v2);
         rightFront.setPower(v3);
+    }
+
+    public void turnTo(double angle) {
+
+        TURN_CONTROLLER.setPID(kPTurn, kITurn, kDTurn);
+        TURN_CONTROLLER.setSetPoint(angle);
+        double heading = getRawExternalHeading();
+        double motorPower = TURN_CONTROLLER.calculate(heading);
+
+        motorPower = UtilMethods.ensureRange(motorPower, -1.0, 1.0);
+
+          //clockwise
+        leftFront.setPower(-motorPower);
+        leftRear.setPower(-motorPower);
+        rightFront.setPower(motorPower);
+        rightRear.setPower(motorPower);
+        
     }
 
     @Override

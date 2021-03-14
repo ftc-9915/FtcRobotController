@@ -1,10 +1,13 @@
 package org.firstinspires.ftc.teamcode.OpModes.Autonomous;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Common.RingPosition;
+import org.firstinspires.ftc.teamcode.Common.UtilMethods;
 import org.firstinspires.ftc.teamcode.Subsystems.Collector;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
@@ -92,7 +95,10 @@ public class AutonomousFrameworkAsync extends OpMode {
 
     @Override
     public void loop() {
+
         path.followPathAsync(telemetry);
+
+
     }
 
 

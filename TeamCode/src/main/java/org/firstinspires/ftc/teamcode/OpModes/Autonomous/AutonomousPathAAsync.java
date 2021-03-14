@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.OpModes.Autonomous;
 
+import android.util.Log;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
@@ -61,6 +63,8 @@ public class AutonomousPathAAsync extends AutonomousPathAsync {
     //build trajectories on construction
     public AutonomousPathAAsync(MecanumDrivebase drive, WobbleArm wobbleArm, Flywheel flywheel, Collector collector, Hopper hopper) {
         super(drive, wobbleArm, flywheel, collector, hopper);
+
+
 
         //Trajectories
 
@@ -129,6 +133,7 @@ public class AutonomousPathAAsync extends AutonomousPathAsync {
                         if (UtilMethods.inRange(flywheel.getRPM(), shootingPoseRPM - RPM_FORGIVENESS, shootingPoseRPM + RPM_FORGIVENESS) && !hopperPositionIn && timer.seconds() > 0.5) {
                             hopper.setPushInPos();
                             timer.reset();
+                            Log.d("Ring Release RPM", "" + flywheel.getRPM());
                             hopperPositionIn = true;
                         }
                         if (hopperPositionIn && timer.seconds() > 0.5) {
@@ -239,6 +244,7 @@ public class AutonomousPathAAsync extends AutonomousPathAsync {
         PoseLibrary.AUTO_ENDING_POSE = poseEstimate;
 
         // Print pose to telemetry
+
         telemetry.addData("x", poseEstimate.getX());
         telemetry.addData("y", poseEstimate.getY());
         telemetry.addData("heading", poseEstimate.getHeading());
@@ -246,6 +252,7 @@ public class AutonomousPathAAsync extends AutonomousPathAsync {
         telemetry.addData("Rings", rings);
         telemetry.addData("RPM", flywheel.getRPM());
         telemetry.addData("In Range", UtilMethods.inRange(flywheel.getRPM(), shootingPoseRPM - RPM_FORGIVENESS, shootingPoseRPM + RPM_FORGIVENESS));
+        telemetry.addData("Current RPM", flywheel.getRPM());
         telemetry.update();
 
     }

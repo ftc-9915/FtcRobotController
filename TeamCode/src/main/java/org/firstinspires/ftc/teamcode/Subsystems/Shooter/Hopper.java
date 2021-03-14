@@ -22,7 +22,8 @@ public class Hopper implements SubsystemBase {
     public static  double LIFT_UP_POS = 0.49;
     public static  double LIFT_DOWN_POS = 0.75;
 
-    public static  double PUSH_OUT_POS = 0.70;
+    public static  double PUSH_OUT_POS = 0.75;
+    public static double PUSH_INIT_POS = 0.7;
     public static  double PUSH_IN_POS = 0.52;
 
     //Subsystem State
@@ -46,7 +47,7 @@ public class Hopper implements SubsystemBase {
         pushServo = hardwareMap.servo.get(pushName);
 
         liftServo.setPosition(LIFT_UP_POS);
-        pushServo.setPosition(PUSH_OUT_POS);
+        pushServo.setPosition(PUSH_INIT_POS);
     }
 
     public boolean setLiftUpPos(){

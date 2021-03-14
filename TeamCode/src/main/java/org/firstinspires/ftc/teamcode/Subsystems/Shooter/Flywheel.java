@@ -22,7 +22,7 @@ public class Flywheel implements SubsystemBase {
     public static double kP = 15;
     public static double kI = 0;
     public static double kD = 0;
-    public static double kF = 15.85;
+    public static double kF = 13.7;
 
     //in degrees
     private double shooterAngle;
@@ -52,7 +52,7 @@ public class Flywheel implements SubsystemBase {
 //        motorConfigurationType.setAchieveableMaxRPMFraction(1.0);
 //        flywheel.setMotorType(motorConfigurationType);
 
-        PIDFCoefficients PIDF = new PIDFCoefficients(kP,  kI,   kD,   kF * 12 / batteryVoltageSensor.getVoltage());
+        PIDFCoefficients PIDF = new PIDFCoefficients(kP,  kI,   kD,   kF * 13.21 / batteryVoltageSensor.getVoltage());
         flywheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         flywheel.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, PIDF);
 
