@@ -9,6 +9,7 @@ import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Util;
 
 import org.firstinspires.ftc.teamcode.Commands.ShootCommand;
 import org.firstinspires.ftc.teamcode.Common.UtilMethods;
@@ -74,12 +75,18 @@ public class TeleOpTest extends OpMode {
 
     int rings = 0;
     int powerShotState = 1; // *** changed from 0 to 1 ***
+    double[] powerShotAngles;
+    double initialAngle;
 
     double speed = 0.0;
     double strafe = 0.0;
     double rotation = 0.0;
     double strafePower = 1.0;
     boolean slowmodeOn = false;
+
+    //target angle
+    double angle = 0.0;
+
 
 
 
@@ -159,12 +166,15 @@ public class TeleOpTest extends OpMode {
 
         // Retrieve pose
         Pose2d currentPose = drive.getPoseEstimate();
+        telemetry.addData("At Setpoint Angle",UtilMethods.inRange(Math.toDegrees(drive.getRawExternalHeading()), angle - 1, angle + 1));
+        telemetry.addData("raw heading", Math.toDegrees(drive.getRawExternalHeading()));
 
         telemetry.addData("Current Robot Position", pipeline.getFieldPositionFromGoal().toString());
         telemetry.addData("Distance to Goal", pipeline.getDistanceToGoalWall());
 
         telemetry.addData("Goal Visibility", pipeline.isGoalVisible());
         telemetry.addData("Distance (in)", pipeline.getDistanceToGoalWall());
+        telemetry.addData("Current Mode", currentMode);
 //        telemetry.addData("Goal Height (px)", getGoalHeight());
 //        telemetry.addData("Goal Pitch (degrees)", getPitch());
         telemetry.addData("Goal Yaw (degrees)",pipeline.getYaw());
@@ -180,7 +190,6 @@ public class TeleOpTest extends OpMode {
         telemetry.addData("x", currentPose.getX());
         telemetry.addData("y", currentPose.getY());
         telemetry.addData("heading", Math.toDegrees(currentPose.getHeading()));
-        telemetry.addData("raw heading", Math.toDegrees(drive.getRawExternalHeading()));
 
 
 
@@ -446,7 +455,13 @@ public class TeleOpTest extends OpMode {
 //                    drive.setPoseEstimate(PoseLibrary.POWER_SHOT_START_POSE.getPose2d());
                     drive.setPoseEstimate(pipeline.getFieldPositionFromGoal());
                     powerShotState = 0;
-                    currentMode = Mode.GENERATE_NEXT_POWERSHOT_PATH;
+//                    drive.turnTo(0.0);
+//                    if(drive.isAtAngle(0.0)) {
+                        initialAngle = drive.getRawExternalHeading();
+                        powerShotAngles = pipeline.getPowerShotAngles(pipeline.getDistanceFromGoalCenter(), pipeline.getDistanceToGoalWall());
+                        timer.reset();
+                        currentMode = Mode.GENERATE_NEXT_POWERSHOT_PATH;
+//                    }
                 }
 
                 //shoot three rings with wait for rpm logic
@@ -458,6 +473,7 @@ public class TeleOpTest extends OpMode {
                 }
 
                 if (gamepad1.dpad_left) {
+                    timer.reset();
                     currentMode = Mode.ALIGN_TO_ANGLE;
                 }
 
@@ -474,9 +490,22 @@ public class TeleOpTest extends OpMode {
 
 
             case ALIGN_TO_ANGLE:
+
+
+                //put angle in degrees
+                drive.turnTo(angle);
+
+                if (UtilMethods.inRange(Math.toDegrees(drive.getRawExternalHeading()), angle - 1, angle + 1) && timer.seconds() > 0.02){
+                    currentMode = Mode.DRIVER_CONTROL;
+                    timer.reset();
+                } else{
+                    timer.reset();
+                }
+
+
                 if (gamepad1.left_bumper)
                     currentMode = Mode.DRIVER_CONTROL;
-                drive.turnTo(0.0);
+
                 break;
 
             case ALIGN_TO_GOAL:
@@ -515,15 +544,20 @@ public class TeleOpTest extends OpMode {
                     // 0 1 2
                 } else if (powerShotState < PoseLibrary.POWER_SHOT_POSES.length - 1) {
                     //0 1 2
-                    Trajectory driveToPowerShotPose = drive.trajectoryBuilder(PoseLibrary.POWER_SHOT_POSES[powerShotState].getPose2d())
-                            //1 2 3
-                            .lineToSplineHeading(PoseLibrary.POWER_SHOT_POSES[powerShotState + 1].getPose2d())
-                            .build();
+//                    Trajectory driveToPowerShotPose = drive.trajectoryBuilder(PoseLibrary.POWER_SHOT_POSES[powerShotState].getPose2d())
+//                            //1 2 3
+//                            .lineToSplineHeading(PoseLibrary.POWER_SHOT_POSES[powerShotState + 1].getPose2d())
+//                            .build();
 
-                    drive.followTrajectoryAsync(driveToPowerShotPose);
+//                    drive.followTrajectoryAsync(driveToPowerShotPose);
+                    angle = powerShotAngles[powerShotState] + initialAngle;
 
-                    powerShotState++;
-                    currentMode = Mode.PREPARE_TO_SHOOT_POWERSHOTS;
+                    drive.turnTo(angle);
+                    if(drive.isAtAngle(angle) || timer.seconds() > 1) {
+//                        drive.stop();
+                        powerShotState++;
+                        currentMode = Mode.PREPARE_TO_SHOOT_POWERSHOTS;
+                    }
                 } else {
                     flywheel.setRPM(0);
                     currentMode = Mode.DRIVER_CONTROL;
@@ -566,6 +600,7 @@ public class TeleOpTest extends OpMode {
                         rings--;
                     }
                 } else {
+                    timer.reset();
                     currentMode = Mode.GENERATE_NEXT_POWERSHOT_PATH;
                 }
 

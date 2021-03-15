@@ -65,7 +65,7 @@ public class MecanumDrivebase extends com.acmerobotics.roadrunner.drive.MecanumD
     public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(3, 0, 0);
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(6, 0, 0);
 
-    public static double kPTurn = 0.0;
+    public static double kPTurn = 2.0;
     public static double kITurn = 0.0;
     public static double kDTurn = 0.0;
 
@@ -409,10 +409,18 @@ public class MecanumDrivebase extends com.acmerobotics.roadrunner.drive.MecanumD
         rightFront.setPower(v3);
     }
 
+
+    public boolean isAtAngle(double angle) {
+        double heading = getRawExternalHeading();
+        return Math.abs(angle - heading) < 2;
+    }
+
+    //input in degrees, converts to radians
     public void turnTo(double angle) {
 
+
         TURN_CONTROLLER.setPID(kPTurn, kITurn, kDTurn);
-        TURN_CONTROLLER.setSetPoint(angle);
+        TURN_CONTROLLER.setSetPoint(Math.toRadians(angle));
         double heading = getRawExternalHeading();
         double motorPower = TURN_CONTROLLER.calculate(heading);
 
@@ -424,6 +432,13 @@ public class MecanumDrivebase extends com.acmerobotics.roadrunner.drive.MecanumD
         rightFront.setPower(motorPower);
         rightRear.setPower(motorPower);
         
+    }
+
+    public void stop() {
+        leftFront.setPower(0.0);
+        leftRear.setPower(0.0);
+        rightFront.setPower(0.0);
+        rightRear.setPower(0.0);
     }
 
     @Override

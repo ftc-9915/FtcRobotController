@@ -19,10 +19,10 @@ public class PoseLibrary {
 
 
     //automatic power shot poses
-    public static Pose2d_RPM POWER_SHOT_START_POSE = new Pose2d_RPM(10, 72-8.5, Math.toRadians(0.0), 2900);
-    public static Pose2d_RPM POWER_SHOT_POSE_1 = new Pose2d_RPM(0, 31.5, Math.toRadians(-21), 2900);
-    public static Pose2d_RPM POWER_SHOT_POSE_2 = new Pose2d_RPM(0, 24, Math.toRadians(-21), 2900);
-    public static Pose2d_RPM POWER_SHOT_POSE_3 = new Pose2d_RPM(0, 16.5, Math.toRadians(-21), 2900);
+    public static Pose2d_RPM POWER_SHOT_START_POSE = new Pose2d_RPM(10, 72-8.5, Math.toRadians(0.0), 3000);
+    public static Pose2d_RPM POWER_SHOT_POSE_1 = new Pose2d_RPM(0, 31.5, Math.toRadians(-21), 3000);
+    public static Pose2d_RPM POWER_SHOT_POSE_2 = new Pose2d_RPM(0, 24, Math.toRadians(-21), 3000);
+    public static Pose2d_RPM POWER_SHOT_POSE_3 = new Pose2d_RPM(0, 16.5, Math.toRadians(-21), 3000);
 
     public static Pose2d_RPM[] POWER_SHOT_POSES = {POWER_SHOT_START_POSE, POWER_SHOT_POSE_1, POWER_SHOT_POSE_2, POWER_SHOT_POSE_3};
 

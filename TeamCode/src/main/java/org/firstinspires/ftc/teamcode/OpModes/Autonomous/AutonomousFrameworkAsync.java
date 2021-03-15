@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Common.RingPosition;
@@ -39,6 +40,7 @@ public class AutonomousFrameworkAsync extends OpMode {
     Flywheel flywheel;
     Collector collector;
     Hopper hopper;
+    ElapsedTime timer = new ElapsedTime();
 
 
     @Override
@@ -63,6 +65,7 @@ public class AutonomousFrameworkAsync extends OpMode {
         //Initialize webcam
         ringDetectPipeline = new VisionPipeline();
         camera = new Camera(hardwareMap, ringDetectPipeline);
+        timer.reset();
     }
 
     //Called every 25 seconds
@@ -86,11 +89,15 @@ public class AutonomousFrameworkAsync extends OpMode {
                 telemetry.addLine("Go Path FOUR");
                 path = new AutonomousPathCAsync(drive, wobbleArm, flywheel, collector, hopper);
                 break;
-        }
 
+            default:
+                telemetry.addLine("Path UNKNOWN");
+                break;
+        }
 
         telemetry.addData("Ring position", ringConfiguration);
         telemetry.update();
+        timer.reset();
     }
 
     @Override
