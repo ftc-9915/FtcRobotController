@@ -26,21 +26,20 @@ public class AutonomousFrameworkAsync extends OpMode {
     Camera camera;
     VisionPipeline ringDetectPipeline;
 
-    RingPosition ringConfiguration;
+    public static AutonomousPathAsync pathA;
+    public static AutonomousPathAsync pathB;
+    public static AutonomousPathAsync pathC;
 
 
+    public static RingPosition ringConfiguration;
+    public static AutonomousPathAsync path;
 
-    boolean pathIsFinished = false;
-
-
-    AutonomousPathAsync path;
 
     MecanumDrivebase drive;
     WobbleArm wobbleArm;
     Flywheel flywheel;
     Collector collector;
     Hopper hopper;
-    ElapsedTime timer = new ElapsedTime();
 
 
     @Override
@@ -61,11 +60,15 @@ public class AutonomousFrameworkAsync extends OpMode {
         //Initialize hopper
         hopper = new Hopper(hardwareMap);
 
+        //initialize paths ahead of time
+        pathA =  new AutonomousPathAAsync(drive, wobbleArm, flywheel, collector, hopper);
+        pathB = new AutonomousPathBAsync(drive, wobbleArm, flywheel, collector, hopper);
+        pathC = new AutonomousPathCAsync(drive, wobbleArm, flywheel, collector, hopper);
+
 
         //Initialize webcam
         ringDetectPipeline = new VisionPipeline();
         camera = new Camera(hardwareMap, ringDetectPipeline);
-        timer.reset();
     }
 
     //Called every 25 seconds
@@ -73,38 +76,40 @@ public class AutonomousFrameworkAsync extends OpMode {
     public void init_loop() {
         //Check ring and set path
         ringConfiguration = ringDetectPipeline.getRingPosition();
-//        ringConfiguration = ringConfiguration.NONE;
-        switch (ringConfiguration) {
-            case NONE:
-                telemetry.addLine("Go Path NONE");
-                path = new AutonomousPathAAsync(drive, wobbleArm, flywheel, collector, hopper);
-                break;
-
-            case ONE:
-                telemetry.addLine("Go Path ONE");
-                path = new AutonomousPathBAsync(drive, wobbleArm, flywheel, collector, hopper);
-                break;
-
-            case FOUR:
-                telemetry.addLine("Go Path FOUR");
-                path = new AutonomousPathCAsync(drive, wobbleArm, flywheel, collector, hopper);
-                break;
-
-            default:
-                telemetry.addLine("Path UNKNOWN");
-                break;
-        }
 
         telemetry.addData("Ring position", ringConfiguration);
         telemetry.update();
-        timer.reset();
+    }
+
+    @Override
+    public void start() {
+        switch (ringConfiguration) {
+            case NONE:
+                path = pathA;
+                telemetry.addLine("Go Path A");
+                break;
+
+            case ONE:
+                path = pathB;
+                telemetry.addLine("Go Path B");
+                break;
+
+            case FOUR:
+                path = pathC;
+                telemetry.addLine("Go Path C");
+                break;
+
+            default:
+                path = pathB;
+                telemetry.addLine("Path B");
+                break;
+        }
     }
 
     @Override
     public void loop() {
 
         path.followPathAsync(telemetry);
-
 
     }
 
