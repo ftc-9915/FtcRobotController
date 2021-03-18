@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.util.Angle;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -158,10 +159,23 @@ public class TeleOpTest extends OpMode {
         triggerReleased = true;
 
 
-    }
+        //set read mode to manual
+        for (LynxModule module : hardwareMap.getAll(LynxModule.class))
+            module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+
+
+
+        }
 
     @Override
     public void loop() {
+
+        //Clear Bulk Cache at beginning of loop
+        for (LynxModule module : hardwareMap.getAll(LynxModule.class))
+            module.clearBulkCache();
+
+
+
         drive.update();
 
         // Retrieve pose

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.OpModes.Autonomous;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -60,6 +61,13 @@ public class AutonomousFrameworkAsync extends OpMode {
         //Initialize hopper
         hopper = new Hopper(hardwareMap);
 
+
+        //set read mode to manual
+        for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
+            module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        }
+
+
         //initialize paths ahead of time
         pathA =  new AutonomousPathAAsync(drive, wobbleArm, flywheel, collector, hopper);
         pathB = new AutonomousPathBAsync(drive, wobbleArm, flywheel, collector, hopper);
@@ -108,6 +116,11 @@ public class AutonomousFrameworkAsync extends OpMode {
 
     @Override
     public void loop() {
+
+        //Clear Bulk Cache at beginning of loop
+        for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
+            module.clearBulkCache();
+        }
 
         path.followPathAsync(telemetry);
 
