@@ -31,7 +31,6 @@ public class AutonomousPathAAsync extends AutonomousPathAsync {
 
     //Pre declare trajectories
     Trajectory goToShootingPosePt1;
-    Trajectory goToShootingPosePt2;
     Trajectory goToPickUpGoalPose1;
     Trajectory goToPickUpGoalPose2;
     Trajectory goToPlaceSecondGoalPart1;
@@ -73,11 +72,8 @@ public class AutonomousPathAAsync extends AutonomousPathAsync {
                 .splineTo(placeGoalAndShootingPose1.vec(), placeGoalAndShootingPose1.getHeading())
                 .build();
 
-        goToShootingPosePt2 = drive.trajectoryBuilder(goToShootingPosePt1.end())
-                .splineTo(placeGoalAndShootingPose2.vec(), placeGoalAndShootingPose2.getHeading())
-                .build();
 
-        goToPickUpGoalPose1 = drive.trajectoryBuilder(goToShootingPosePt2.end())
+        goToPickUpGoalPose1 = drive.trajectoryBuilder(goToShootingPosePt1.end())
                 .lineToLinearHeading(pickUpGoalPose1)
                 .addDisplacementMarker(() -> drive.followTrajectoryAsync(goToPickUpGoalPose2))
                 .build();
@@ -145,12 +141,18 @@ public class AutonomousPathAAsync extends AutonomousPathAsync {
                     }
                     else {
                         timer.reset();
-                        drive.followTrajectoryAsync(goToShootingPosePt2);
-                        currentState = State.PLACE_GOAL;
+                        currentState = State.TURN_TO_PLACE_GOAL;
                     }
                 }
                 break;
 
+            case TURN_TO_PLACE_GOAL:
+                drive.turnTo(placeGoalAndShootingPose2.getHeading());
+                if (timer.seconds() > 1.5) {
+                    timer.reset();
+                    currentState = State.PLACE_GOAL;
+                }
+                break;
 
             case PLACE_GOAL:
                 if (!drive.isBusy()) {
@@ -263,7 +265,8 @@ public class AutonomousPathAAsync extends AutonomousPathAsync {
     enum State {
         DRIVE_TO_SHOOT,
         SHOOT,   // First, follow a splineTo() trajectory
-        DRIVE_TO_PLACE_GOAL,   // Then, follow a lineTo() trajectory
+        DRIVE_TO_PLACE_GOAL,
+        TURN_TO_PLACE_GOAL,// Then, follow a lineTo() trajectory
         PLACE_GOAL,         // Then we want to do a point turn
         DRIVE_TO_SECOND_GOAL,   // Then, we follow another lineTo() trajectory
         PICKUP_SECOND_GOAL,         // Then we're gonna wait a second
