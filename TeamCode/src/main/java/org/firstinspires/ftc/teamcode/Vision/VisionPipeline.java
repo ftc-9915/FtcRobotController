@@ -24,7 +24,7 @@ public class VisionPipeline extends OpenCvPipeline {
 
     //Cb Threshhold Values
     private static  int FOUR_RING_THRESHOLD = 138;
-    private static  int ONE_RING_THRESHOLD = 129;
+    private static  int ONE_RING_THRESHOLD = 128;
 
     //Viewfinder Colorspace
     public ViewfinderType[] COLOR_SPACES = new ViewfinderType[] {ViewfinderType.RGB, ViewfinderType.YcrCb, ViewfinderType.Cb};

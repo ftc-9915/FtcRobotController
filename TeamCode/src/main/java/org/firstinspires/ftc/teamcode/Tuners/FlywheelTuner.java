@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Tuners;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -21,11 +22,17 @@ public class FlywheelTuner extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+
+
         MecanumDrivebase drive = new MecanumDrivebase(hardwareMap);
         drive.setPoseEstimate(PoseLibrary.START_POS_BLUE_2);
 
         Flywheel flywheel = new Flywheel(hardwareMap);
         Hopper hopper = new Hopper(hardwareMap);
+
+        for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
+            module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+        }
 
 
         waitForStart();
@@ -47,8 +54,9 @@ public class FlywheelTuner extends LinearOpMode {
 
             flywheel.setRPM(RPM);
 
-            dashboardTelemetry.addData("Desired RPM", RPM);
-            dashboardTelemetry.addData("Current RPM", flywheel.getRPM());
+            dashboardTelemetry.addData("Desired Velocity", Flywheel.rpmToTicksPerSecond(RPM));
+            dashboardTelemetry.addData("Current Velocity", flywheel.flywheelMotor.getVelocity());
+            dashboardTelemetry.addData("At RPM", flywheel.atTargetRPM());
             dashboardTelemetry.update();
 
 

@@ -25,8 +25,8 @@ import static org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary.POWER_
 import static org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary.POWER_SHOT_POSES_RIGHT;
 
 
-@Config
 @TeleOp(name="TeleOp Test", group="test")
+@Config
 public class TeleOpTest extends OpMode {
 
     //Subsystems
@@ -85,7 +85,7 @@ public class TeleOpTest extends OpMode {
     double rotation = 0.0;
     double strafePower = 1.0;
     boolean slowmodeOn = false;
-    public static boolean leftMode = false;
+    public static boolean leftMode = true;  
 
     Pose2d_RPM[] POWER_SHOT_POSES = leftMode ? POWER_SHOT_POSES_LEFT : POWER_SHOT_POSES_RIGHT;
 
@@ -185,13 +185,20 @@ public class TeleOpTest extends OpMode {
 
         // Retrieve pose
         Pose2d currentPose = drive.getPoseEstimate();
+
+        telemetry.addData("Goal Visibility", pipeline.isGoalVisible());
+        telemetry.addData("RPM", launcherRPM);
+        telemetry.addData("Drive Mode: ", currentMode);
+        telemetry.addData("x", currentPose.getX());
+        telemetry.addData("y", currentPose.getY());
+        telemetry.addData("heading", Math.toDegrees(currentPose.getHeading()));
+
         telemetry.addData("At Setpoint Angle",UtilMethods.inRange(Math.toDegrees(drive.getRawExternalHeading()), angle - 1, angle + 1));
         telemetry.addData("raw heading", Math.toDegrees(drive.getRawExternalHeading()));
 
         telemetry.addData("Current Robot Position", pipeline.getFieldPositionFromGoal().toString());
         telemetry.addData("Distance to Goal", pipeline.getDistanceToGoalWall());
 
-        telemetry.addData("Goal Visibility", pipeline.isGoalVisible());
         telemetry.addData("Distance (in)", pipeline.getDistanceToGoalWall());
         telemetry.addData("Current Mode", currentMode);
 //        telemetry.addData("Goal Height (px)", getGoalHeight());
@@ -205,32 +212,28 @@ public class TeleOpTest extends OpMode {
         telemetry.addData("Timer", timer.seconds());
 
         // Controls and Information
-        telemetry.addData("Drive Mode: ", currentMode);
-        telemetry.addData("x", currentPose.getX());
-        telemetry.addData("y", currentPose.getY());
-        telemetry.addData("heading", Math.toDegrees(currentPose.getHeading()));
 
 
 
-        telemetry.addData("Launcher RPM", launcherRPM);
-        telemetry.addData("Actual RPM", flywheel.getRPM());
-        telemetry.addData("Arm Position", armPos);
-        telemetry.addData("Gamepad2 Left Stick Y", gamepad2.left_stick_y);
-        telemetry.addData("Actual Arm Position", wobbleArm.getArmPosition());
-        telemetry.addData("Slowmode On", slowmodeOn);
-        telemetry.addLine("--- Controls (Gamepad 1) ---");
-        telemetry.addData("Turn collector on", "Button A");
-        telemetry.addData("Turn collector off", "Button B");
-        telemetry.addData("Reverse collector direction", "Button X");
-        telemetry.addData("Slowmode", "Button Y");
-        telemetry.addData("Dpad Up", "Drive to shoot");
-        telemetry.addData("Dpad Down", "Cancel Auto");
-        telemetry.addLine("--- Experimental ---");
-        telemetry.addLine("DPAD UP - Drive to BC shooting position");
-        telemetry.addLine("DPAD RIGHT - Reset pose estimate and auto power shots\n");
-        telemetry.addLine("DPAD LEFT - Set pose estimate to powershot start pose\n");
-        telemetry.addLine("LEFT BUMPER - return to driver control mode");
-        telemetry.addLine("RIGHT BUMPER - ALIGN TO GOAL");
+//        telemetry.addData("Launcher RPM", launcherRPM);
+//        telemetry.addData("Actual RPM", flywheel.getRPM());
+//        telemetry.addData("Arm Position", armPos);
+//        telemetry.addData("Gamepad2 Left Stick Y", gamepad2.left_stick_y);
+//        telemetry.addData("Actual Arm Position", wobbleArm.getArmPosition());
+//        telemetry.addData("Slowmode On", slowmodeOn);
+//        telemetry.addLine("--- Controls (Gamepad 1) ---");
+//        telemetry.addData("Turn collector on", "Button A");
+//        telemetry.addData("Turn collector off", "Button B");
+//        telemetry.addData("Reverse collector direction", "Button X");
+//        telemetry.addData("Slowmode", "Button Y");
+//        telemetry.addData("Dpad Up", "Drive to shoot");
+//        telemetry.addData("Dpad Down", "Cancel Auto");
+//        telemetry.addLine("--- Experimental ---");
+//        telemetry.addLine("DPAD UP - Drive to BC shooting position");
+//        telemetry.addLine("DPAD RIGHT - Reset pose estimate and auto power shots\n");
+//        telemetry.addLine("DPAD LEFT - Set pose estimate to powershot start pose\n");
+//        telemetry.addLine("LEFT BUMPER - return to driver control mode");
+//        telemetry.addLine("RIGHT BUMPER - ALIGN TO GOAL");
 
 
         //DPAD RIGHT - Reset pose estimate and auto power shots
@@ -457,7 +460,9 @@ public class TeleOpTest extends OpMode {
                     // We switch the state to AUTOMATIC_CONTROL
 
 //                    liftServo.setPosition(LIFT_UP_POS);
+                    collector.turnCollectorOff();
 
+                    drive.setPoseEstimate(new Pose2d(-72, drive.getPoseEstimate().getY()));
                     Trajectory driveToShootPositionPath = drive.trajectoryBuilder(currentPose)
                             .lineToLinearHeading(PoseLibrary.SHOOTING_POSE_BC.getPose2d())
                             .build();
@@ -607,8 +612,7 @@ public class TeleOpTest extends OpMode {
                 flywheel.setRPM(POWER_SHOT_POSES_LEFT[powerShotState].getRPM());
                 hopper.setLiftUpPos();
                 if (rings > 0) {
-                    if (UtilMethods.inRange(flywheel.getRPM(), POWER_SHOT_POSES_LEFT[powerShotState].getRPM() - 150,
-                            POWER_SHOT_POSES_LEFT[powerShotState].getRPM() + 150)
+                    if (flywheel.atTargetRPM()
                             && hopper.getPushMode() == Hopper.PushMode.PUSH_OUT && timer.seconds() > 0.5) {
                         hopper.setPushInPos();
                         timer.reset();
@@ -639,7 +643,7 @@ public class TeleOpTest extends OpMode {
                     hopper.setLiftUpPos();
                 }
                 if (rings > 0) {
-                    if (UtilMethods.inRange(flywheel.getRPM(), launcherRPM - 150, launcherRPM + 150) && hopper.getPushMode() == Hopper.PushMode.PUSH_OUT && timer.seconds() > 0.5) {
+                    if (flywheel.atTargetRPM() && hopper.getPushMode() == Hopper.PushMode.PUSH_OUT && timer.seconds() > 0.5) {
                         hopper.setPushInPos();
                         timer.reset();
                     }
@@ -663,9 +667,8 @@ public class TeleOpTest extends OpMode {
 
                 // If drive finishes its task, shoot rings
                 if (!drive.isBusy()) {
-                    rings = 3;
                     timer.reset();
-                    currentMode = Mode.SHOOT_RINGS;
+                    currentMode = Mode.ALIGN_TO_GOAL;
                 }
                 break;
 
