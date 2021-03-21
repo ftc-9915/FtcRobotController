@@ -62,10 +62,10 @@ public class AutonomousFrameworkAsync extends OpMode {
         hopper = new Hopper(hardwareMap);
 
 
-//        //set read mode to manual
-//        for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
-//            module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
-//        }
+        //set read mode to manual
+        for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
+            module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        }
 
 
         //initialize paths ahead of time
@@ -118,10 +118,10 @@ public class AutonomousFrameworkAsync extends OpMode {
     @Override
     public void loop() {
 
-//        //Clear Bulk Cache at beginning of loop
-//        for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
-//            module.clearBulkCache();
-//        }
+        //Clear Bulk Cache at beginning of loop
+        for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
+            module.clearBulkCache();
+        }
 
         path.followPathAsync(telemetry);
 

@@ -20,7 +20,7 @@ public class Flywheel implements SubsystemBase {
 
     PIDFCoefficients PIDF;
     public static double kP = 15;
-    public static double kI = 0;
+    public static double kI = 0.2;
     public static double kD = 0;
     public static double kF = 13.7;
 
