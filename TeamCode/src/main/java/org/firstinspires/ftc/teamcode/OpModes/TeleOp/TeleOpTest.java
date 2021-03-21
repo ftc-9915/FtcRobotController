@@ -116,7 +116,7 @@ public class TeleOpTest extends OpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         //Init Drive and set estimate
-        drive = new MecanumDrivebase(hardwareMap);
+        drive = new MecanumDrivebase(hardwareMap, 1.2);
         drive.setPoseEstimate(PoseLibrary.AUTO_ENDING_POSE);
 
 

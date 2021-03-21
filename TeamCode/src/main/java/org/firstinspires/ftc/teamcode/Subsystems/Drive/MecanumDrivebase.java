@@ -111,6 +111,12 @@ public class MecanumDrivebase extends com.acmerobotics.roadrunner.drive.MecanumD
 
     private Pose2d lastPoseOnTurn;
 
+    public MecanumDrivebase(HardwareMap hardwareMap, double timeout){
+        this(hardwareMap);
+        follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, TRANSLATIONAL_PID, HEADING_PID,
+                new Pose2d(0.5, 0.5, Math.toRadians(5.0)), timeout);
+    }
+
     public MecanumDrivebase(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
 

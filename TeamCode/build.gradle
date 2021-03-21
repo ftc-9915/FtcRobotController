@@ -20,5 +20,7 @@ dependencies {
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
     implementation 'org.openftc:easyopencv:1.4.4'
     implementation 'com.acmerobotics.roadrunner:core:0.5.3'
+    implementation "com.noahbres.jotai:jotai:1.0.2"
+
 }
 

@@ -21,6 +21,8 @@ import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
 
 import java.util.Arrays;
 
+import static org.firstinspires.ftc.teamcode.Subsystems.WobbleArm.ARM_POS_PLACE_GOAL;
+
 @Config
 public class AutonomousPathCAsync extends AutonomousPathAsync {
 
@@ -170,7 +172,7 @@ public class AutonomousPathCAsync extends AutonomousPathAsync {
                 //Trigger action depending on timer using else if logic
                 if (timer.seconds() > 2.5) {
                     currentState = State.DRIVE_TO_PLACE_SECOND_GOAL;
-                } else if (timer.seconds() > 1.5) {
+                } else if (timer.seconds() > 0.5) {
                     wobbleArm.closeClaw();
                 } /*else if (timer.seconds() > 0.5) {
                     wobbleArm.pickUpSecondGoal();
@@ -193,13 +195,14 @@ public class AutonomousPathCAsync extends AutonomousPathAsync {
                 break;
             case PLACE_SECOND_GOAL:
                 if(!drive.isBusy()) {
+                    //TODO: Test if arm logic works
                     //Trigger action depending on timer using else if logic
                     if (timer.seconds() > 2) {
                         currentState = State.PARK;
                         wobbleArm.liftArm();
                         //will drive to pose 1 and pose 2 using displacement marker
                         drive.followTrajectoryAsync(goToParkingPose);
-                    } else if (timer.seconds() > 1.5) {
+                    } else if (UtilMethods.atTarget(WobbleArm.ARM_POS_PLACE_GOAL, wobbleArm.getArmPosition(), 10) || timer.seconds() > 1.5) {
                         wobbleArm.openClaw();
                     } else if (timer.seconds() > 0.5) {
                         wobbleArm.placeGoal();

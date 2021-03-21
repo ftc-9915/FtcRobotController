@@ -22,4 +22,8 @@ public class UtilMethods {
     public static boolean inRange(double value, double min, double max) {
         return (value>= min) && (value<= max);
     }
+
+    public static boolean atTarget(double target, double value,  double plusMinus) {
+        return (value>= target-plusMinus) && (value<= target+plusMinus);
+    }
 }
