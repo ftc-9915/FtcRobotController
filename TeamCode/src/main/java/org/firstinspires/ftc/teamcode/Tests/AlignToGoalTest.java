@@ -3,54 +3,178 @@ package org.firstinspires.ftc.teamcode.Tests;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.acmerobotics.roadrunner.control.PIDFController;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.util.Angle;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.OpModes.TeleOp.TeleOpTest;
-import org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants;
-import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
+import org.firstinspires.ftc.teamcode.Common.UtilMethods;
+import org.firstinspires.ftc.teamcode.Subsystems.Collector;
+import org.firstinspires.ftc.teamcode.Subsystems.Drive.Pose2d_RPM;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
+import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
+import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Flywheel;
+import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Hopper;
+import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
 import org.firstinspires.ftc.teamcode.Vision.BlueGoalVisionPipeline;
 import org.firstinspires.ftc.teamcode.Vision.Camera;
 
+import static org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary.POWER_SHOT_POSES_LEFT;
+import static org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary.POWER_SHOT_POSES_RIGHT;
+
+
 @Config
-@TeleOp(name = "AlignToGoalTest", group = "test")
+@TeleOp(name="AlignToGoalTest", group="test")
 public class AlignToGoalTest extends OpMode {
 
-    enum Mode {
-        DRIVER_MODE,
-        ALIGN_TO_GOAL_VISION_MODE,
-        ALIGN_TO_GOAL_ENCODER_MODE,
-    }
+
+    private final FtcDashboard dashboard = FtcDashboard.getInstance();
+
+    //TESTING
+    public static boolean autoExit = false;
+
+
+    //Subsystems
+    MecanumDrivebase drive;
+    Flywheel flywheel;
+    WobbleArm wobbleArm;
+    Collector collector;
+    Hopper hopper;
 
     Camera camera;
     BlueGoalVisionPipeline pipeline;
-    MecanumDrivebase drive;
-
-    private PIDFController headingController = new PIDFController(MecanumDrivebase.HEADING_PID);
-    // Declare a target vector you'd like your bot to align with
-    // Can be any x/y coordinate of your choosing
-    private Vector2d targetPosition = new Vector2d(72, 36);
 
 
-    Mode mode;
+
+    //DcMotor launcherMotor;
+//    DcMotor collectorMotor;
+//    DcMotor armMotor;
+//    Servo liftServo;
+//    Servo pushServo;
+//    Servo clawServo1;
+//    Servo clawServo2;
+
+    ElapsedTime timer = new ElapsedTime();
+
+    double launcherPower;
+    double launcherRPM;
+    boolean launcherOn;
+    //    double collectorPower;
+    int armPos;
+
+    // Ensures that the adjustments are made each time the gamepad buttons are pressed rather than each time through loop
+    boolean buttonReleased1;
+    boolean buttonReleased2;
+    boolean triggerReleased;
+
+//    static final double LIFT_UP_POS = 0.50;
+//    static final double LIFT_DOWN_POS = 0.75;
+//    static final double NOT_PUSH_POS = 0.70;
+//    static final double PUSH_POS = 0.52;
+
+    // TODO: test these and edit with accurate values
+//    static final int ARM_SPEED = 2;
+//    static final int ARM_UPPER_LIMIT = 10000;
+//    static final int ARM_LOWER_LIMIT = -10000;
+//    static final double CLAW_OPEN_POS = 0.7;
+//    static final double CLAW_CLOSE_POS = 0.15;
+
+
+    int rings = 0;
+    int powerShotState = 1; // *** changed from 0 to 1 ***
+    double[] powerShotAngles;
+    double initialAngle;
+
+    double speed = 0.0;
+    double strafe = 0.0;
+    double rotation = 0.0;
+    double strafePower = 1.0;
+    boolean slowmodeOn = false;
+    public static boolean leftMode = false;
+
+    Pose2d_RPM[] POWER_SHOT_POSES = leftMode ? POWER_SHOT_POSES_LEFT : POWER_SHOT_POSES_RIGHT;
+
+
+    //target angle
+    public static double targetAngle = 0.0;
+
+
+
+
+    enum Mode {
+        DRIVER_CONTROL,
+        LINE_TO_POINT,
+        SHOOT_RINGS,
+        GENERATE_NEXT_POWERSHOT_PATH,
+        PREPARE_TO_SHOOT_POWERSHOTS,
+        SHOOT_RINGS_POWERSHOT,
+        ALIGN_TO_ANGLE,
+        ALIGN_TO_GOAL;
+    }
+
+    Mode currentMode = Mode.DRIVER_CONTROL;
 
 
     @Override
     public void init() {
-        drive = new MecanumDrivebase(hardwareMap);
+
+        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
+
+        //Init Drive and set estimate
+        drive = new MecanumDrivebase(hardwareMap, 1.2);
         drive.setPoseEstimate(PoseLibrary.AUTO_ENDING_POSE);
 
+
+
+        //Init Hopper
+        hopper = new Hopper(hardwareMap);
+//        liftServo = hardwareMap.servo.get("liftServo");
+//        pushServo = hardwareMap.servo.get("pushServo");
+//        // Starting position
+//        liftServo.setPosition(LIFT_DOWN_POS);
+//        pushServo.setPosition(NOT_PUSH_POS);
+
+
+        //Init Collector
+        collector = new Collector(hardwareMap);
+//      collectorMotor = hardwareMap.dcMotor.get("collectorMotor");
+
+
+
+        //Init Wobble Arm
+        // TODO: Do not initialize the arm to the current position after autonomous because it would not be in the starting position at the end of autonomous
+        wobbleArm = new WobbleArm(hardwareMap);
+//        armMotor = hardwareMap.dcMotor.get("armMotor");
+//        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        armMotor.setTargetPosition(0);
+//        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        clawServo1 = hardwareMap.servo.get("clawServo");
+//        clawServo2 = hardwareMap.servo.get("clawServo2");
+
+        flywheel = new Flywheel(hardwareMap);
+
+        //Init Camera
         pipeline = new BlueGoalVisionPipeline(telemetry);
         camera = new Camera(hardwareMap, pipeline);
         camera.setHighGoalPosition();
-        mode = Mode.DRIVER_MODE;
 
-        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        // Initialization values
+        launcherPower = 0.0;
+        launcherRPM = 3300;
+        launcherOn = false;
+//        collectorPower = 1.0;
+        armPos = 0;
+        buttonReleased1 = true;
+        buttonReleased2 = true;
+        triggerReleased = true;
+
+
+        //set read mode to manual
+        for (LynxModule module : hardwareMap.getAll(LynxModule.class))
+            module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+
 
 
     }
@@ -58,46 +182,334 @@ public class AlignToGoalTest extends OpMode {
     @Override
     public void loop() {
 
+        //Clear Bulk Cache at beginning of loop
+        for (LynxModule module : hardwareMap.getAll(LynxModule.class))
+            module.clearBulkCache();
 
 
-        Pose2d driveDirection = new Pose2d();
 
-        telemetry.addData("Mode:", mode);
+        drive.update();
 
-        switch (mode) {
-            case DRIVER_MODE:
-                // Standard teleop control
-                // Convert gamepad input into desired pose velocity
-                //negative values for pose go clockwise
-                driveDirection = new Pose2d(
-                        -gamepad1.left_stick_y,
-                        -gamepad1.left_stick_x,
-                        -gamepad1.right_stick_x
-                );
+        // Retrieve pose
+        Pose2d currentPose = drive.getPoseEstimate();
+        telemetry.addData("Goal Visibility", pipeline.isGoalVisible());
+        telemetry.addData("Distance (in)", pipeline.getDistanceToGoalWall());
+        telemetry.addData("Goal Yaw (degrees)",pipeline.getYaw());
+        telemetry.addData("Goal Yaw Target (degrees)", BlueGoalVisionPipeline.HIGH_GOAL_SETPOINT);
+        telemetry.addData("Motor Power",pipeline.getMotorPower());
+        telemetry.addData("At Setpoint Angle",UtilMethods.inRange(Math.toDegrees(drive.getRawExternalHeading()), targetAngle - 1, targetAngle + 1));
+        telemetry.addData("raw heading", Math.toDegrees(drive.getRawExternalHeading()));
+        telemetry.addData("raw heading target", targetAngle);
 
-                if(gamepad1.right_bumper) {
-                    //turn to zero degrees
-                    drive.turnAsync(Math.toRadians(0.0));
+        telemetry.addData("Distance to Goal", pipeline.getDistanceToGoalWall());
+        telemetry.addData("Launcher RPM", launcherRPM);
+        telemetry.addData("Current Mode", currentMode);
 
-                    if (!drive.isBusy())
-                    {
-                        mode = Mode.ALIGN_TO_GOAL_VISION_MODE;
+
+
+
+        switch (currentMode){
+            case DRIVER_CONTROL:
+
+                // Chassis code
+                speed = -gamepad1.left_stick_y * strafePower;
+                strafe = gamepad1.left_stick_x * strafePower;
+                rotation = gamepad1.right_stick_x * strafePower;
+
+
+//                leftFront.setPower(speed + strafe + rotation);
+//                leftBack.setPower(speed - strafe + rotation);
+//                rightBack.setPower(speed + strafe - rotation);
+//                rightFront.setPower(speed - strafe - rotation);
+                drive.setMotorPowers(speed + strafe + rotation, speed - strafe + rotation, speed + strafe - rotation, speed - strafe - rotation);
+//                drive.setWeightedDrivePower(
+//                        new Pose2d(
+//                                -gamepad1.left_stick_y * MecanumDrivebase.VY_WEIGHT,
+//                                -gamepad1.left_stick_x * MecanumDrivebase.VX_WEIGHT,
+//                                -gamepad1.right_stick_x * MecanumDrivebase.OMEGA_WEIGHT
+//                        )
+//                );
+
+                // Slowmode
+
+                if (gamepad1.y && buttonReleased1) {
+                    if (slowmodeOn) {
+//                        MecanumDrivebase.VX_WEIGHT = 1.0;
+//                        MecanumDrivebase.VY_WEIGHT = 1.0;
+//                        MecanumDrivebase.OMEGA_WEIGHT = 1.0;
+                        strafePower = 1.0;
+                        slowmodeOn = false;
+                    } else {
+//                        MecanumDrivebase.VX_WEIGHT = 0.5;
+//                        MecanumDrivebase.VY_WEIGHT = 0.5;
+//                        MecanumDrivebase.OMEGA_WEIGHT = 0.5;
+                        strafePower = 0.5;
+                        slowmodeOn = true;
                     }
+                    buttonReleased1 = false;
+                }
+
+                // Turns collector on/off
+                if (gamepad1.a && buttonReleased1) {
+                    collector.turnCollectorOn();
+                    hopper.setPushOutPos();
+                    hopper.setLiftDownPos();
+                    buttonReleased1 = false;
+//                    collectorPower = 1.0;
+//                    pushServo.setPosition(NOT_PUSH_POS);
+//                    liftServo.setPosition(LIFT_DOWN_POS);
+                }
+
+                if (gamepad1.b && buttonReleased1) {
+                    collector.turnCollectorOff();
+                    buttonReleased1 = false;
+//                    collectorPower = 0.0;
+                }
+
+                // Reverses collector
+
+                if (gamepad1.x && buttonReleased1) {
+                    collector.turnCollectorReverse();
+                    buttonReleased1 = false;
+//                    collectorPower = -1.0;
+                }
+
+                // Turns launcher on/off
+                if (gamepad2.x && buttonReleased2) {
+                    /*
+                    if (launcherPower == 0.0) {
+                        launcherPower = -0.68;
+                    } else {
+                        launcherPower = 0.0;
+                    }
+                     */
+                    if (launcherOn) {
+                        flywheel.setRPM(0);
+                        launcherOn = false;
+                    } else {
+                        flywheel.setRPM(launcherRPM);
+                        launcherOn = true;
+                    }
+                    buttonReleased2 = false;
+                }
+
+                // Adjusts launcher speed every time trigger goes below 0.4
+                if (gamepad2.left_trigger > 0.4 && triggerReleased && launcherOn) {
+                    //launcherPower -= 0.05;
+                    launcherRPM -= 50;
+                    flywheel.setRPM(launcherRPM);
+                    triggerReleased = false;
+                }
+
+                if (gamepad2.right_trigger > 0.4 && triggerReleased && launcherOn) {
+                    //launcherPower += 0.05;
+                    launcherRPM += 50;
+                    flywheel.setRPM(launcherRPM);
+                    triggerReleased = false;
+                }
+
+                // Pushes/retracts collector servo
+                if (gamepad2.y && buttonReleased2) {
+                    hopper.setPushInPos();
+                    timer.reset();
+                    buttonReleased2 = false;
+//                  pushServo.setPosition(PUSH_POS);
+                }
+
+                if (timer.seconds() > 0.75) {
+                    hopper.setPushOutPos();
+//                  pushServo.setPosition(NOT_PUSH_POS);
+                }
+
+                // Lifts/Lowers the collecting platform
+                if (gamepad2.left_bumper && buttonReleased2) {
+                    hopper.setLiftDownPos();
+//                    liftServo.setPosition(LIFT_DOWN_POS);
+                    buttonReleased2 = false;
+                }
+
+                if (gamepad2.right_bumper && buttonReleased2) {
+                    hopper.setLiftUpPos();
+//                    liftServo.setPosition(LIFT_UP_POS);
+                    buttonReleased2 = false;
+                }
+
+                // Lifts/Lowers Wobble Goal Arm
+
+                armPos -= 10 * gamepad2.left_stick_y;
+                if (armPos < wobbleArm.ARM_LOWER_LIMIT) {
+                    armPos = wobbleArm.ARM_LOWER_LIMIT;
+                }
+                if (armPos > wobbleArm.ARM_UPPER_LIMIT) {
+                    armPos = wobbleArm.ARM_UPPER_LIMIT;
+                }
+
+                // Arm Presets
+
+                if (gamepad2.dpad_up && buttonReleased2) {
+                    armPos = wobbleArm.ARM_POS_LIFT_ARM;
+                    buttonReleased2 = false;
+                }
+                if (gamepad2.dpad_down && buttonReleased2) {
+                    armPos = wobbleArm.ARM_POS_PICKUP_GOAL;
+                    wobbleArm.openClaw();
+                    buttonReleased2 = false;
+                }
+                if (gamepad2.dpad_right && buttonReleased2) {
+                    armPos = wobbleArm.ARM_POS_OVER_WALL;
+                    buttonReleased2 = false;
+                }
+                if (gamepad2.dpad_left && buttonReleased2) {
+                    armPos = 0;
+                    buttonReleased2 = false;
+                }
+                wobbleArm.setArmPos(armPos);
+
+                // Opens/Closes Wobble Goal Claw
+
+                if (gamepad2.a && buttonReleased2) {
+                    wobbleArm.openClaw();
+                    buttonReleased2 = false;
+                }
+                if (gamepad2.b && buttonReleased2) {
+                    wobbleArm.closeClaw();
+                    buttonReleased2 = false;
+                }
+
+
+
+                // Do not adjust values again until after buttons are released (and pressed again) so the
+                // adjustments are made each time the gamepad buttons are pressed rather than each time through loop
+                if (!gamepad1.a && !gamepad1.b && !gamepad1.x && !gamepad1.y) {
+                    buttonReleased1 = true;
+                }
+
+                if(!gamepad2.left_bumper && !gamepad2.right_bumper && !gamepad2.a && !gamepad2.b && !gamepad2.x && !gamepad2.y && !gamepad2.dpad_up && !gamepad2.dpad_right && !gamepad2.dpad_down && !gamepad2.dpad_left) {
+                    buttonReleased2 = true;
+                }
+
+                if (gamepad2.left_trigger < 0.4 && gamepad2.right_trigger < 0.4) {
+                    triggerReleased = true;
+                }
+
+                //launcherMotor.setPower(launcherPower);
+//                collectorMotor.setPower(collectorPower);
+
+                //EXPERIMENTAL CONTROLS
+                // DPAD UP - Drive to BC shooting position
+                //DPAD RIGHT - Reset pose estimate and auto power shots
+                //DPAD DOWN - shoot based on wait logic
+                // DPAD LEFT - Set pose estimate to powershot start pose
+                //LEFT BUMPER - return to driver control mode
+                //RIGHT BUMPER - ALIGN TO GOAL
+
+                //create trajectory to shooting position on the fly
+                if (gamepad1.dpad_up) {
+                    // If the D-pad up button is pressed on gamepad1, we generate a lineTo()
+                    // trajectory on the fly and follow it
+                    // We switch the state to AUTOMATIC_CONTROL
+
+//                    liftServo.setPosition(LIFT_UP_POS);
+
+                    Trajectory driveToShootPositionPath = drive.trajectoryBuilder(currentPose)
+                            .lineToLinearHeading(PoseLibrary.SHOOTING_POSE_BC.getPose2d())
+                            .build();
+
+                    drive.followTrajectoryAsync(driveToShootPositionPath);
+                    flywheel.setRPM(PoseLibrary.SHOOTING_POSE_BC.getRPM());
+
+                    currentMode = Mode.LINE_TO_POINT;
+                }
+
+                //reset encoders to powershot starting pose, set powershot state to zero
+                if (gamepad1.dpad_right) {
+
+                    currentMode = Mode.ALIGN_TO_ANGLE;
+//                    //set starting position at left wall
+////                    drive.setPoseEstimate(PoseLibrary.POWER_SHOT_START_POSE.getPose2d());
+//                    drive.setPoseEstimate(pipeline.getFieldPositionFromGoal());
+//                    powerShotState = 0;
+////                    drive.turnTo(0.0);
+////                    if(drive.isAtAngle(0.0)) {
+//                        initialAngle = drive.getRawExternalHeading();
+//                        powerShotAngles = pipeline.getPowerShotAngles(pipeline.getDistanceFromGoalCenter(), pipeline.getDistanceToGoalWall());
+//                        timer.reset();
+//                        currentMode = Mode.GENERATE_NEXT_POWERSHOT_PATH;
+////                    }
+                }
+
+                //shoot three rings with wait for rpm logic
+                if (gamepad1.dpad_down) {
+                    rings = 3;
+                    timer.reset();
+                    launcherOn = true;
+                    currentMode = Mode.SHOOT_RINGS;
+                }
+
+                if (gamepad1.dpad_left) {
+                    drive.setPoseEstimate(POWER_SHOT_POSES[0].getPose2d());
+                    powerShotState = 0;
+                    currentMode = Mode.GENERATE_NEXT_POWERSHOT_PATH;
+                }
+
+                if(gamepad1.right_bumper && pipeline.isGoalVisible()) {
+                    //turn to zero degrees
+//                    drive.turnAsync(Angle.normDelta(Math.toRadians(0.0) - currentPose.getHeading()));
+                    collector.turnCollectorOff();
+                    currentMode = Mode.ALIGN_TO_GOAL;
+                    timer.reset();
+
                 }
 
                 break;
 
-            case ALIGN_TO_GOAL_VISION_MODE:
 
 
+            case ALIGN_TO_ANGLE:
 
-                //won't auto exit for debug purposes
+
+                //put angle in degrees
+                drive.turnTo(targetAngle);
+
+                //TESTING
+                if(autoExit){
+                    if (UtilMethods.inRange(Math.toDegrees(Math.toDegrees(drive.getRawExternalHeading())), targetAngle - 1, targetAngle + 1) && timer.seconds() > 0.02){
+                        currentMode = Mode.DRIVER_CONTROL;
+                        timer.reset();
+                    } else{
+                        timer.reset();
+                    }
+                }
+
+
                 if (gamepad1.left_bumper)
-                    telemetry.addLine("Left Bumper Pushed");
-                    mode = Mode.DRIVER_MODE;
+                    currentMode = Mode.DRIVER_CONTROL;
 
-                if(pipeline.isGoalVisible() && !pipeline.isGoalCentered()) {
-                    //returns posiptve if robot needs to turn counterclockwise
+                break;
+
+            case ALIGN_TO_GOAL:
+
+
+                //TESTING
+                if (autoExit) {
+                    //if goal is centered for 1 second shoot rings, else reset timer
+                    if (pipeline.isGoalCentered() && timer.seconds() > 0.02) {
+                        rings = 3;
+                        timer.reset();
+                        launcherOn = true;
+                        currentMode = Mode.SHOOT_RINGS;
+                    } else {
+                        timer.reset();
+                    }
+                }
+
+
+                //emergency exit
+                if (gamepad1.left_bumper)
+                    currentMode = Mode.DRIVER_CONTROL;
+
+                if(pipeline.isGoalVisible()) {
+                    //returns positive if robot needs to turn counterclockwise
                     double motorPower = pipeline.getMotorPower();
 
                     drive.leftFront.setPower(-motorPower);
@@ -106,53 +518,121 @@ public class AlignToGoalTest extends OpMode {
                     drive.rightRear.setPower(motorPower);
                 }
 
-                //for logging and tuning purposes
-                if(pipeline.isGoalVisible()) {
-                    telemetry.addData("Motor Power", pipeline.getMotorPower());
-                    telemetry.addData("Error", pipeline.headingController.getPositionError());
-                    telemetry.addData("Yaw", pipeline.getYaw());
+
+
+                break;
+            // generate a trajectory based on powershot state and move to stop and aim state
+            case GENERATE_NEXT_POWERSHOT_PATH:
+                if (gamepad1.left_bumper) {
+                    drive.cancelFollowing();
+                    currentMode = Mode.DRIVER_CONTROL;
+                    // 0 1 2
+                } else if (powerShotState < POWER_SHOT_POSES.length - 1) {
+                    //0 1 2
+                    Trajectory driveToPowerShotPose = drive.trajectoryBuilder(POWER_SHOT_POSES[powerShotState].getPose2d())
+                            //1 2 3
+                            .lineToSplineHeading(POWER_SHOT_POSES[powerShotState + 1].getPose2d())
+                            .build();
+
+                    drive.followTrajectoryAsync(driveToPowerShotPose);
+
+                    powerShotState++;
+                    currentMode = Mode.PREPARE_TO_SHOOT_POWERSHOTS;
+                } else {
+                    flywheel.setRPM(0);
+                    currentMode = Mode.DRIVER_CONTROL;
+                }
+                break;
+
+            //when robot has reached the end of it's generated trajectory, reset timer and rings to 1, then move to shoot rings state
+            case PREPARE_TO_SHOOT_POWERSHOTS:
+                if (gamepad1.left_bumper) {
+                    drive.cancelFollowing();
+                    currentMode = Mode.DRIVER_CONTROL;
+                } else if (!drive.isBusy()) {
+                    rings = 1;
+                    timer.reset();
+                    currentMode = Mode.SHOOT_RINGS_POWERSHOT;
+                }
+                break;
+
+
+
+            //set rings to shoot and reset timer required before moving to this state
+            case SHOOT_RINGS_POWERSHOT:
+                //emergency exit
+                if (gamepad1.left_bumper) {
+                    rings = 0;
+                    currentMode = Mode.DRIVER_CONTROL;
+                }
+
+                flywheel.setRPM(POWER_SHOT_POSES_LEFT[powerShotState].getRPM());
+                hopper.setLiftUpPos();
+                if (rings > 0) {
+                    if (UtilMethods.inRange(flywheel.getRPM(), POWER_SHOT_POSES_LEFT[powerShotState].getRPM() - 150,
+                            POWER_SHOT_POSES_LEFT[powerShotState].getRPM() + 150)
+                            && hopper.getPushMode() == Hopper.PushMode.PUSH_OUT && timer.seconds() > 0.5) {
+                        hopper.setPushInPos();
+                        timer.reset();
+                    }
+                    if (hopper.getPushMode() == Hopper.PushMode.PUSH_IN  && timer.seconds() > 0.5) {
+                        hopper.setPushOutPos();
+                        timer.reset();
+                        rings--;
+                    }
+                } else {
+                    timer.reset();
+                    currentMode = Mode.GENERATE_NEXT_POWERSHOT_PATH;
                 }
 
                 break;
 
-//            case ALIGN_TO_GOAL_ENCODER_MODE:
-//
-//                // Switch back into normal driver control mode if `b` is pressed
-//                if (gamepad1.b) {
-//                    mode = Mode.DRIVER_MODE;
-//                }
-//
-//                // Difference between the target vector and the bot's position
-//                Vector2d difference = targetPosition.minus(poseEstimate.vec());
-//                // Obtain the target angle for feedback and derivative for feedforward
-//                double theta = Angle.normDelta(difference.angle());
-//
-//
-//                // Set the target heading for the heading controller to our desired angle
-//                headingController.setTargetPosition(theta);
-//
-//                // Set desired angular velocity to the heading controller output + angular
-//                // velocity feedforward
-//                headingInput = (headingController.update(poseEstimate.getHeading())
-//                        * DriveConstants.kV)
-//                        * DriveConstants.TRACK_WIDTH;
-//
-//                driveDirection = new Pose2d(
-//                        -gamepad1.left_stick_y,
-//                        -gamepad1.left_stick_x,
-//                        headingInput
-//                );
-//
-//                break;
-        }
 
-        //Press a to toggle between mask and output
-        if (gamepad1.a) {
-            pipeline.onViewportTapped();
-        }
+            //set rings to shoot and reset timer required before moving to this state
+            case SHOOT_RINGS:
+                drive.setMotorPowers(0,0,0,0);
+                //emergency exit
+                if (gamepad1.left_bumper || rings == 0) {
+                    rings = 0;
+                    currentMode = Mode.DRIVER_CONTROL;
+                    flywheel.setRPM(0);
+                } else {
+                    flywheel.setRPM(launcherRPM);
+                    hopper.setLiftUpPos();
+                }
+                if (rings > 0) {
+                    if (UtilMethods.inRange(flywheel.getRPM(), launcherRPM - 150, launcherRPM + 150) && hopper.getPushMode() == Hopper.PushMode.PUSH_OUT && timer.seconds() > 0.5) {
+                        hopper.setPushInPos();
+                        timer.reset();
+                    }
+                    if (hopper.getPushMode() == Hopper.PushMode.PUSH_IN  && timer.seconds() > 0.5) {
+                        hopper.setPushOutPos();
+                        timer.reset();
+                        rings--;
+                    }
+                }
+                break;
 
-        drive.setWeightedDrivePower(driveDirection);
-        drive.update();
+
+
+
+            case LINE_TO_POINT:
+                // If left bumper is pressed, we break out of the automatic following
+                if (gamepad1.left_bumper) {
+                    drive.cancelFollowing();
+                    currentMode = Mode.DRIVER_CONTROL;
+                }
+
+                // If drive finishes its task, shoot rings
+                if (!drive.isBusy()) {
+                    rings = 3;
+                    timer.reset();
+                    currentMode = Mode.SHOOT_RINGS;
+                }
+                break;
+
+
+        }
 
         telemetry.update();
 

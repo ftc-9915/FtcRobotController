@@ -669,8 +669,10 @@ public class TeleOpTest extends OpMode {
                 }
                 break;
 
-
         }
+
+        telemetry.update();
+
 
     }
 

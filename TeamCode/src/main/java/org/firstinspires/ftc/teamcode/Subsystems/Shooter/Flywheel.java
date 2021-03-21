@@ -65,7 +65,8 @@ public class Flywheel implements SubsystemBase {
 
 
     public boolean setRPM (double rpm){
-
+        PIDF = new PIDFCoefficients(kP,  kI,   kD,   kF * 13.21 / batteryVoltageSensor.getVoltage());
+        flywheel.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, PIDF);
         double rotationsPerSecond = rpm / 60;
         double ticksPerSecond = rotationsPerSecond * ticksPerRev;
         flywheel.setVelocity(ticksPerSecond);
