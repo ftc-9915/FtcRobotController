@@ -76,8 +76,9 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
     public PIDController headingController = new PIDController(kP, kI, kD);
 
     public static double CAMERA_HEIGHT = 8.25; //camera height inches for distance calculation
-    public static double HIGH_GOAL_HEIGHT = 35.875; //camera height inches for distance calculation
+    public static double HIGH_GOAL_CENTER_HEIGHT = 40.625; //camera height inches for distance calculation
 
+    //in degrees
     public static int CAMERA_PITCH_OFFSET = 0;
     public static int CAMERA_YAW_OFFSET = 0;
 
@@ -315,9 +316,7 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
     }
 
 
-    public double getDistanceFromGoalCenter() {
-        return getDistanceToGoalWall() / Math.tan(Math.toRadians(90 + getYaw()));
-    }
+
 
     //helper method to check if rect is found
     public boolean isGoalVisible(){
@@ -335,12 +334,17 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
         return upperLeftCorner != null && upperRightCorner != null && lowerLeftCorner != null && lowerRightCorner != null && upperMiddle != null && lowerMiddle != null;
     }
 
-    public double getDistanceToGoalWall(){
-        if (!isGoalVisible()){
-            return 0;
-        }
-        return (3869/getGoalHeight()) + -12.1;
+//    public double getDistanceToGoalWall(){
+//        if (!isGoalVisible()){
+//            return 0;
+//        }
+//        return (3869/getGoalHeight()) + -12.1;
+//    }
+
+    public double getDistanceToGoalWall() {
+        return (HIGH_GOAL_CENTER_HEIGHT - CAMERA_HEIGHT) / Math.tan(Math.toRadians(getPitch()));
     }
+
 
     public double[] getPowerShotAngles(double distanceFromGoalCenter, double distanceToGoalWall) {
         double distanceFromFirstPowerShot = 16.0 - distanceFromGoalCenter - HIGH_GOAL_SETPOINT;
@@ -374,7 +378,7 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
         double targetCenterX = getCenterofRect(blueRect).x;
 
         return Math.toDegrees(
-                Math.atan((targetCenterX - (centerX + CENTER_X_OFFSET)) / horizontalFocalLength)
+                Math.atan((targetCenterX - (centerX + CENTER_X_OFFSET)) / horizontalFocalLength) + CAMERA_YAW_OFFSET
         );
     }
 
@@ -387,7 +391,7 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
         double targetCenterY = getCenterofRect(blueRect).y;
 
         return -Math.toDegrees(
-                Math.atan((targetCenterY - (centerY + CENTER_Y_OFFSET)) / verticalFocalLength)
+                Math.atan((targetCenterY - (centerY + CENTER_Y_OFFSET)) / verticalFocalLength)  + CAMERA_PITCH_OFFSET
         );
     }
 
