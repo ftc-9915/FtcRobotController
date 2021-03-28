@@ -51,28 +51,14 @@ public class TeleOpTest extends OpMode {
 
     ElapsedTime timer = new ElapsedTime();
 
-    double launcherPower;
     double launcherRPM;
     boolean launcherOn;
-    //    double collectorPower;
     int armPos;
 
     // Ensures that the adjustments are made each time the gamepad buttons are pressed rather than each time through loop
     boolean buttonReleased1;
     boolean buttonReleased2;
     boolean triggerReleased;
-
-//    static final double LIFT_UP_POS = 0.50;
-//    static final double LIFT_DOWN_POS = 0.75;
-//    static final double NOT_PUSH_POS = 0.70;
-//    static final double PUSH_POS = 0.52;
-
-    // TODO: test these and edit with accurate values
-//    static final int ARM_SPEED = 2;
-//    static final int ARM_UPPER_LIMIT = 10000;
-//    static final int ARM_LOWER_LIMIT = -10000;
-//    static final double CLAW_OPEN_POS = 0.7;
-//    static final double CLAW_CLOSE_POS = 0.15;
 
 
     int rings = 0;
@@ -90,13 +76,8 @@ public class TeleOpTest extends OpMode {
 
     Pose2d_RPM[] POWER_SHOT_POSES;
 
-
-
     //target angle
     double angle = 0.0;
-
-
-
 
     enum Mode {
         DRIVER_CONTROL,
@@ -150,7 +131,6 @@ public class TeleOpTest extends OpMode {
         camera.setHighGoalPosition();
 
         // Initialization values
-        launcherPower = 0.0;
         launcherRPM = 3300;
         launcherOn = false;
 
@@ -184,9 +164,7 @@ public class TeleOpTest extends OpMode {
         telemetry.addData("Drive Mode: ", currentMode);
         telemetry.addData("x", currentPose.getX());
         telemetry.addData("y", currentPose.getY());
-
         telemetry.addData("raw heading", Math.toDegrees(drive.getRawExternalHeading()));
-
         telemetry.addData("At Setpoint Angle",UtilMethods.inRange(Math.toDegrees(drive.getRawExternalHeading()), angle - 1, angle + 1));
 
 //        telemetry.addData("Current Robot Position", pipeline.getFieldPositionFromGoal().toString());
@@ -206,36 +184,7 @@ public class TeleOpTest extends OpMode {
 
         // Controls and Information
 
-
-
-//        telemetry.addData("Launcher RPM", launcherRPM);
-//        telemetry.addData("Actual RPM", flywheel.getRPM());
-//        telemetry.addData("Arm Position", armPos);
-//        telemetry.addData("Gamepad2 Left Stick Y", gamepad2.left_stick_y);
-//        telemetry.addData("Actual Arm Position", wobbleArm.getArmPosition());
-//        telemetry.addData("Slowmode On", slowmodeOn);
-//        telemetry.addLine("--- Controls (Gamepad 1) ---");
-//        telemetry.addData("Turn collector on", "Button A");
-//        telemetry.addData("Turn collector off", "Button B");
-//        telemetry.addData("Reverse collector direction", "Button X");
-//        telemetry.addData("Slowmode", "Button Y");
-//        telemetry.addData("Dpad Up", "Drive to shoot");
-//        telemetry.addData("Dpad Down", "Cancel Auto");
-//        telemetry.addLine("--- Experimental ---");
-//        telemetry.addLine("DPAD UP - Drive to BC shooting position");
-//        telemetry.addLine("DPAD RIGHT - Reset pose estimate and auto power shots\n");
-//        telemetry.addLine("DPAD LEFT - Set pose estimate to powershot start pose\n");
-//        telemetry.addLine("LEFT BUMPER - return to driver control mode");
-//        telemetry.addLine("RIGHT BUMPER - ALIGN TO GOAL");
-
-
-        //DPAD RIGHT - Reset pose estimate and auto power shots
-        //DPAD DOWN - shoot based on wait logic
-        // DPAD LEFT - Set pose estimate to powershot start pose
-        //LEFT BUMPER - return to driver control mode
-        //RIGHT BUMPER - ALIGN TO GOAL
-
-
+        /*
         telemetry.addLine();
         telemetry.addLine("--- Controls (Gamepad 2) ---");
         telemetry.addData("Open Claw", "Button A");
@@ -250,6 +199,7 @@ public class TeleOpTest extends OpMode {
         telemetry.addData("Lift collector platform", "Right Bumper");
         telemetry.addData("Decrease Launcher Speed", "Left Trigger");
         telemetry.addData("Increase Launcher Speed", "Right Trigger");
+         */
 
         switch (currentMode){
             case DRIVER_CONTROL:
@@ -315,7 +265,6 @@ public class TeleOpTest extends OpMode {
                 }
 
                 if (gamepad2.right_trigger > 0.4 && triggerReleased && launcherOn) {
-                    //launcherPower += 0.05;
                     launcherRPM += 50;
                     flywheel.setRPM(launcherRPM);
                     triggerReleased = false;
@@ -400,13 +349,9 @@ public class TeleOpTest extends OpMode {
                 }
 
 
-
-
-
                 //DPAD-UP - auto drive to general shooting position
                 if (gamepad1.dpad_up) {
                     collector.turnCollectorOff();
-                    currentPose = drive.getPoseEstimate();
                     Trajectory driveToShootPositionPath = drive.trajectoryBuilder(currentPose)
                             .lineToLinearHeading(PoseLibrary.TELE_SHOOTING_POSE.getPose2d())
                             .build();
@@ -427,7 +372,7 @@ public class TeleOpTest extends OpMode {
                 //DPAD LEFT - Shoot Powershots From Right To Left
                 if (gamepad1.dpad_left) {
                     POWER_SHOT_POSES = POWER_SHOT_POSES_RIGHT;
-
+                    flywheel.setRPM(POWER_SHOT_POSES[0].getRPM());
                     drive.setPoseEstimate(POWER_SHOT_POSES[0].getPose2d());
                     powerShotState = 0;
                     currentMode = Mode.GENERATE_NEXT_POWERSHOT_PATH;
@@ -436,7 +381,7 @@ public class TeleOpTest extends OpMode {
                 //DPAD RIGHT - Shoot Powershots From Left To Right
                 if (gamepad1.dpad_right) {
                     POWER_SHOT_POSES = POWER_SHOT_POSES_LEFT;
-
+                    flywheel.setRPM(POWER_SHOT_POSES[0].getRPM());
                     drive.setPoseEstimate(POWER_SHOT_POSES[0].getPose2d());
                     powerShotState = 0;
                     currentMode = Mode.GENERATE_NEXT_POWERSHOT_PATH;
@@ -445,6 +390,7 @@ public class TeleOpTest extends OpMode {
                 //RIGHT BUMPER - Auto Aim
                 if(gamepad1.right_bumper && pipeline.isGoalVisible()) {
                     collector.turnCollectorOff();
+                    flywheel.setRPM(launcherRPM);
                     currentMode = Mode.ALIGN_TO_GOAL;
                     timer.reset();
                 }
@@ -456,9 +402,9 @@ public class TeleOpTest extends OpMode {
                 }
 
 
-                    //GAMEPAD 2 RIGHT STICK BUTTON - Reset odometry to white line to starting line to maintain good distance
+                //GAMEPAD 2 RIGHT STICK BUTTON - Reset odometry to white line to starting line to maintain good distance
                 if(gamepad2.right_stick_button) {
-                    drive.setPoseEstimate(new Pose2d(12, drive.getPoseEstimate().getY(), drive.getPoseEstimate().getHeading()));
+                    drive.setPoseEstimate(new Pose2d(12, currentPose.getY(), currentPose.getHeading()));
                 }
 
                 break;
@@ -466,9 +412,7 @@ public class TeleOpTest extends OpMode {
 
 
             case ALIGN_TO_ANGLE:
-
-
-                //put angle in degrees
+                //pass angle in degrees
                 drive.turnTo(angle);
 
                 if (UtilMethods.inRange(Math.toDegrees(drive.getRawExternalHeading()), angle - 1, angle + 1) && timer.seconds() > 0.02){
@@ -477,7 +421,6 @@ public class TeleOpTest extends OpMode {
                 } else{
                     timer.reset();
                 }
-
 
                 if (gamepad1.left_bumper)
                     currentMode = Mode.DRIVER_CONTROL;
@@ -508,10 +451,8 @@ public class TeleOpTest extends OpMode {
                     drive.rightFront.setPower(motorPower);
                     drive.rightRear.setPower(motorPower);
                 }
-
-
-
                 break;
+
             // generate a trajectory based on powershot state and move to stop and aim state
             case GENERATE_NEXT_POWERSHOT_PATH:
                 if (gamepad1.left_bumper) {
@@ -613,7 +554,7 @@ public class TeleOpTest extends OpMode {
                     currentMode = Mode.DRIVER_CONTROL;
                 }
 
-                // If drive finishes its task, shoot rings
+                // If drive finishes its task, we break out of the automatic following
                 if (!drive.isBusy()) {
                     timer.reset();
                     currentMode = Mode.ALIGN_TO_GOAL;
