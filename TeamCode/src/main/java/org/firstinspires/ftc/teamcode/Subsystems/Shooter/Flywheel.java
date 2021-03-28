@@ -94,9 +94,9 @@ public class Flywheel implements SubsystemBase {
         return true;
     }
 
-    //within 5%
+    //within 4%
     public boolean atTargetRPM() {
-        return UtilMethods.inRange(getVelocity(), 0.95 * rpmToTicksPerSecond(targetRPM), 1.05 * rpmToTicksPerSecond(targetRPM));
+        return UtilMethods.inRange(getVelocity(), 0.96 * rpmToTicksPerSecond(targetRPM), 1.04 * rpmToTicksPerSecond(targetRPM));
     }
 
 

@@ -87,7 +87,9 @@ public class TeleOpTest extends OpMode {
     boolean slowmodeOn = false;
 
 
+
     Pose2d_RPM[] POWER_SHOT_POSES;
+
 
 
     //target angle
@@ -137,14 +139,8 @@ public class TeleOpTest extends OpMode {
 
 
         //Init Wobble Arm
-        // TODO: Do not initialize the arm to the current position after autonomous because it would not be in the starting position at the end of autonomous
         wobbleArm = new WobbleArm(hardwareMap);
-//        armMotor = hardwareMap.dcMotor.get("armMotor");
-//        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        armMotor.setTargetPosition(0);
-//        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//        clawServo1 = hardwareMap.servo.get("clawServo");
-//        clawServo2 = hardwareMap.servo.get("clawServo2");
+
 
         flywheel = new Flywheel(hardwareMap);
 
@@ -157,7 +153,7 @@ public class TeleOpTest extends OpMode {
         launcherPower = 0.0;
         launcherRPM = 3300;
         launcherOn = false;
-//        collectorPower = 1.0;
+
         armPos = 0;
         buttonReleased1 = true;
         buttonReleased2 = true;
@@ -167,9 +163,6 @@ public class TeleOpTest extends OpMode {
         //set read mode to manual
         for (LynxModule module : hardwareMap.getAll(LynxModule.class))
             module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
-
-
-
         }
 
     @Override
@@ -191,6 +184,7 @@ public class TeleOpTest extends OpMode {
         telemetry.addData("Drive Mode: ", currentMode);
         telemetry.addData("x", currentPose.getX());
         telemetry.addData("y", currentPose.getY());
+
         telemetry.addData("raw heading", Math.toDegrees(drive.getRawExternalHeading()));
 
         telemetry.addData("At Setpoint Angle",UtilMethods.inRange(Math.toDegrees(drive.getRawExternalHeading()), angle - 1, angle + 1));
@@ -208,6 +202,7 @@ public class TeleOpTest extends OpMode {
 //        telemetry.addData("At Set Point", pipeline.isGoalCentered());
 //        telemetry.addData("Real motor power", drive.leftFront.getPower());
 //        telemetry.addData("Timer", timer.seconds());
+
 
         // Controls and Information
 
@@ -264,6 +259,7 @@ public class TeleOpTest extends OpMode {
                 strafe = gamepad1.left_stick_x * strafePower;
                 rotation = gamepad1.right_stick_x * strafePower;
 
+
                 drive.setMotorPowers(speed + strafe + rotation, speed - strafe + rotation, speed + strafe - rotation, speed - strafe - rotation);
 
                 // Slowmode
@@ -273,6 +269,7 @@ public class TeleOpTest extends OpMode {
                         strafePower = 1.0;
                         slowmodeOn = false;
                     } else {
+
                         strafePower = 0.5;
                         slowmodeOn = true;
                     }
@@ -342,6 +339,7 @@ public class TeleOpTest extends OpMode {
                 }
 
                 if (gamepad2.right_bumper && buttonReleased2) {
+                    collector.turnCollectorOff();
                     hopper.setLiftUpPos();
                     buttonReleased2 = false;
                 }
@@ -446,8 +444,6 @@ public class TeleOpTest extends OpMode {
 
                 //RIGHT BUMPER - Auto Aim
                 if(gamepad1.right_bumper && pipeline.isGoalVisible()) {
-                    //turn to zero degrees
-//                    drive.turnAsync(Angle.normDelta(Math.toRadians(0.0) - currentPose.getHeading()));
                     collector.turnCollectorOff();
                     currentMode = Mode.ALIGN_TO_GOAL;
                     timer.reset();
@@ -617,9 +613,10 @@ public class TeleOpTest extends OpMode {
                     currentMode = Mode.DRIVER_CONTROL;
                 }
 
-                // If drive finishes its task, go back to driver control
+                // If drive finishes its task, shoot rings
                 if (!drive.isBusy()) {
-                    currentMode = Mode.DRIVER_CONTROL;
+                    timer.reset();
+                    currentMode = Mode.ALIGN_TO_GOAL;
                 }
                 break;
 

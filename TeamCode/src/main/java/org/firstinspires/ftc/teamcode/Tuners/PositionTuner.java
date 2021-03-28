@@ -48,15 +48,7 @@ public class PositionTuner extends LinearOpMode {
             wobbleArm.clawServoLeft.setPosition(leftClawPosition);
             wobbleArm.clawServoRight.setPosition(rightClawPosition);
             camera.cameraServo.setPosition(cameraServoPosition);
-
-
-            drive.setWeightedDrivePower(
-                    new Pose2d(
-                            -gamepad1.left_stick_y,
-                            -gamepad1.left_stick_x,
-                            -gamepad1.right_stick_x
-                    )
-            );
+            
 
             drive.update();
 
