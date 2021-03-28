@@ -408,14 +408,13 @@ public class TeleOpTest extends OpMode {
                 //DPAD-UP - auto drive to general shooting position
                 if (gamepad1.dpad_up) {
                     collector.turnCollectorOff();
-                    drive.setPoseEstimate(new Pose2d(-72, drive.getPoseEstimate().getY()));
                     currentPose = drive.getPoseEstimate();
                     Trajectory driveToShootPositionPath = drive.trajectoryBuilder(currentPose)
-                            .lineToLinearHeading(PoseLibrary.MIDDLE_SHOOTING_POSE.getPose2d())
+                            .lineToLinearHeading(PoseLibrary.TELE_SHOOTING_POSE.getPose2d())
                             .build();
 
                     drive.followTrajectoryAsync(driveToShootPositionPath);
-                    flywheel.setRPM(PoseLibrary.MIDDLE_SHOOTING_POSE.getRPM());
+                    flywheel.setRPM(PoseLibrary.TELE_SHOOTING_POSE.getRPM());
 
                     currentMode = Mode.LINE_TO_POINT;
                 }
@@ -455,7 +454,13 @@ public class TeleOpTest extends OpMode {
                 }
 
 
-                //GAMEPAD 2 RIGHT STICK BUTTON - Reset odometry to starting line to maintain good distance
+                //GAMEPAD 2 LEFT STICK BUTTON - Set shooting position
+                if(gamepad2.left_stick_button) {
+                    PoseLibrary.TELE_SHOOTING_POSE = new Pose2d_RPM(currentPose, 3350);
+                }
+
+
+                    //GAMEPAD 2 RIGHT STICK BUTTON - Reset odometry to white line to starting line to maintain good distance
                 if(gamepad2.right_stick_button) {
                     drive.setPoseEstimate(new Pose2d(12, drive.getPoseEstimate().getY(), drive.getPoseEstimate().getHeading()));
                 }
