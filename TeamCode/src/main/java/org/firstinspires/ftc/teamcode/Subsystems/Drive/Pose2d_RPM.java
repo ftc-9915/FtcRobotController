@@ -5,8 +5,8 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 
 //Wrapper Class for Pose2d that also contains RPM
 public class Pose2d_RPM  {
-    private final Pose2d pose2d;
-    private final double RPM;
+    private  Pose2d pose2d;
+    private  double RPM;
 
 
     public Pose2d_RPM(Pose2d pose2d, double RPM) {
@@ -22,6 +22,15 @@ public class Pose2d_RPM  {
     public double getRPM() {
         return RPM;
     }
+
+    public void setRPM(double rpm) {
+        this.RPM = rpm;
+    }
+
+    public void setPose2d(Pose2d pose2d) {
+        this.pose2d = pose2d;
+    }
+
 
     public Pose2d getPose2d() {
         return pose2d;

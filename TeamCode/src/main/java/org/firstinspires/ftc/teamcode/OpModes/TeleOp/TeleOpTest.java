@@ -29,6 +29,8 @@ import static org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary.POWER_
 @Config
 public class TeleOpTest extends OpMode {
 
+    public static double aimTimer = 1;
+
     //Subsystems
     MecanumDrivebase drive;
     Flywheel flywheel;
@@ -164,8 +166,11 @@ public class TeleOpTest extends OpMode {
         telemetry.addData("Drive Mode: ", currentMode);
         telemetry.addData("x", currentPose.getX());
         telemetry.addData("y", currentPose.getY());
+        telemetry.addData("Angle To Goal", pipeline.getYaw());
+        telemetry.addData("Aligned To Goal", pipeline.isGoalCentered());
         telemetry.addData("raw heading", Math.toDegrees(drive.getRawExternalHeading()));
         telemetry.addData("At Setpoint Angle",UtilMethods.inRange(Math.toDegrees(drive.getRawExternalHeading()), angle - 1, angle + 1));
+        telemetry.addData("Tele Shooting Pose", PoseLibrary.TELE_SHOOTING_POSE.getPose2d());
 
 //        telemetry.addData("Current Robot Position", pipeline.getFieldPositionFromGoal().toString());
 //        telemetry.addData("Distance to Goal", pipeline.getDistanceToGoalWall());
@@ -367,6 +372,7 @@ public class TeleOpTest extends OpMode {
                 if (gamepad1.dpad_down) {
                     angle = 0;
                     currentMode = Mode.ALIGN_TO_ANGLE;
+                    timer.reset();
                 }
 
                 //DPAD LEFT - Shoot Powershots From Right To Left
@@ -398,7 +404,7 @@ public class TeleOpTest extends OpMode {
 
                 //GAMEPAD 2 LEFT STICK BUTTON - Set shooting position
                 if(gamepad2.left_stick_button) {
-                    PoseLibrary.TELE_SHOOTING_POSE = new Pose2d_RPM(currentPose, 3350);
+                        PoseLibrary.TELE_SHOOTING_POSE.setPose2d(currentPose);
                 }
 
 
@@ -429,13 +435,15 @@ public class TeleOpTest extends OpMode {
 
             case ALIGN_TO_GOAL:
                 //if goal is centered for 1 second shoot rings, else reset timer
-                if (pipeline.isGoalCentered() && timer.seconds() > 0.02) {
-                    rings = 3;
-                    timer.reset();
-                    launcherOn = true;
-                    currentMode = Mode.SHOOT_RINGS;
-                } else {
-                    timer.reset();
+                if (timer.seconds() > aimTimer) {
+                    if(pipeline.isGoalVisible()){
+                        rings = 3;
+                        timer.reset();
+                        launcherOn = true;
+                        currentMode = Mode.SHOOT_RINGS;
+                    } else {
+                        timer.reset();
+                    }
                 }
 
                 //emergency exit

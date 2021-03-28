@@ -68,9 +68,9 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
     //---------------- EDITABLE CONSTANTS --------------
 
     //PID Controller
-    public static double kP = 0.015;
-    public static double kI = 0.01;
-    public static double kD = 0.0001;
+    public static double kP = 0.02;
+    public static double kI = 0;
+    public static double kD = 0.0005;
     public static double TOLERANCE = 1.0;
 
     public PIDController headingController = new PIDController(kP, kI, kD);
@@ -90,12 +90,12 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
 
 
     //Boundary Line (Only detects above this to eliminate field tape)
-    public static int BOUNDARY = 160    ;
+    public static int BOUNDARY = 130    ;
 
 
     //Mask constants to isolate blue coloured subjects
     public static double UPPER_BLUE_THRESH = 200;
-    public static double LOWER_BLUE_THRESH = 144;
+    public static double LOWER_BLUE_THRESH = 145;
 
 
     //Countour Filter Constants
@@ -104,7 +104,7 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
     public static double CONTOUR_ASPECT_RATIO_MAX = 2;
 
     //degrees
-    public static double HIGH_GOAL_SETPOINT = -19.2;
+    public static double HIGH_GOAL_SETPOINT = -18.5;
     public static double minimumMotorPower = 0.05;
 
 
