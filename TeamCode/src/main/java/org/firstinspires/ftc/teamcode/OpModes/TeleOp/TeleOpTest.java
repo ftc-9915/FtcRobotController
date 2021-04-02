@@ -73,22 +73,24 @@ public class TeleOpTest extends OpMode {
     double rotation = 0.0;
     double strafePower = 1.0;
     boolean slowmodeOn = false;
+    double powershotHeadingOffset = 0;
 
 
 
     Pose2d_RPM[] POWER_SHOT_POSES;
 
     //target angle
-    double angle = 0.0;
+    double angle = -6.5;
 
     enum Mode {
         DRIVER_CONTROL,
         LINE_TO_POINT,
         SHOOT_RINGS,
-        GENERATE_NEXT_POWERSHOT_PATH,
+        STAFE_TO_POWERSHOT_POSITION,
         PREPARE_TO_SHOOT_POWERSHOTS,
         SHOOT_RINGS_POWERSHOT,
         ALIGN_TO_ANGLE,
+        TURN_TO,
         ALIGN_TO_GOAL;
     }
 
@@ -133,7 +135,7 @@ public class TeleOpTest extends OpMode {
         camera.setHighGoalPosition();
 
         // Initialization values
-        launcherRPM = 3300;
+        launcherRPM = 3200;
         launcherOn = false;
 
         armPos = 0;
@@ -160,6 +162,8 @@ public class TeleOpTest extends OpMode {
 
         // Retrieve pose
         Pose2d currentPose = drive.getPoseEstimate();
+
+        telemetry.addData("Powershot State", powerShotState);
 
         telemetry.addData("Goal Visibility", pipeline.isGoalVisible());
         telemetry.addData("RPM", launcherRPM);
@@ -377,20 +381,28 @@ public class TeleOpTest extends OpMode {
 
                 //DPAD LEFT - Shoot Powershots From Right To Left
                 if (gamepad1.dpad_left) {
-                    POWER_SHOT_POSES = POWER_SHOT_POSES_RIGHT;
+/*                    POWER_SHOT_POSES = POWER_SHOT_POSES_RIGHT;
                     flywheel.setRPM(POWER_SHOT_POSES[0].getRPM());
                     drive.setPoseEstimate(POWER_SHOT_POSES[0].getPose2d());
                     powerShotState = 0;
-                    currentMode = Mode.GENERATE_NEXT_POWERSHOT_PATH;
+                    currentMode = Mode.STAFE_TO_POWERSHOT_POSITION;
+ */
+                    currentMode = Mode.ALIGN_TO_ANGLE;
                 }
+
 
                 //DPAD RIGHT - Shoot Powershots From Left To Right
                 if (gamepad1.dpad_right) {
-                    POWER_SHOT_POSES = POWER_SHOT_POSES_LEFT;
-                    flywheel.setRPM(POWER_SHOT_POSES[0].getRPM());
-                    drive.setPoseEstimate(POWER_SHOT_POSES[0].getPose2d());
+                    flywheel.setRPM(2950);
                     powerShotState = 0;
-                    currentMode = Mode.GENERATE_NEXT_POWERSHOT_PATH;
+
+                    Trajectory driveToPowershotPosition = drive.trajectoryBuilder(currentPose)
+                            .strafeRight(63)
+                            .build();
+
+                    drive.followTrajectoryAsync(driveToPowershotPosition);
+
+                    currentMode = Mode.STAFE_TO_POWERSHOT_POSITION;
                 }
 
                 //RIGHT BUMPER - Auto Aim
@@ -421,7 +433,7 @@ public class TeleOpTest extends OpMode {
                 //pass angle in degrees
                 drive.turnTo(angle);
 
-                if (UtilMethods.inRange(Math.toDegrees(drive.getRawExternalHeading()), angle - 1, angle + 1) && timer.seconds() > 0.02){
+                if (UtilMethods.inRange(Math.toDegrees(drive.getRawExternalHeading()), angle - 1, angle + 1) && timer.seconds() > 1){
                     currentMode = Mode.DRIVER_CONTROL;
                     timer.reset();
                 } else{
@@ -462,26 +474,17 @@ public class TeleOpTest extends OpMode {
                 break;
 
             // generate a trajectory based on powershot state and move to stop and aim state
-            case GENERATE_NEXT_POWERSHOT_PATH:
+            case STAFE_TO_POWERSHOT_POSITION:
                 if (gamepad1.left_bumper) {
                     drive.cancelFollowing();
                     currentMode = Mode.DRIVER_CONTROL;
                     // 0 1 2
-                } else if (powerShotState < POWER_SHOT_POSES.length - 1) {
-                    //0 1 2
-                    Trajectory driveToPowerShotPose = drive.trajectoryBuilder(POWER_SHOT_POSES[powerShotState].getPose2d())
-                            //1 2 3
-                            .lineToSplineHeading(POWER_SHOT_POSES[powerShotState + 1].getPose2d())
-                            .build();
-
-                    drive.followTrajectoryAsync(driveToPowerShotPose);
-
-                    powerShotState++;
+                } else if (!drive.isBusy()) {
                     currentMode = Mode.PREPARE_TO_SHOOT_POWERSHOTS;
-                } else {
-                    flywheel.setRPM(0);
-                    currentMode = Mode.DRIVER_CONTROL;
+                    powershotHeadingOffset = drive.getRawExternalHeading();
+                    timer.reset();
                 }
+
                 break;
 
             //when robot has reached the end of it's generated trajectory, reset timer and rings to 1, then move to shoot rings state
@@ -489,7 +492,8 @@ public class TeleOpTest extends OpMode {
                 if (gamepad1.left_bumper) {
                     drive.cancelFollowing();
                     currentMode = Mode.DRIVER_CONTROL;
-                } else if (!drive.isBusy()) {
+                }
+                else if (!drive.isBusy()) {
                     rings = 1;
                     timer.reset();
                     currentMode = Mode.SHOOT_RINGS_POWERSHOT;
@@ -506,7 +510,6 @@ public class TeleOpTest extends OpMode {
                     currentMode = Mode.DRIVER_CONTROL;
                 }
 
-                flywheel.setRPM(POWER_SHOT_POSES_LEFT[powerShotState].getRPM());
                 hopper.setLiftUpPos();
                 if (rings > 0) {
                     if (flywheel.atTargetRPM()
@@ -520,10 +523,26 @@ public class TeleOpTest extends OpMode {
                         rings--;
                     }
                 } else {
+                    currentMode = Mode.TURN_TO;
+                    powerShotState++;
                     timer.reset();
-                    currentMode = Mode.GENERATE_NEXT_POWERSHOT_PATH;
                 }
 
+                break;
+
+
+            case TURN_TO:
+                if (powerShotState > 2)
+                    currentMode = Mode.DRIVER_CONTROL;
+                if(timer.seconds() > 1) {
+                    currentMode = Mode.PREPARE_TO_SHOOT_POWERSHOTS;
+                } else if (powerShotState == 1) {
+                    //turn to -6.5 degrees
+                    drive.turnTo(-5 + powershotHeadingOffset)  ;
+                } else if (powerShotState == 2) {
+                    //turn to -13 degrees
+                    drive.turnTo(-8 + powershotHeadingOffset);
+                }
                 break;
 
 

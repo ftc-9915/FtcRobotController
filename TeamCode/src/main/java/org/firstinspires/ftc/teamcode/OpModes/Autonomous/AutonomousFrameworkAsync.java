@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.OpModes.Autonomous;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -41,6 +42,9 @@ public class AutonomousFrameworkAsync extends OpMode {
     Flywheel flywheel;
     Collector collector;
     Hopper hopper;
+    
+    private FtcDashboard dashboard;
+
 
 
     @Override
@@ -77,6 +81,21 @@ public class AutonomousFrameworkAsync extends OpMode {
 //        Initialize webcam
         ringDetectPipeline = new VisionPipeline();
         camera = new Camera(hardwareMap, ringDetectPipeline);
+
+
+        //logging
+
+        dashboard = FtcDashboard.getInstance();
+        dashboard.setTelemetryTransmissionInterval(25);
+
+        TelemetryPacket packet = new TelemetryPacket();
+        packet.put("Desired RPM", 0);
+        packet.put("RPM", (0));
+        packet.put("Upper Bound", 5000);
+        packet.put("Lower Bound", 0);
+
+        dashboard.sendTelemetryPacket(packet);
+
     }
 
     //Called every 25 seconds

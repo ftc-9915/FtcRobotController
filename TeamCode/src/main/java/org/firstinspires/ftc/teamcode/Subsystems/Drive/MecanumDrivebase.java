@@ -65,9 +65,9 @@ public class MecanumDrivebase extends com.acmerobotics.roadrunner.drive.MecanumD
     public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(3, 0, 0);
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(6, 0, 0);
 
-    public static double kPTurn = 2.0;
+    public static double kPTurn = 2.14;
     public static double kITurn = 0.0;
-    public static double kDTurn = 0.0;
+    public static double kDTurn = 0.001;
 
     public static PIDController TURN_CONTROLLER = new PIDController(kPTurn, kITurn, kDTurn);
 
@@ -120,8 +120,8 @@ public class MecanumDrivebase extends com.acmerobotics.roadrunner.drive.MecanumD
     public MecanumDrivebase(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
 
-        dashboard = FtcDashboard.getInstance();
-        dashboard.setTelemetryTransmissionInterval(25);
+        //dashboard = FtcDashboard.getInstance();
+        //dashboard.setTelemetryTransmissionInterval(25);
 
         clock = NanoClock.system();
 
@@ -261,9 +261,12 @@ public class MecanumDrivebase extends com.acmerobotics.roadrunner.drive.MecanumD
             poseHistory.removeFirst();
         }
 
-        TelemetryPacket packet = new TelemetryPacket();
-        Canvas fieldOverlay = packet.fieldOverlay();
 
+
+        //TelemetryPacket packet = new TelemetryPacket();
+        //Canvas fieldOverlay = packet.fieldOverlay();
+
+        /*
         packet.put("mode", mode);
 
         packet.put("x", currentPose.getX());
@@ -273,6 +276,8 @@ public class MecanumDrivebase extends com.acmerobotics.roadrunner.drive.MecanumD
         packet.put("xError", lastError.getX());
         packet.put("yError", lastError.getY());
         packet.put("headingError", lastError.getHeading());
+
+         */
 
         switch (mode) {
             case IDLE:
@@ -297,8 +302,8 @@ public class MecanumDrivebase extends com.acmerobotics.roadrunner.drive.MecanumD
 
                 Pose2d newPose = lastPoseOnTurn.copy(lastPoseOnTurn.getX(), lastPoseOnTurn.getY(), targetState.getX());
 
-                fieldOverlay.setStroke("#4CAF50");
-                DashboardUtil.drawRobot(fieldOverlay, newPose);
+               // fieldOverlay.setStroke("#4CAF50");
+               // DashboardUtil.drawRobot(fieldOverlay, newPose);
 
                 if (t >= turnProfile.duration()) {
                     mode = Mode.IDLE;
@@ -312,14 +317,14 @@ public class MecanumDrivebase extends com.acmerobotics.roadrunner.drive.MecanumD
 
                 Trajectory trajectory = follower.getTrajectory();
 
-                fieldOverlay.setStrokeWidth(1);
-                fieldOverlay.setStroke("#4CAF50");
-                DashboardUtil.drawSampledPath(fieldOverlay, trajectory.getPath());
+                //fieldOverlay.setStrokeWidth(1);
+                //fieldOverlay.setStroke("#4CAF50");
+             //   DashboardUtil.drawSampledPath(fieldOverlay, trajectory.getPath());
                 double t = follower.elapsedTime();
-                DashboardUtil.drawRobot(fieldOverlay, trajectory.get(t));
+              //  DashboardUtil.drawRobot(fieldOverlay, trajectory.get(t));
 
-                fieldOverlay.setStroke("#3F51B5");
-                DashboardUtil.drawPoseHistory(fieldOverlay, poseHistory);
+              //  fieldOverlay.setStroke("#3F51B5");
+               // DashboardUtil.drawPoseHistory(fieldOverlay, poseHistory);
 
                 if (!follower.isFollowing()) {
                     mode = Mode.IDLE;
@@ -330,10 +335,10 @@ public class MecanumDrivebase extends com.acmerobotics.roadrunner.drive.MecanumD
             }
         }
 
-        fieldOverlay.setStroke("#3F51B5");
-        DashboardUtil.drawRobot(fieldOverlay, currentPose);
+        //fieldOverlay.setStroke("#3F51B5");
+       // DashboardUtil.drawRobot(fieldOverlay, currentPose);
 
-        dashboard.sendTelemetryPacket(packet);
+        //dashboard.sendTelemetryPacket(packet);
     }
 
     public void waitForIdle() {

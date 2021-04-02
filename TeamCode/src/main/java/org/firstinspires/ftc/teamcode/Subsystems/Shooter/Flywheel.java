@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.Subsystems.Shooter;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -36,6 +38,10 @@ public class Flywheel implements SubsystemBase {
 
     private VoltageSensor batteryVoltageSensor;
 
+    //logging
+    private FtcDashboard dashboard;
+
+
 
     //Common Shooting RPMs
     public static double powerShotRPM;
@@ -67,6 +73,8 @@ public class Flywheel implements SubsystemBase {
 
         setPIDFCoefficients(MOTOR_VELO_PID);
 
+        dashboard = FtcDashboard.getInstance();
+        dashboard.setTelemetryTransmissionInterval(25);
 
     }
 
@@ -90,6 +98,16 @@ public class Flywheel implements SubsystemBase {
         }
 
         flywheelMotor.setVelocity(rpmToTicksPerSecond(rpm));
+
+        //logging
+        TelemetryPacket packet = new TelemetryPacket();
+        packet.put("Desired RPM", rpm);
+        packet.put("RPM", getRPM());
+        packet.put("Upper Bound", 5000);
+        packet.put("Lower Bound", 0);
+
+        dashboard.sendTelemetryPacket(packet);
+
 
         return true;
     }

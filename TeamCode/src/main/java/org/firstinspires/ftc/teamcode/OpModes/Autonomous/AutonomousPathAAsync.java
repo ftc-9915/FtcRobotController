@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.OpModes.Autonomous;
 
 import android.util.Log;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
@@ -51,19 +52,24 @@ public class AutonomousPathAAsync extends AutonomousPathAsync {
 
     //Poses
     public static Pose2d placeGoalAndShootingPose1 = PoseLibrary.SHOOTING_POSE_A.getPose2d();
-    public static Pose2d placeGoalAndShootingPose2 = new Pose2d(-5, 55, Math.toRadians(-0.1));
+    public static Pose2d placeGoalAndShootingPose2 = new Pose2d(-5, 55, Math.toRadians(0));
     public static Pose2d pickUpGoalPose1 = new Pose2d(-24, goalY, Math.toRadians(180.0));
     public static Pose2d pickUpGoalPose2 = new Pose2d(goalX, goalY, Math.toRadians(180.0));
     public static Pose2d placeSecondGoalPose = new Pose2d(0, 57, Math.toRadians(0.0));
     public static Pose2d parkingPose1 = new Pose2d(0, 30, Math.toRadians(0.0));
     public static Pose2d parkingPose2 = new Pose2d(15, 30, Math.toRadians(0.0));
 
+    //Telemetry
+    FtcDashboard dashboard;
+    Telemetry dashboardTelemetry;
 
     //build trajectories on construction
     public AutonomousPathAAsync(MecanumDrivebase drive, WobbleArm wobbleArm, Flywheel flywheel, Collector collector, Hopper hopper) {
         super(drive, wobbleArm, flywheel, collector, hopper);
 
-
+        //telemetry
+        dashboard = FtcDashboard.getInstance();
+        dashboardTelemetry = dashboard.getTelemetry();
 
         //Trajectories
 
@@ -107,6 +113,10 @@ public class AutonomousPathAAsync extends AutonomousPathAsync {
     @Override
     public void followPathAsync(Telemetry telemetry) {
 
+        dashboardTelemetry.addData("Desired Velocity", Flywheel.rpmToTicksPerSecond(shootingPoseRPM));
+        dashboardTelemetry.addData("Current Velocity", flywheel.flywheelMotor.getVelocity());
+        dashboardTelemetry.addData("At RPM", flywheel.atTargetRPM());
+
         switch (currentState) {
             case DRIVE_TO_SHOOT:
                 // Check if the drive class isn't busy
@@ -129,7 +139,6 @@ public class AutonomousPathAAsync extends AutonomousPathAsync {
                         if (UtilMethods.inRange(flywheel.getRPM(), shootingPoseRPM - RPM_FORGIVENESS, shootingPoseRPM + RPM_FORGIVENESS) && !hopperPositionIn && timer.seconds() > 0.5) {
                             hopper.setPushInPos();
                             timer.reset();
-                            Log.d("Ring Release RPM", "" + flywheel.getRPM());
                             hopperPositionIn = true;
                         }
                         if (hopperPositionIn && timer.seconds() > 0.5) {

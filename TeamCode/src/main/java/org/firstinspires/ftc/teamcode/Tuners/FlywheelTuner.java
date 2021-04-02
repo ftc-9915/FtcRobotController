@@ -38,8 +38,6 @@ public class FlywheelTuner extends LinearOpMode {
         waitForStart();
 
         while (!isStopRequested()) {
-            FtcDashboard dashboard = FtcDashboard.getInstance();
-            Telemetry dashboardTelemetry = dashboard.getTelemetry();
 
             hopper.setLiftUpPos();
 
@@ -53,14 +51,6 @@ public class FlywheelTuner extends LinearOpMode {
 
 
             flywheel.setRPM(RPM);
-
-            dashboardTelemetry.addData("Desired Velocity", Flywheel.rpmToTicksPerSecond(RPM));
-            dashboardTelemetry.addData("Current Velocity", flywheel.flywheelMotor.getVelocity());
-            dashboardTelemetry.addData("At RPM", flywheel.atTargetRPM());
-            dashboardTelemetry.update();
-
-
-
 
         }
     }

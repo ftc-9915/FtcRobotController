@@ -14,9 +14,9 @@ public class PoseLibrary {
     public static Pose2d AUTO_ENDING_POSE = new Pose2d(-55, 26.5, Math.toRadians(0.0));
 
     //common shooting poses
-    public static Pose2d_RPM SHOOTING_POSE_A = new Pose2d_RPM(-4, 55, Math.toRadians(-25.0), 3300); //used in auto path A
-    public static Pose2d_RPM SHOOTING_POSE_BC = new Pose2d_RPM(6.8066, 26.37388, Math.toRadians(-5), 3350); //used in auto path B and C
-    public static Pose2d_RPM TELE_SHOOTING_POSE = new Pose2d_RPM(0, 26.37388, Math.toRadians(0), 3350);  //used in teleop line to point
+    public static Pose2d_RPM SHOOTING_POSE_A = new Pose2d_RPM(-4, 55, Math.toRadians(-24.0), 3180); //used in auto path A
+    public static Pose2d_RPM SHOOTING_POSE_BC = new Pose2d_RPM(6.8066, 26.37388, Math.toRadians(-5), 3200); //used in auto path B and C
+    public static Pose2d_RPM TELE_SHOOTING_POSE = new Pose2d_RPM(0, 26.37388, Math.toRadians(0), 3200);  //used in teleop line to point
 
 
     //automatic power shot poses
