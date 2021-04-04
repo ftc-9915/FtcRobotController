@@ -104,7 +104,7 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
     public static double CONTOUR_ASPECT_RATIO_MAX = 2;
 
     //degrees
-    public static double HIGH_GOAL_SETPOINT = -18.5;
+    public static double HIGH_GOAL_SETPOINT = -14;
     public static double minimumMotorPower = 0.05;
 
 

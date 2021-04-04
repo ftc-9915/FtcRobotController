@@ -238,6 +238,7 @@
 //                    //Trigger action depending on timer using else if logic
 //                    if (timer.seconds() > 2) {
 //                        currentState = State.SHOOT_SECOND;
+       //                 rings   = 1;
 //                        wobbleArm.liftArm();
 //                        flywheel.setRPM(shootingPoseRPM);
 //                        drive.followTrajectoryAsync(goToShootingPosePt1);

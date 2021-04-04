@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -161,8 +162,23 @@ public class TeleOpTest extends OpMode {
 
         drive.update();
 
+
+
+
         // Retrieve pose
         Pose2d currentPose = drive.getPoseEstimate();
+
+        // Adjusts launcher speed every time trigger goes below 0.4
+        if (gamepad2.left_trigger > 0.4 && triggerReleased) {
+            launcherRPM -= 50;
+            triggerReleased = false;
+        }
+
+        if (gamepad2.right_trigger > 0.4 && triggerReleased) {
+            launcherRPM += 50;
+            triggerReleased = false;
+        }
+
 
         telemetry.addData("Powershot State", powerShotState);
 
@@ -210,6 +226,8 @@ public class TeleOpTest extends OpMode {
         telemetry.addData("Decrease Launcher Speed", "Left Trigger");
         telemetry.addData("Increase Launcher Speed", "Right Trigger");
          */
+
+
 
         switch (currentMode){
             case DRIVER_CONTROL:
@@ -267,18 +285,7 @@ public class TeleOpTest extends OpMode {
                     buttonReleased2 = false;
                 }
 
-                // Adjusts launcher speed every time trigger goes below 0.4
-                if (gamepad2.left_trigger > 0.4 && triggerReleased && launcherOn) {
-                    launcherRPM -= 50;
-                    flywheel.setRPM(launcherRPM);
-                    triggerReleased = false;
-                }
 
-                if (gamepad2.right_trigger > 0.4 && triggerReleased && launcherOn) {
-                    launcherRPM += 50;
-                    flywheel.setRPM(launcherRPM);
-                    triggerReleased = false;
-                }
 
                 // Pushes/retracts collector servo
                 if (gamepad2.y && buttonReleased2) {
@@ -382,19 +389,26 @@ public class TeleOpTest extends OpMode {
 
                 //DPAD LEFT - Shoot Powershots From Right To Left
                 if (gamepad1.dpad_left) {
-/*                    POWER_SHOT_POSES = POWER_SHOT_POSES_RIGHT;
-                    flywheel.setRPM(POWER_SHOT_POSES[0].getRPM());
-                    drive.setPoseEstimate(POWER_SHOT_POSES[0].getPose2d());
+                    launcherRPM = 2900;
+                    flywheel.setRPM(launcherRPM);
                     powerShotState = 0;
+
+                    drive.setPoseEstimate(new Pose2d(0,0,Math.toRadians(0.0)));
+                    Trajectory driveToPowershotPosition = drive.trajectoryBuilder(new Pose2d(0,0,Math.toRadians(0.0)))
+                            .lineToConstantHeading(new Vector2d(-9.9, 15))
+                            .build();
+
+                    drive.followTrajectoryAsync(driveToPowershotPosition);
+
                     currentMode = Mode.STAFE_TO_POWERSHOT_POSITION;
- */
-                    currentMode = Mode.ALIGN_TO_ANGLE;
+
                 }
 
 
                 //DPAD RIGHT - Shoot Powershots From Left To Right
                 if (gamepad1.dpad_right) {
-                    flywheel.setRPM(2950);
+                    launcherRPM = 2900;
+                    flywheel.setRPM(launcherRPM);
                     powerShotState = 0;
 
                     Trajectory driveToPowershotPosition = drive.trajectoryBuilder(currentPose)
@@ -448,6 +462,7 @@ public class TeleOpTest extends OpMode {
 
             case ALIGN_TO_GOAL:
                 //if goal is centered for 1 second shoot rings, else reset timer
+                flywheel.setRPM(launcherRPM);
                 if (timer.seconds() > aimTimer) {
                     if(pipeline.isGoalVisible()){
                         rings = 3;
@@ -486,6 +501,8 @@ public class TeleOpTest extends OpMode {
                     powershotHeadingOffset = drive.getRawExternalHeading();
                     timer.reset();
                 }
+                flywheel.setRPM(launcherRPM);
+
 
                 break;
 
@@ -500,6 +517,8 @@ public class TeleOpTest extends OpMode {
                     timer.reset();
                     currentMode = Mode.SHOOT_RINGS_POWERSHOT;
                 }
+                flywheel.setRPM(launcherRPM);
+
                 break;
 
 
@@ -512,6 +531,7 @@ public class TeleOpTest extends OpMode {
                     currentMode = Mode.DRIVER_CONTROL;
                 }
 
+                flywheel.setRPM(launcherRPM);
                 hopper.setLiftUpPos();
                 if (rings > 0) {
                     if (flywheel.atTargetRPM()
@@ -530,6 +550,7 @@ public class TeleOpTest extends OpMode {
                     timer.reset();
                 }
 
+
                 break;
 
 
@@ -538,13 +559,15 @@ public class TeleOpTest extends OpMode {
                     currentMode = Mode.DRIVER_CONTROL;
                 else if (powerShotState == 1) {
                     //turn to -6.5 degrees
-                    drive.turnAsync(Math.toRadians(-6));
+                    drive.turnAsync(Math.toRadians(-5));
                     currentMode = Mode.WAIT_FOR_TURN_TO_FINISH;
                 } else if (powerShotState == 2) {
                     //turn to -13 degrees
-                    drive.turnAsync(Math.toRadians(-7));
+                    drive.turnAsync(Math.toRadians(-5));
                     currentMode = Mode.WAIT_FOR_TURN_TO_FINISH;
                 }
+                flywheel.setRPM(launcherRPM);
+
                 break;
 
 
@@ -552,6 +575,8 @@ public class TeleOpTest extends OpMode {
                 if(!drive.isBusy()) {
                     currentMode = Mode.PREPARE_TO_SHOOT_POWERSHOTS;
                 }
+                flywheel.setRPM(launcherRPM);
+
                 break;
 
 
