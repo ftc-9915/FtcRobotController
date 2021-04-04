@@ -20,18 +20,18 @@ public class PoseLibrary {
 
 
     //automatic power shot poses
-    public static Pose2d_RPM POWER_SHOT_START_POSE_LEFT = new Pose2d_RPM(10, 72-8.5, Math.toRadians(0.0), 2900);
-    public static Pose2d_RPM POWER_SHOT_START_POSE_RIGHT = new Pose2d_RPM(10, 72-85.5, Math.toRadians(0.0), 2900);
+    public static Pose2d_RPM POWER_SHOT_START_POSE_LEFT = new Pose2d_RPM(0, 63.5, Math.toRadians(0.0), 2900);
+    public static Pose2d_RPM POWER_SHOT_START_POSE_RIGHT = new Pose2d_RPM(10, -13.5, Math.toRadians(0.0), 2900);
 
-    public static Pose2d_RPM POWER_SHOT_POSE_1 = new Pose2d_RPM(0, 31.5, Math.toRadians(-21), 2900);
-    public static Pose2d_RPM POWER_SHOT_POSE_2 = new Pose2d_RPM(0, 24, Math.toRadians(-21), 2900);
-    public static Pose2d_RPM POWER_SHOT_POSE_3 = new Pose2d_RPM(0, 16.5, Math.toRadians(-21), 2900);
+    public static Pose2d_RPM POWER_SHOT_POSE_1_LEFT = new Pose2d_RPM(0, 0.5, Math.toRadians(0), 2950);
+    public static Pose2d_RPM POWER_SHOT_POSE_2_LEFT = new Pose2d_RPM(0, -7.0, Math.toRadians(0), 2950);
+    public static Pose2d_RPM POWER_SHOT_POSE_3_LEFT = new Pose2d_RPM(0, -14.5, Math.toRadians(0), 2950);
 
-    public static Pose2d_RPM POWER_SHOT_POSE_1_RIGHT = new Pose2d_RPM(0, 31.5, Math.toRadians(-21), 2800);
-    public static Pose2d_RPM POWER_SHOT_POSE_2_RIGHT = new Pose2d_RPM(0, 24, Math.toRadians(-21), 2800);
-    public static Pose2d_RPM POWER_SHOT_POSE_3_RIGHT = new Pose2d_RPM(0, 16.5, Math.toRadians(-21), 2800);
+    public static Pose2d_RPM POWER_SHOT_POSE_1_RIGHT = new Pose2d_RPM(0, 15.5, Math.toRadians(-21), 2800);
+    public static Pose2d_RPM POWER_SHOT_POSE_2_RIGHT = new Pose2d_RPM(0, 8.0, Math.toRadians(-21), 2800);
+    public static Pose2d_RPM POWER_SHOT_POSE_3_RIGHT = new Pose2d_RPM(0, 0., Math.toRadians(-21), 2800);
 
-    public static Pose2d_RPM[] POWER_SHOT_POSES_LEFT = {POWER_SHOT_START_POSE_LEFT, POWER_SHOT_POSE_1, POWER_SHOT_POSE_2, POWER_SHOT_POSE_3};
+    public static Pose2d_RPM[] POWER_SHOT_POSES_LEFT = {POWER_SHOT_START_POSE_LEFT, POWER_SHOT_POSE_1_LEFT, POWER_SHOT_POSE_2_LEFT, POWER_SHOT_POSE_3_LEFT};
     public static Pose2d_RPM[] POWER_SHOT_POSES_RIGHT = {POWER_SHOT_START_POSE_RIGHT, POWER_SHOT_POSE_3_RIGHT, POWER_SHOT_POSE_2_RIGHT, POWER_SHOT_POSE_1_RIGHT};
 
 
