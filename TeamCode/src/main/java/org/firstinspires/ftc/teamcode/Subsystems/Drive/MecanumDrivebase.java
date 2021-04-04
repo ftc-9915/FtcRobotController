@@ -64,8 +64,9 @@ import static org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants.kV;
 public class MecanumDrivebase extends com.acmerobotics.roadrunner.drive.MecanumDrive {
     public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(3, 0, 0);
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(6, 0, 0);
+    public static PIDCoefficients POINT_TURN_PID = new PIDCoefficients(10, 0, 0.1);
 
-    public static double kPTurn = 2.14;
+    public static double kPTurn = 2;
     public static double kITurn = 0.0;
     public static double kDTurn = 0.001;
 
@@ -127,7 +128,7 @@ public class MecanumDrivebase extends com.acmerobotics.roadrunner.drive.MecanumD
 
         mode = Mode.IDLE;
 
-        turnController = new PIDFController(HEADING_PID);
+        turnController = new PIDFController(POINT_TURN_PID);
         turnController.setInputBounds(0, 2 * Math.PI);
 
         velConstraint = new MinVelocityConstraint(Arrays.asList(
@@ -305,7 +306,7 @@ public class MecanumDrivebase extends com.acmerobotics.roadrunner.drive.MecanumD
                // fieldOverlay.setStroke("#4CAF50");
                // DashboardUtil.drawRobot(fieldOverlay, newPose);
 
-                if (t >= turnProfile.duration()) {
+                if (t >= turnProfile.duration() + 0.5) {
                     mode = Mode.IDLE;
                     setDriveSignal(new DriveSignal());
                 }
