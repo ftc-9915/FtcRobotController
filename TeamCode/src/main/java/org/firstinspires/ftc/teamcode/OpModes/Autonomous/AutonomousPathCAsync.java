@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Flywheel;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Hopper;
+import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Shooter;
 import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
 
 import java.util.Arrays;
@@ -57,8 +58,8 @@ public class AutonomousPathCAsync extends AutonomousPathAsync {
     Pose2d parkPose = new Pose2d(19, 50, Math.toRadians(0.0));
 
     //build trajectories on construction
-    public AutonomousPathCAsync(MecanumDrivebase drive, WobbleArm wobbleArm, Flywheel flywheel, Collector collector, Hopper hopper) {
-        super(drive, wobbleArm, flywheel, collector, hopper);
+    public AutonomousPathCAsync(MecanumDrivebase drive, WobbleArm wobbleArm, Shooter shooter, Collector collector)  {
+        super(drive, wobbleArm, shooter, collector);
 
         //Trajectories
         goToShootingPosePt1 = drive.trajectoryBuilder(PoseLibrary.START_POS_BLUE_2)
@@ -93,6 +94,8 @@ public class AutonomousPathCAsync extends AutonomousPathAsync {
         goToParkingPose = drive.trajectoryBuilder(goToPlaceSecondGoalPart1.end())
                 .lineToConstantHeading(parkPose.vec())
                 .build();
+
+
     }
 
     @Override
@@ -107,33 +110,16 @@ public class AutonomousPathCAsync extends AutonomousPathAsync {
                 // Make sure we use the async follow function
                 if (!drive.isBusy()) {
                     currentState = State.SHOOT;
-                    flywheel.setRPM(shootingPoseRPM);
+                    shooter.shootRings(3, shootingPoseRPM);
                     drive.followTrajectoryAsync(goToShootingPosePt1);
                     timer.reset();
+
                 }
                 break;
             case SHOOT:
-                if (!drive.isBusy()) {
-                    flywheel.setRPM(shootingPoseRPM);
-                    hopper.setLiftUpPos();
-                    if (rings > 0) {
-                        if (UtilMethods.inRange(flywheel.getRPM(), shootingPoseRPM - RPM_FORGIVENESS, shootingPoseRPM + RPM_FORGIVENESS) && !hopperPositionIn && timer.seconds() > 0.5) {
-                            hopper.setPushInPos();
-                            timer.reset();
-                            hopperPositionIn = true;
-                        }
-                        if (hopperPositionIn && timer.seconds() > 0.5) {
-                            hopper.setPushOutPos();
-                            timer.reset();
-                            hopperPositionIn = false;
-                            rings--;
-                        }
-                    }
-                    else {
+                if (!shooter.isBusy()) {
                         currentState = State.DRIVE_TO_PLACE_GOAL;
                         drive.followTrajectoryAsync(goToPlaceGoalPose);
-                        flywheel.setRPM(0);
-                    }
                 }
                 break;
 
@@ -218,8 +204,6 @@ public class AutonomousPathCAsync extends AutonomousPathAsync {
         telemetry.addData("heading", poseEstimate.getHeading());
         telemetry.addData("Current State", currentState);
         telemetry.addData("Rings", rings);
-        telemetry.addData("RPM", flywheel.getRPM());
-        telemetry.addData("In Range", UtilMethods.inRange(flywheel.getRPM(), shootingPoseRPM - RPM_FORGIVENESS, shootingPoseRPM + RPM_FORGIVENESS));
         telemetry.update();
 
     }

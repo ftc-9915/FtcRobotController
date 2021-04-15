@@ -16,6 +16,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Flywheel;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Hopper;
+import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Shooter;
 import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
 import org.firstinspires.ftc.teamcode.Vision.Camera;
 import org.firstinspires.ftc.teamcode.Vision.VisionPipeline;
@@ -39,10 +40,9 @@ public class AutonomousFrameworkAsync extends OpMode {
 
     MecanumDrivebase drive;
     WobbleArm wobbleArm;
-    Flywheel flywheel;
     Collector collector;
-    Hopper hopper;
-    
+    Shooter shooter;
+
     private FtcDashboard dashboard;
 
 
@@ -56,14 +56,10 @@ public class AutonomousFrameworkAsync extends OpMode {
         //Initialize Wobble Arm
         wobbleArm = new WobbleArm(hardwareMap);
 
-        //Initialize Flywheel
-        flywheel = new Flywheel(hardwareMap);
-
         //Initialize collector
         collector = new Collector(hardwareMap);
 
-        //Initialize hopper
-        hopper = new Hopper(hardwareMap);
+        shooter = new Shooter(hardwareMap);
 
 
         //set read mode to manual
@@ -73,9 +69,9 @@ public class AutonomousFrameworkAsync extends OpMode {
 
 
         //initialize paths ahead of time
-        pathA =  new AutonomousPathAAsync(drive, wobbleArm, flywheel, collector, hopper);
-        pathB = new AutonomousPathBAsync(drive, wobbleArm, flywheel, collector, hopper);
-        pathC = new AutonomousPathCAsync(drive, wobbleArm, flywheel, collector, hopper);
+        //pathA =  new AutonomousPathAAsync(drive, wobbleArm, shooter, collector);
+        //pathB = new AutonomousPathBAsync(drive, wobbleArm, shooter, collector);
+        pathC = new AutonomousPathCAsync(drive, wobbleArm, shooter, collector);
 
 //
 //        Initialize webcam
@@ -113,12 +109,12 @@ public class AutonomousFrameworkAsync extends OpMode {
     public void start() {
         switch (ringConfiguration) {
             case NONE:
-                path = pathA;
+             //   path = pathA;
                 telemetry.addLine("Go Path A");
                 break;
 
             case ONE:
-                path = pathB;
+             //   path = pathB;
                 telemetry.addLine("Go Path B");
                 break;
 

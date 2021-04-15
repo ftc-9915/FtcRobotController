@@ -5,22 +5,21 @@ import org.firstinspires.ftc.teamcode.Subsystems.Collector;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Flywheel;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Hopper;
+import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Shooter;
 import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
 
 public abstract class AutonomousPathAsync {
 
     MecanumDrivebase drive;
     WobbleArm wobbleArm;
-    Flywheel flywheel;
     Collector collector;
-    Hopper hopper;
+    Shooter shooter;
 
-    public AutonomousPathAsync(MecanumDrivebase drive, WobbleArm wobbleArm, Flywheel flywheel, Collector collector, Hopper hopper){
+    public AutonomousPathAsync(MecanumDrivebase drive, WobbleArm wobbleArm, Shooter shooter, Collector collector){
         this.drive = drive;
         this.wobbleArm = wobbleArm;
-        this.flywheel = flywheel;
         this.collector = collector;
-        this.hopper = hopper;
+        this.shooter = shooter;
     }
 
 
