@@ -18,6 +18,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Flywheel;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Hopper;
+import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Shooter;
 import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
 import org.firstinspires.ftc.teamcode.Vision.BlueGoalVisionPipeline;
 import org.firstinspires.ftc.teamcode.Vision.Camera;
@@ -34,11 +35,9 @@ public class TeleOpTest extends OpMode {
 
     //Subsystems
     MecanumDrivebase drive;
-    Flywheel flywheel;
     WobbleArm wobbleArm;
+    Shooter shooter;
     Collector collector;
-    Hopper hopper;
-
     Camera camera;
     BlueGoalVisionPipeline pipeline;
 
@@ -64,7 +63,6 @@ public class TeleOpTest extends OpMode {
     boolean triggerReleased;
 
 
-    int rings = 0;
     int powerShotState = 1; // *** changed from 0 to 1 ***
     double[] powerShotAngles;
     double initialAngle;
@@ -109,27 +107,16 @@ public class TeleOpTest extends OpMode {
         drive.setPoseEstimate(PoseLibrary.AUTO_ENDING_POSE);
 
 
-
-        //Init Hopper
-        hopper = new Hopper(hardwareMap);
-//        liftServo = hardwareMap.servo.get("liftServo");
-//        pushServo = hardwareMap.servo.get("pushServo");
-//        // Starting position
-//        liftServo.setPosition(LIFT_DOWN_POS);
-//        pushServo.setPosition(NOT_PUSH_POS);
-
+        //Init Shooter System
+        shooter = new Shooter(hardwareMap);
 
         //Init Collector
         collector = new Collector(hardwareMap);
-//      collectorMotor = hardwareMap.dcMotor.get("collectorMotor");
-
 
 
         //Init Wobble Arm
         wobbleArm = new WobbleArm(hardwareMap);
 
-
-        flywheel = new Flywheel(hardwareMap);
 
         //Init Camera
         pipeline = new BlueGoalVisionPipeline(telemetry);
@@ -161,7 +148,8 @@ public class TeleOpTest extends OpMode {
 
 
         drive.update();
-
+        wobbleArm.update();
+        shooter.update();
 
 
 
@@ -257,8 +245,8 @@ public class TeleOpTest extends OpMode {
                 // Turns collector on/off
                 if (gamepad1.a && buttonReleased1) {
                     collector.turnCollectorOn();
-                    hopper.setPushOutPos();
-                    hopper.setLiftDownPos();
+                   shooter. hopper.setPushOutPos();
+                    shooter.hopper.setLiftDownPos();
                     buttonReleased1 = false;
                 }
 
@@ -276,10 +264,10 @@ public class TeleOpTest extends OpMode {
                 // Turns launcher on/off
                 if (gamepad2.x && buttonReleased2) {
                     if (launcherOn) {
-                        flywheel.setRPM(0);
+                        shooter.flywheel.setRPM(0);
                         launcherOn = false;
                     } else {
-                        flywheel.setRPM(launcherRPM);
+                        shooter.flywheel.setRPM(launcherRPM);
                         launcherOn = true;
                     }
                     buttonReleased2 = false;
@@ -289,55 +277,50 @@ public class TeleOpTest extends OpMode {
 
                 // Pushes/retracts collector servo
                 if (gamepad2.y && buttonReleased2) {
-                    hopper.setPushInPos();
+                    shooter.hopper.setPushInPos();
                     timer.reset();
                     buttonReleased2 = false;
                 }
 
                 if (timer.seconds() > 0.75) {
-                    hopper.setPushOutPos();
+                    shooter.hopper.setPushOutPos();
                 }
 
                 // Lifts/Lowers the collecting platform
                 if (gamepad2.left_bumper && buttonReleased2) {
-                    hopper.setLiftDownPos();
+                    shooter.hopper.setLiftDownPos();
                     buttonReleased2 = false;
                 }
 
                 if (gamepad2.right_bumper && buttonReleased2) {
                     collector.turnCollectorOff();
-                    hopper.setLiftUpPos();
+                    shooter.hopper.setLiftUpPos();
                     buttonReleased2 = false;
                 }
 
                 // Lifts/Lowers Wobble Goal Arm
-                armPos -= 10 * gamepad2.left_stick_y;
-                if (armPos < wobbleArm.ARM_LOWER_LIMIT) {
-                    armPos = wobbleArm.ARM_LOWER_LIMIT;
-                }
-                if (armPos > wobbleArm.ARM_UPPER_LIMIT) {
-                    armPos = wobbleArm.ARM_UPPER_LIMIT;
-                }
+
+                if(gamepad2.left_stick_y != 0)
+                    wobbleArm.setArmPos((int) Math.round(wobbleArm.getArmPosition() - (10 * gamepad2.left_stick_y)));
 
                 // Arm Presets
                 if (gamepad2.dpad_up && buttonReleased2) {
-                    armPos = wobbleArm.ARM_POS_LIFT_ARM;
+                    wobbleArm.closeClawLiftArm();
                     buttonReleased2 = false;
                 }
                 if (gamepad2.dpad_down && buttonReleased2) {
-                    armPos = wobbleArm.ARM_POS_PICKUP_GOAL;
-                    wobbleArm.openClaw();
+                    wobbleArm.openClawLowerArm();
                     buttonReleased2 = false;
                 }
                 if (gamepad2.dpad_right && buttonReleased2) {
-                    armPos = wobbleArm.ARM_POS_OVER_WALL;
+                    wobbleArm.setArmPos(WobbleArm.ARM_POS_LIFT_ARM);
                     buttonReleased2 = false;
                 }
                 if (gamepad2.dpad_left && buttonReleased2) {
-                    armPos = 0;
+                    wobbleArm.storeArm();
                     buttonReleased2 = false;
                 }
-                wobbleArm.setArmPos(armPos);
+
 
                 // Opens/Closes Wobble Goal Claw
                 if (gamepad2.a && buttonReleased2) {
@@ -348,7 +331,6 @@ public class TeleOpTest extends OpMode {
                     wobbleArm.closeClaw();
                     buttonReleased2 = false;
                 }
-
 
 
                 // Do not adjust values again until after buttons are released (and pressed again) so the
@@ -374,7 +356,7 @@ public class TeleOpTest extends OpMode {
                             .build();
 
                     drive.followTrajectoryAsync(driveToShootPositionPath);
-                    flywheel.setRPM(PoseLibrary.TELE_SHOOTING_POSE.getRPM());
+                   shooter. flywheel.setRPM(PoseLibrary.TELE_SHOOTING_POSE.getRPM());
 
                     currentMode = Mode.LINE_TO_POINT;
                 }
@@ -390,7 +372,7 @@ public class TeleOpTest extends OpMode {
                 //DPAD LEFT - Shoot Powershots From Right To Left
                 if (gamepad1.dpad_left) {
                     launcherRPM = 2900;
-                    flywheel.setRPM(launcherRPM);
+                    shooter.flywheel.setRPM(launcherRPM);
                     powerShotState = 0;
 
                     drive.setPoseEstimate(new Pose2d(0,0,Math.toRadians(0.0)));
@@ -408,7 +390,7 @@ public class TeleOpTest extends OpMode {
                 //DPAD RIGHT - Shoot Powershots From Left To Right
                 if (gamepad1.dpad_right) {
                     launcherRPM = 2900;
-                    flywheel.setRPM(launcherRPM);
+                    shooter.flywheel.setRPM(launcherRPM);
                     powerShotState = 0;
 
                     Trajectory driveToPowershotPosition = drive.trajectoryBuilder(currentPose)
@@ -423,7 +405,7 @@ public class TeleOpTest extends OpMode {
                 //RIGHT BUMPER - Auto Aim
                 if(gamepad1.right_bumper && pipeline.isGoalVisible()) {
                     collector.turnCollectorOff();
-                    flywheel.setRPM(launcherRPM);
+                    shooter.flywheel.setRPM(launcherRPM);
                     currentMode = Mode.ALIGN_TO_GOAL;
                     timer.reset();
                 }
@@ -462,12 +444,10 @@ public class TeleOpTest extends OpMode {
 
             case ALIGN_TO_GOAL:
                 //if goal is centered for 1 second shoot rings, else reset timer
-                flywheel.setRPM(launcherRPM);
+                shooter.flywheel.setRPM(launcherRPM);
                 if (timer.seconds() > aimTimer) {
                     if(pipeline.isGoalVisible()){
-                        rings = 3;
-                        timer.reset();
-                        launcherOn = true;
+                        shooter.shootRings(3, launcherRPM);
                         currentMode = Mode.SHOOT_RINGS;
                     } else {
                         timer.reset();
@@ -497,11 +477,11 @@ public class TeleOpTest extends OpMode {
                     // 0 1 2
                 } else if (!drive.isBusy()) {
                     currentMode = Mode.PREPARE_TO_SHOOT_POWERSHOTS;
-                    hopper.setPushOutPos();
+                    shooter.hopper.setPushOutPos();
                     powershotHeadingOffset = drive.getRawExternalHeading();
                     timer.reset();
                 }
-                flywheel.setRPM(launcherRPM);
+                shooter.flywheel.setRPM(launcherRPM);
 
 
                 break;
@@ -513,11 +493,11 @@ public class TeleOpTest extends OpMode {
                     currentMode = Mode.DRIVER_CONTROL;
                 }
                 else if (!drive.isBusy()) {
-                    rings = 1;
                     timer.reset();
                     currentMode = Mode.SHOOT_RINGS_POWERSHOT;
+                    shooter.shootRings(1, launcherRPM);
                 }
-                flywheel.setRPM(launcherRPM);
+                shooter.flywheel.setRPM(launcherRPM);
 
                 break;
 
@@ -527,29 +507,15 @@ public class TeleOpTest extends OpMode {
             case SHOOT_RINGS_POWERSHOT:
                 //emergency exit
                 if (gamepad1.left_bumper) {
-                    rings = 0;
+                    shooter.cancelCommand();
                     currentMode = Mode.DRIVER_CONTROL;
                 }
 
-                flywheel.setRPM(launcherRPM);
-                hopper.setLiftUpPos();
-                if (rings > 0) {
-                    if (flywheel.atTargetRPM()
-                            && hopper.getPushMode() == Hopper.PushMode.PUSH_OUT && timer.seconds() > 0.5) {
-                        hopper.setPushInPos();
-                        timer.reset();
-                    }
-                    if (hopper.getPushMode() == Hopper.PushMode.PUSH_IN  && timer.seconds() > 0.5) {
-                        hopper.setPushOutPos();
-                        timer.reset();
-                        rings--;
-                    }
-                } else {
+                if(!shooter.isBusy()) {
                     currentMode = Mode.TURN_TO;
                     powerShotState++;
                     timer.reset();
                 }
-
 
                 break;
 
@@ -566,7 +532,7 @@ public class TeleOpTest extends OpMode {
                     drive.turnAsync(Math.toRadians(-5));
                     currentMode = Mode.WAIT_FOR_TURN_TO_FINISH;
                 }
-                flywheel.setRPM(launcherRPM);
+                shooter.flywheel.setRPM(launcherRPM);
 
                 break;
 
@@ -575,37 +541,22 @@ public class TeleOpTest extends OpMode {
                 if(!drive.isBusy()) {
                     currentMode = Mode.PREPARE_TO_SHOOT_POWERSHOTS;
                 }
-                flywheel.setRPM(launcherRPM);
+                shooter.flywheel.setRPM(launcherRPM);
 
                 break;
 
 
-            //set rings to shoot and reset timer required before moving to this state
             case SHOOT_RINGS:
-                drive.setMotorPowers(0,0,0,0);
                 //emergency exit
-                if (gamepad1.left_bumper || rings == 0) {
-                    rings = 0;
+                if (gamepad1.left_bumper ) {
+                    shooter.cancelCommand();
                     currentMode = Mode.DRIVER_CONTROL;
-                    flywheel.setRPM(0);
-                } else {
-                    flywheel.setRPM(launcherRPM);
-                    hopper.setLiftUpPos();
                 }
-                if (rings > 0) {
-                    if (flywheel.atTargetRPM() && hopper.getPushMode() == Hopper.PushMode.PUSH_OUT && timer.seconds() > 0.5) {
-                        hopper.setPushInPos();
-                        timer.reset();
-                    }
-                    if (hopper.getPushMode() == Hopper.PushMode.PUSH_IN  && timer.seconds() > 0.5) {
-                        hopper.setPushOutPos();
-                        timer.reset();
-                        rings--;
-                    }
+
+                if (!shooter.isBusy()) {
+                    currentMode = Mode.DRIVER_CONTROL;
                 }
                 break;
-
-
 
 
             case LINE_TO_POINT:

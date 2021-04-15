@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.Subsystems.Shooter;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -27,7 +26,8 @@ public class Flywheel implements SubsystemBase {
     double lastKi = 0.0;
     double lastKd = 0.0;
     double lastKf = getMotorVelocityF();
-    double targetRPM = 0.0;
+    public double activeTargetRPM = 3200; // target RPM when flywheel is on
+    boolean flywheelOn;
 
     //in degrees
     private double shooterAngle;
@@ -71,10 +71,10 @@ public class Flywheel implements SubsystemBase {
         flywheelMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+
         setPIDFCoefficients(MOTOR_VELO_PID);
 
-        dashboard = FtcDashboard.getInstance();
-        dashboard.setTelemetryTransmissionInterval(25);
+        turnOff();
 
     }
 
@@ -84,37 +84,48 @@ public class Flywheel implements SubsystemBase {
     }
 
 
-    public boolean setRPM (double rpm){
+    public void  setRPM (double rpm){
+        if (rpm == 0) {
+            turnOff();
+        } else {
+            flywheelOn = true;
 //        PIDF = new PIDFCoefficients(kP,  kI,   kD,   kF * 13.21 / batteryVoltageSensor.getVoltage());
-        targetRPM = rpm;
-        //change PIDF on the fly when needed
-        if (lastKp != MOTOR_VELO_PID.p || lastKi != MOTOR_VELO_PID.i || lastKd != MOTOR_VELO_PID.d || lastKf != MOTOR_VELO_PID.f) {
-            setPIDFCoefficients(MOTOR_VELO_PID);
+            activeTargetRPM = rpm;
+            //change PIDF on the fly when needed
+            if (lastKp != MOTOR_VELO_PID.p || lastKi != MOTOR_VELO_PID.i || lastKd != MOTOR_VELO_PID.d || lastKf != MOTOR_VELO_PID.f) {
+                setPIDFCoefficients(MOTOR_VELO_PID);
 
-            lastKp = MOTOR_VELO_PID.p;
-            lastKi = MOTOR_VELO_PID.i;
-            lastKd = MOTOR_VELO_PID.d;
-            lastKf = MOTOR_VELO_PID.f;
+                lastKp = MOTOR_VELO_PID.p;
+                lastKi = MOTOR_VELO_PID.i;
+                lastKd = MOTOR_VELO_PID.d;
+                lastKf = MOTOR_VELO_PID.f;
+            }
+
+            flywheelMotor.setVelocity(rpmToTicksPerSecond(rpm));
         }
+    }
 
-        flywheelMotor.setVelocity(rpmToTicksPerSecond(rpm));
+    public void turnOn() {
+        setRPM(activeTargetRPM);
+        flywheelOn = true;
+    }
 
-        //logging
-        TelemetryPacket packet = new TelemetryPacket();
-        packet.put("Desired RPM", rpm);
-        packet.put("RPM", getRPM());
-        packet.put("Upper Bound", 5000);
-        packet.put("Lower Bound", 0);
+    public void turnOff() {
+        flywheelMotor.setVelocity(0);
+        flywheelOn = false;
+    }
 
-        dashboard.sendTelemetryPacket(packet);
-
-
-        return true;
+    public void toggleOnOff() {
+        if (flywheelOn) {
+            turnOff();
+        } else {
+            turnOn();
+        }
     }
 
     //within 4%
     public boolean atTargetRPM() {
-        return UtilMethods.inRange(getVelocity(), 0.96 * rpmToTicksPerSecond(targetRPM), 1.04 * rpmToTicksPerSecond(targetRPM));
+        return UtilMethods.inRange(getVelocity(), 0.96 * rpmToTicksPerSecond(activeTargetRPM), 1.04 * rpmToTicksPerSecond(activeTargetRPM));
     }
 
 
@@ -165,3 +176,4 @@ public class Flywheel implements SubsystemBase {
     }
 
 }
+

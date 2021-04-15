@@ -21,8 +21,6 @@ import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
 
 import java.util.Arrays;
 
-import static org.firstinspires.ftc.teamcode.Subsystems.WobbleArm.ARM_POS_PLACE_GOAL;
-
 @Config
 public class AutonomousPathCAsync extends AutonomousPathAsync {
 
@@ -134,91 +132,71 @@ public class AutonomousPathCAsync extends AutonomousPathAsync {
                     else {
                         currentState = State.DRIVE_TO_PLACE_GOAL;
                         drive.followTrajectoryAsync(goToPlaceGoalPose);
+                        flywheel.setRPM(0);
                     }
                 }
                 break;
 
             case DRIVE_TO_PLACE_GOAL:
                 if (!drive.isBusy()) {
+                    wobbleArm.placeGoal();
                     currentState = State.PLACE_GOAL;
                     timer.reset();
                 }
                 break;
 
             case PLACE_GOAL:
-                //Trigger action depending on timer using else if logic
-                if (timer.seconds() > 2) {
+                //Wait for arm to finish
+                if (!wobbleArm.isBusy()) {
                     currentState = State.DRIVE_TO_SECOND_GOAL;
-                    wobbleArm.setArmPos(-100);
                     //will drive to pose 1 and pose 2 using displacement marker
                     drive.followTrajectoryAsync(goToPickUpGoalPose1);
                     timer.reset();
-                } else if (timer.seconds() > 1.5) {
-                    wobbleArm.openClaw();
-                } else if (timer.seconds() > 0.5) {
-                    wobbleArm.placeGoal();
                 }
+
                 break;
             case DRIVE_TO_SECOND_GOAL:
+                // lower arm on the way to second goal
                 if(timer.seconds() > 1) {
-                    wobbleArm.pickUpSecondGoal();
+                    wobbleArm.openClawLowerArm();
                 }
+                //  after driving to goal, pickup goal
                 if (!drive.isBusy()) {
                     currentState = State.PICKUP_SECOND_GOAL;
-                    timer.reset();
+                    wobbleArm.closeClawLiftArm();
                 }
                 break;
             case PICKUP_SECOND_GOAL:
-                //Trigger action depending on timer using else if logic
-                if (timer.seconds() > 2.5) {
-                    currentState = State.DRIVE_TO_PLACE_SECOND_GOAL;
-                } else if (timer.seconds() > 0.5) {
-                    wobbleArm.closeClaw();
-                } /*else if (timer.seconds() > 0.5) {
-                    wobbleArm.pickUpSecondGoal();
-                }*/
-                break;
-            case DRIVE_TO_PLACE_SECOND_GOAL:
-                if(!wobbleArm.isBusy()) {
-                    wobbleArm.liftArm();
-                    //will drive to pose 1 and pose 2 using displacement marker
+                //  after the arm picks up the goal, drive to place second goal
+                if (!wobbleArm.isBusy()) {
                     drive.followTrajectoryAsync(goToPlaceSecondGoalPart1);
-                    currentState = State.CHECK_DRIVE;
+                    currentState = State.DRIVE_TO_PLACE_SECOND_GOAL;
                 }
                 break;
-
-            case CHECK_DRIVE:
+            case DRIVE_TO_PLACE_SECOND_GOAL:
+                // after driving to zone c, place goal
                 if (!drive.isBusy()) {
                     currentState = State.PLACE_SECOND_GOAL;
-                    timer.reset();
+                    wobbleArm.placeGoal();
                 }
                 break;
             case PLACE_SECOND_GOAL:
-                if(!drive.isBusy()) {
-                    //TODO: Test if arm logic works
-                    //Trigger action depending on timer using else if logic
-                    if (timer.seconds() > 2) {
-                        currentState = State.PARK;
-                        wobbleArm.liftArm();
-                        //will drive to pose 1 and pose 2 using displacement marker
-                        drive.followTrajectoryAsync(goToParkingPose);
-                    } else if (UtilMethods.atTarget(WobbleArm.ARM_POS_PLACE_GOAL, wobbleArm.getArmPosition(), 10) || timer.seconds() > 1.5) {
-                        wobbleArm.openClaw();
-                    } else if (timer.seconds() > 0.5) {
-                        wobbleArm.placeGoal();
-                    }
+                //after goal is placed, drive to park
+                if (!wobbleArm.isBusy()) {
+                    //will drive to pose 1 and pose 2 using displacement marker
+                    drive.followTrajectoryAsync(goToParkingPose);
+                    currentState = State.PARK;
                 }
                 break;
 
             case PARK:
+                // after driving to parking pose, store arm
                 if (!drive.isBusy()) {
-                    wobbleArm.liftArm();
+                    wobbleArm.storeArm();
                     currentState = State.IDLE;
                 }
                 break;
             case IDLE:
-                flywheel.setRPM(0);
-                wobbleArm.setArmPos(1);
                 break;
         }
 
@@ -226,6 +204,7 @@ public class AutonomousPathCAsync extends AutonomousPathAsync {
 
         // We update drive continuously in the background, regardless of state
         drive.update();
+        wobbleArm.update();
 
         // Read pose
         Pose2d poseEstimate = drive.getPoseEstimate();

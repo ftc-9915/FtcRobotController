@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.OpModes.Autonomous;
 
-import android.util.Log;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
@@ -23,8 +21,6 @@ import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Hopper;
 import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
 
 import java.util.Arrays;
-
-import static org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary.SHOOTING_POSE_A;
 
 @Config
 public class AutonomousPathAAsync extends AutonomousPathAsync {
@@ -183,7 +179,7 @@ public class AutonomousPathAAsync extends AutonomousPathAsync {
                 break;
             case DRIVE_TO_SECOND_GOAL:
                 if (timer.seconds() > 0.5){
-                    wobbleArm.pickUpSecondGoal();
+                    wobbleArm.openClawLowerArm();
                 }
                 if (!drive.isBusy()) {
                     currentState = State.PICKUP_SECOND_GOAL;
@@ -197,12 +193,12 @@ public class AutonomousPathAAsync extends AutonomousPathAsync {
                 } else if (timer.seconds() > 1) {
                     wobbleArm.closeClaw();
                 } else if (timer.seconds() > 0.5) {
-                    wobbleArm.pickUpSecondGoal();
+                    wobbleArm.openClawLowerArm();
                 }
                 break;
             case DRIVE_TO_PLACE_SECOND_GOAL:
                 if(!wobbleArm.isBusy()) {
-                    wobbleArm.liftArm();
+                    wobbleArm.closeClawLiftArm();
                     //will drive to pose 1 and pose 2 using displacement marker
                     drive.followTrajectoryAsync(goToPlaceSecondGoalPart1);
                     currentState = State.CHECK_DRIVE;

@@ -154,7 +154,7 @@ public class AutonomousPathBAsync extends AutonomousPathAsync {
                 //Trigger action depending on timer using else if logic
                 if (timer.seconds() > 2) {
                     currentState = State.DRIVE_TO_SECOND_GOAL;
-                    wobbleArm.liftArm();
+                    wobbleArm.closeClawLiftArm();
                     //will drive to pose 1 and pose 2 using displacement marker
                     drive.followTrajectoryAsync(goToPickUpGoalPose1);
                     timer.reset();
@@ -170,7 +170,7 @@ public class AutonomousPathBAsync extends AutonomousPathAsync {
                     timer.reset();
                 }
                 if (timer.seconds() > 1){
-                    wobbleArm.pickUpSecondGoal();
+                    wobbleArm.openClawLowerArm();
                 }
                 break;
             case PICKUP_SECOND_GOAL:
@@ -180,12 +180,12 @@ public class AutonomousPathBAsync extends AutonomousPathAsync {
                 } else if (timer.seconds() > 1) {
                     wobbleArm.closeClaw();
                 } else if (timer.seconds() > 0.5) {
-                    wobbleArm.pickUpSecondGoal();
+                    wobbleArm.openClawLowerArm();
                 }
                 break;
             case DRIVE_TO_PLACE_SECOND_GOAL:
                 if(!wobbleArm.isBusy()) {
-                    wobbleArm.liftArm();
+                    wobbleArm.closeClawLiftArm();
                     //will drive to pose 1 and pose 2 using displacement marker
                     drive.followTrajectoryAsync(goToPlaceSecondGoalPart1);
                     currentState = State.CHECK_DRIVE;
@@ -203,7 +203,7 @@ public class AutonomousPathBAsync extends AutonomousPathAsync {
                     //Trigger action depending on timer using else if logic
                     if (timer.seconds() > 2) {
                         currentState = State.PARK;
-                        wobbleArm.liftArm();
+                        wobbleArm.closeClawLiftArm();
                         //will drive to pose 1 and pose 2 using displacement marker
                         drive.followTrajectoryAsync(goToParkingPose);
                     } else if (timer.seconds() > 1.5) {
@@ -216,7 +216,7 @@ public class AutonomousPathBAsync extends AutonomousPathAsync {
 
             case PARK:
                 if (!drive.isBusy()) {
-                    wobbleArm.liftArm();
+                    wobbleArm.closeClawLiftArm();
                     currentState = State.IDLE;
                 }
                 break;
