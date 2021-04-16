@@ -152,7 +152,7 @@ public class AutonomousPathBAsync extends AutonomousPathAsync {
 
             case PLACE_GOAL:
                 //Trigger action depending on timer using else if logic
-                if (timer.seconds() > 2) {
+                if (timer.seconds() > 1.25) {
                     currentState = State.DRIVE_TO_SECOND_GOAL;
                     wobbleArm.liftArm();
                     //will drive to pose 1 and pose 2 using displacement marker
@@ -175,9 +175,9 @@ public class AutonomousPathBAsync extends AutonomousPathAsync {
                 break;
             case PICKUP_SECOND_GOAL:
                 //Trigger action depending on timer using else if logic
-                if (timer.seconds() > 2) {
+                if (timer.seconds() > 1.25) {
                     currentState = State.DRIVE_TO_PLACE_SECOND_GOAL;
-                } else if (timer.seconds() > 1) {
+                } else if (UtilMethods.atTarget(WobbleArm.ARM_POS_PICKUP_GOAL, wobbleArm.getArmPosition(), 10) || timer.seconds() > 1) {
                     wobbleArm.closeClaw();
                 } else if (timer.seconds() > 0.5) {
                     wobbleArm.pickUpSecondGoal();
@@ -201,14 +201,14 @@ public class AutonomousPathBAsync extends AutonomousPathAsync {
             case PLACE_SECOND_GOAL:
                 if(!drive.isBusy()) {
                     //Trigger action depending on timer using else if logic
-                    if (timer.seconds() > 2) {
+                    if (timer.seconds() > 1.5) {
                         currentState = State.PARK;
                         wobbleArm.liftArm();
                         //will drive to pose 1 and pose 2 using displacement marker
                         drive.followTrajectoryAsync(goToParkingPose);
-                    } else if (timer.seconds() > 1.5) {
+                    } else if (UtilMethods.atTarget(WobbleArm.ARM_POS_PLACE_GOAL, wobbleArm.getArmPosition(), 10) || timer.seconds() > 1) {
                         wobbleArm.openClaw();
-                    } else if (timer.seconds() > 0.5) {
+                    } else if (timer.seconds() > 0.1) {
                         wobbleArm.placeGoal();
                     }
                 }

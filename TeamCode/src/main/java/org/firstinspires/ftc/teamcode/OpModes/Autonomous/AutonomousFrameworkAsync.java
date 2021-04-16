@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Flywheel;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Hopper;
 import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
+import org.firstinspires.ftc.teamcode.Vision.BlueGoalVisionPipeline;
 import org.firstinspires.ftc.teamcode.Vision.Camera;
 import org.firstinspires.ftc.teamcode.Vision.VisionPipeline;
 
@@ -27,6 +28,7 @@ public class AutonomousFrameworkAsync extends OpMode {
 
     Camera camera;
     VisionPipeline ringDetectPipeline;
+    BlueGoalVisionPipeline blueGoalVisionPipeline;
 
     public static AutonomousPathAsync pathA;
     public static AutonomousPathAsync pathB;
@@ -74,7 +76,7 @@ public class AutonomousFrameworkAsync extends OpMode {
 
         //initialize paths ahead of time
         pathA =  new AutonomousPathAAsync(drive, wobbleArm, flywheel, collector, hopper);
-        pathB = new AutonomousPathBAsync(drive, wobbleArm, flywheel, collector, hopper);
+        pathB = new AutonomousPathBAsync_FourRing(drive, wobbleArm, flywheel, collector, hopper);
         pathC = new AutonomousPathCAsync(drive, wobbleArm, flywheel, collector, hopper);
 
 //
