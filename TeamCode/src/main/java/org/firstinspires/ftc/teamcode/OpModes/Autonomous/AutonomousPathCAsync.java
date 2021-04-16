@@ -102,6 +102,9 @@ public class AutonomousPathCAsync extends AutonomousPathAsync {
     public void followPathAsync(Telemetry telemetry) {
 
         switch (currentState) {
+            case START:
+                drive.followTrajectoryAsync(goToShootingPosePt1);
+                break;
             case DRIVE_TO_SHOOT:
                 // Check if the drive class isn't busy
                 // `isBusy() == true` while it's following the trajectory
@@ -111,7 +114,6 @@ public class AutonomousPathCAsync extends AutonomousPathAsync {
                 if (!drive.isBusy()) {
                     currentState = State.SHOOT;
                     shooter.shootRings(3, shootingPoseRPM);
-                    drive.followTrajectoryAsync(goToShootingPosePt1);
                     timer.reset();
 
                 }
@@ -139,7 +141,6 @@ public class AutonomousPathCAsync extends AutonomousPathAsync {
                     drive.followTrajectoryAsync(goToPickUpGoalPose1);
                     timer.reset();
                 }
-
                 break;
             case DRIVE_TO_SECOND_GOAL:
                 // lower arm on the way to second goal
@@ -212,6 +213,7 @@ public class AutonomousPathCAsync extends AutonomousPathAsync {
     // This enum defines our "state"
     // This is essentially just defines the possible steps our program will take
     enum State {
+        START,
         DRIVE_TO_SHOOT,
         SHOOT,   // First, follow a splineTo() trajectory
         DRIVE_TO_PLACE_GOAL,   // Then, follow a lineTo() trajectory

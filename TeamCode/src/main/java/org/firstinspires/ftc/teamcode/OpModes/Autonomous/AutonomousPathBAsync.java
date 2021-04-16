@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Flywheel;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Hopper;
+import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Shooter;
 import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
 
 import java.util.Arrays;
@@ -57,8 +58,8 @@ public class AutonomousPathBAsync extends AutonomousPathAsync {
     Pose2d parkPose = new Pose2d(17, 27, Math.toRadians(0.0));
 
     //build trajectories on construction
-    public AutonomousPathBAsync(MecanumDrivebase drive, WobbleArm wobbleArm, Flywheel flywheel, Collector collector, Hopper hopper) {
-        super(drive, wobbleArm, flywheel, collector, hopper);
+    public AutonomousPathBAsync(MecanumDrivebase drive, WobbleArm wobbleArm, Shooter shooter, Collector collector) {
+        super( drive,  wobbleArm,  shooter,  collector);
 
         //Trajectories
         goToShootingPosePt1 = drive.trajectoryBuilder(PoseLibrary.START_POS_BLUE_2)
@@ -107,6 +108,10 @@ public class AutonomousPathBAsync extends AutonomousPathAsync {
     public void followPathAsync(Telemetry telemetry) {
 
         switch (currentState) {
+            case START:
+                drive.followTrajectoryAsync(goToShootingPosePt1);
+                currentState = State.DRIVE_TO_SHOOT;
+                break;
             case DRIVE_TO_SHOOT:
                 // Check if the drive class isn't busy
                 // `isBusy() == true` while it's following the trajectory
@@ -115,31 +120,15 @@ public class AutonomousPathBAsync extends AutonomousPathAsync {
                 // Make sure we use the async follow function
                 if (!drive.isBusy()) {
                     currentState = State.SHOOT;
-                    flywheel.setRPM(shootingPoseRPM);
-                    drive.followTrajectoryAsync(goToShootingPosePt1);
+                    shooter.shootRings(3, shootingPoseRPM);
                     timer.reset();
+
                 }
                 break;
             case SHOOT:
-                if (!drive.isBusy()) {
-                    hopper.setLiftUpPos();
-                    if (rings > 0) {
-                        if (UtilMethods.inRange(flywheel.getRPM(), shootingPoseRPM - RPM_FORGIVENESS, shootingPoseRPM + RPM_FORGIVENESS) && !hopperPositionIn && timer.seconds() > 0.5) {
-                            hopper.setPushInPos();
-                            timer.reset();
-                            hopperPositionIn = true;
-                        }
-                        if (hopperPositionIn && timer.seconds() > 0.5) {
-                            hopper.setPushOutPos();
-                            timer.reset();
-                            hopperPositionIn = false;
-                            rings--;
-                        }
-                    }
-                    else {
-                        currentState = State.DRIVE_TO_PLACE_GOAL;
-                        drive.followTrajectoryAsync(goToPlaceGoalPose);
-                    }
+                if (!shooter.isBusy()) {
+                    currentState = State.DRIVE_TO_PLACE_GOAL;
+                    drive.followTrajectoryAsync(goToPlaceGoalPose);
                 }
                 break;
 
@@ -151,78 +140,58 @@ public class AutonomousPathBAsync extends AutonomousPathAsync {
                 break;
 
             case PLACE_GOAL:
-                //Trigger action depending on timer using else if logic
-                if (timer.seconds() > 2) {
+                //Wait for arm to finish
+                if (!wobbleArm.isBusy()) {
                     currentState = State.DRIVE_TO_SECOND_GOAL;
-                    wobbleArm.closeClawLiftArm();
                     //will drive to pose 1 and pose 2 using displacement marker
                     drive.followTrajectoryAsync(goToPickUpGoalPose1);
                     timer.reset();
-                } else if (timer.seconds() > 1.5) {
-                    wobbleArm.openClaw();
-                } else if (timer.seconds() > 0.5) {
-                    wobbleArm.placeGoal();
                 }
+
                 break;
             case DRIVE_TO_SECOND_GOAL:
+                // lower arm on the way to second goal
+                if(timer.seconds() > 1) {
+                    wobbleArm.openClawLowerArm();
+                }
+                //  after driving to goal, pickup goal
                 if (!drive.isBusy()) {
                     currentState = State.PICKUP_SECOND_GOAL;
-                    timer.reset();
-                }
-                if (timer.seconds() > 1){
-                    wobbleArm.openClawLowerArm();
+                    wobbleArm.closeClawLiftArm();
                 }
                 break;
             case PICKUP_SECOND_GOAL:
-                //Trigger action depending on timer using else if logic
-                if (timer.seconds() > 2) {
-                    currentState = State.DRIVE_TO_PLACE_SECOND_GOAL;
-                } else if (timer.seconds() > 1) {
-                    wobbleArm.closeClaw();
-                } else if (timer.seconds() > 0.5) {
-                    wobbleArm.openClawLowerArm();
-                }
-                break;
-            case DRIVE_TO_PLACE_SECOND_GOAL:
-                if(!wobbleArm.isBusy()) {
-                    wobbleArm.closeClawLiftArm();
-                    //will drive to pose 1 and pose 2 using displacement marker
+                //  after the arm picks up the goal, drive to place second goal
+                if (!wobbleArm.isBusy()) {
                     drive.followTrajectoryAsync(goToPlaceSecondGoalPart1);
-                    currentState = State.CHECK_DRIVE;
+                    currentState = State.DRIVE_TO_PLACE_SECOND_GOAL;
                 }
                 break;
 
-            case CHECK_DRIVE:
+            case DRIVE_TO_PLACE_SECOND_GOAL:
+                // after driving to zone c, place goal
                 if (!drive.isBusy()) {
                     currentState = State.PLACE_SECOND_GOAL;
-                    timer.reset();
+                    wobbleArm.placeGoal();
                 }
                 break;
             case PLACE_SECOND_GOAL:
-                if(!drive.isBusy()) {
-                    //Trigger action depending on timer using else if logic
-                    if (timer.seconds() > 2) {
-                        currentState = State.PARK;
-                        wobbleArm.closeClawLiftArm();
-                        //will drive to pose 1 and pose 2 using displacement marker
-                        drive.followTrajectoryAsync(goToParkingPose);
-                    } else if (timer.seconds() > 1.5) {
-                        wobbleArm.openClaw();
-                    } else if (timer.seconds() > 0.5) {
-                        wobbleArm.placeGoal();
-                    }
+                //after goal is placed, drive to park
+                if (!wobbleArm.isBusy()) {
+                    //will drive to pose 1 and pose 2 using displacement marker
+                    drive.followTrajectoryAsync(goToParkingPose);
+                    currentState = State.PARK;
                 }
                 break;
 
             case PARK:
+                // after driving to parking pose, store arm
                 if (!drive.isBusy()) {
-                    wobbleArm.closeClawLiftArm();
+                    wobbleArm.storeArm();
                     currentState = State.IDLE;
                 }
                 break;
             case IDLE:
-                wobbleArm.setArmPos(1);
-                flywheel.setRPM(0);
                 break;
         }
 
@@ -243,7 +212,6 @@ public class AutonomousPathBAsync extends AutonomousPathAsync {
         telemetry.addData("heading", poseEstimate.getHeading());
         telemetry.addData("Current State", currentState);
         telemetry.addData("Rings", rings);
-        telemetry.addData("In Range", UtilMethods.inRange(flywheel.getRPM(), shootingPoseRPM - RPM_FORGIVENESS, shootingPoseRPM + RPM_FORGIVENESS));
         telemetry.update();
 
     }
@@ -252,6 +220,7 @@ public class AutonomousPathBAsync extends AutonomousPathAsync {
     // This enum defines our "state"
     // This is essentially just defines the possible steps our program will take
     enum State {
+        START,
         DRIVE_TO_SHOOT,
         SHOOT,   // First, follow a splineTo() trajectory
         DRIVE_TO_PLACE_GOAL,   // Then, follow a lineTo() trajectory
