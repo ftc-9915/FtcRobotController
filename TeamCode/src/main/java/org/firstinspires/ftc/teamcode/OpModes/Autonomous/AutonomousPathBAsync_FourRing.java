@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Common.UtilMethods;
+import org.firstinspires.ftc.teamcode.OpModes.TeleOp.TeleOpTest;
 import org.firstinspires.ftc.teamcode.Subsystems.Collector;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
@@ -18,6 +19,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Flywheel;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Hopper;
 import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
+import org.firstinspires.ftc.teamcode.Vision.BlueGoalVisionPipeline;
 
 import java.util.Arrays;
 
@@ -30,6 +32,8 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
     public static int goalY = 59;
     public static double shootingPoseAngle = -5;
     public static double shootingPoseRPM = PoseLibrary.SHOOTING_POSE_BC.getRPM();
+
+    BlueGoalVisionPipeline blueGoalPipeline;
 
     //Pre declare trajectories
     Trajectory goToShootingPosePt1;
@@ -47,6 +51,7 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
     State currentState = State.DRIVE_TO_SHOOT;
     int rings = 3;
     ElapsedTime timer = new ElapsedTime();
+    public static double aimTimer =  2;
     boolean hopperPositionIn = false;
 
     //Poses
@@ -125,6 +130,7 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
     @Override
     public void followPathAsync(Telemetry telemetry) {
 
+        blueGoalPipeline = new BlueGoalVisionPipeline(telemetry);
         switch (currentState) {
             case DRIVE_TO_SHOOT:
                 // Check if the drive class isn't busy
@@ -156,6 +162,7 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
                         }
                     }
                     else {
+                        timer.reset();
                         currentState = State.DRIVE_TO_PLACE_GOAL;
                         drive.followTrajectoryAsync(goToPlaceGoalPose);
                     }
@@ -171,15 +178,15 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
 
             case PLACE_GOAL:
                 //Trigger action depending on timer using else if logic
-                if (timer.seconds() > 2) {
+                if (timer.seconds() > 1.5) {
                     currentState = State.DRIVE_TO_RING;
                     wobbleArm.liftArm();
                     //will drive to pose 1 and pose 2 using displacement marker
                     drive.followTrajectoryAsync(goToPickupRingPose1);
                     timer.reset();
-                } else if (timer.seconds() > 1.5) {
+                } else if (UtilMethods.atTarget(WobbleArm.ARM_POS_PLACE_GOAL, wobbleArm.getArmPosition(), 10) || timer.seconds() > 1) {
                     wobbleArm.openClaw();
-                } else if (timer.seconds() > 0.5) {
+                } else  {
                     wobbleArm.placeGoal();
                 }
                 break;
@@ -187,7 +194,6 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
             case DRIVE_TO_RING:
                 if (!drive.isBusy()) {
                     if(timer.seconds() > 2) {
-                        hopper.setLiftUpPos();
                         currentState = State.DRIVE_TO_SECOND_GOAL;
                         drive.followTrajectoryAsync(goToPickUpGoalPose1);
                         timer.reset();
@@ -215,6 +221,8 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
                     wobbleArm.closeClaw();
                 } else if (timer.seconds() > 0.5) {
                     wobbleArm.pickUpSecondGoal();
+                    hopper.setLiftUpPos();
+                    collector.turnCollectorOff();
                 }
                 break;
 
@@ -234,23 +242,33 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
                 }
                 break;
             case PLACE_SECOND_GOAL:
-                if(!drive.isBusy()) {
                     //Trigger action depending on timer using else if logic
-                    if (timer.seconds() > 2) {
-                        currentState = State.SHOOT_SECOND;
-                        rings   = 1;
-                        wobbleArm.liftArm();
-                        flywheel.setRPM(shootingPoseRPM);
-                        drive.followTrajectoryAsync(goToShootingPosePt1);
-                        timer.reset();
-                        //will drive to pose 1 and pose 2 using displacement marker
-                    } else if (timer.seconds() > 1.5) {
-                        wobbleArm.openClaw();
-                    } else if (timer.seconds() > 0.5) {
-                        wobbleArm.placeGoal();
-                    }
+                if (timer.seconds() > 1.5) {
+                    currentState = State.DRIVE_TO_SHOOT_FOUR;
+                    rings = 1;
+                    wobbleArm.liftArm();
+                    flywheel.setRPM(shootingPoseRPM);
+                    drive.followTrajectoryAsync(goToFinalShootingPose);
+                    timer.reset();
+                    //will drive to pose 1 and pose 2 using displacement marker
+                } else if (UtilMethods.atTarget(WobbleArm.ARM_POS_PLACE_GOAL, wobbleArm.getArmPosition(), 10) || timer.seconds() > 1) {
+                    wobbleArm.openClaw();
+                } else  {
+                    wobbleArm.placeGoal();
+                }
+
+                break;
+            case DRIVE_TO_SHOOT_FOUR:
+                if(!drive.isBusy()) {
+                    flywheel.setRPM(shootingPoseRPM);
+                    timer.reset();
+                    currentState = State.SHOOT_SECOND;
+                } else if (timer.seconds() > 0.5){
+                    wobbleArm.setArmPos(1);
+                    wobbleArm.closeClaw();
                 }
                 break;
+
 
             case SHOOT_SECOND:
                 if (!drive.isBusy()) {
@@ -277,12 +295,10 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
 
             case PARK:
                 if (!drive.isBusy()) {
-                    wobbleArm.liftArm();
                     currentState = State.IDLE;
                 }
                 break;
             case IDLE:
-                wobbleArm.setArmPos(1);
                 flywheel.setRPM(0);
                 break;
         }
@@ -299,10 +315,13 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
         PoseLibrary.AUTO_ENDING_POSE = poseEstimate;
 
         // Print pose to telemetry
-        telemetry.addData("x", poseEstimate.getX());
-        telemetry.addData("y", poseEstimate.getY());
-        telemetry.addData("heading", poseEstimate.getHeading());
         telemetry.addData("Current State", currentState);
+        telemetry.addData("Goal Visible", blueGoalPipeline.isGoalVisible());
+        telemetry.addData("Timer", timer.seconds());
+        telemetry.addData("Motor Power", blueGoalPipeline.getMotorPower());
+//        telemetry.addData("x", poseEstimate.getX());
+//        telemetry.addData("y", poseEstimate.getY());
+        telemetry.addData("heading", poseEstimate.getHeading());
         telemetry.addData("Rings", rings);
         telemetry.addData("In Range", UtilMethods.inRange(flywheel.getRPM(), shootingPoseRPM - RPM_FORGIVENESS, shootingPoseRPM + RPM_FORGIVENESS));
         telemetry.update();
@@ -323,6 +342,8 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
         DRIVE_TO_PLACE_SECOND_GOAL,         // Finally, we're gonna turn again
         CHECK_DRIVE,
         PLACE_SECOND_GOAL,
+        DRIVE_TO_SHOOT_FOUR,
+        ALIGN_TO_GOAL,
         SHOOT_SECOND,
         PARK,
         IDLE// Our bot will enter the IDLE state when done

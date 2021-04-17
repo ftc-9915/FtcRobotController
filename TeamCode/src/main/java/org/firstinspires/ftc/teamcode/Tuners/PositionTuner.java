@@ -26,6 +26,7 @@ public class PositionTuner extends LinearOpMode {
     public static double leftClawPosition = WobbleArm.LEFT_CLAW_OPEN_POS;
     public static double rightClawPosition = WobbleArm.RIGHT_CLAW_OPEN_POS;
     public static int wobbleArmPosition = WobbleArm.ARM_POS_PICKUP_GOAL;
+    public static double ringServoPosition = Collector.RAISE_RING_BLOCK;
     public static double cameraServoPosition = 0;
 
     @Override
@@ -48,7 +49,7 @@ public class PositionTuner extends LinearOpMode {
             wobbleArm.clawServoLeft.setPosition(leftClawPosition);
             wobbleArm.clawServoRight.setPosition(rightClawPosition);
             camera.cameraServo.setPosition(cameraServoPosition);
-            
+            collector.ringBlockServo.setPosition(ringServoPosition);
 
             drive.update();
 

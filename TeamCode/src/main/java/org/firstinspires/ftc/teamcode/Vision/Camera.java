@@ -50,6 +50,11 @@ public class Camera {
         });
     }
 
+    public void setPipeline(OpenCvPipeline pipeline) {
+        this.pipeline = pipeline;
+        this.webcam.setPipeline(pipeline);
+    }
+
     public void setRingStackPosition() {
         cameraServo.setPosition(RING_STACK_POSITION);
     }

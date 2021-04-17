@@ -16,13 +16,18 @@ public class Collector implements SubsystemBase {
 
     //Subsystem Components
     private DcMotor collectorMotor;
+    public Servo ringBlockServo;
 
     //Subsystem Component Names
     private String collectorName = "collectorMotor";
+    private String ringBlockServoName = "ringBlockServo";
 
     //Subsystem Constants
     public static double COLLECTOR_ON_SPEED = 1.0;
     public static double COLLECTOR_REVERSE_SPEED = -1.0;
+
+    public static double RAISE_RING_BLOCK = 0.625;
+    public static double LOWER_RING_BLOCK = 0.1;
 
     //Subsystem State
     enum Mode {
@@ -36,6 +41,9 @@ public class Collector implements SubsystemBase {
     public Collector(HardwareMap hardwareMap){
         collectorMotor = hardwareMap.dcMotor.get(collectorName);
         collectorMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        ringBlockServo = hardwareMap.servo.get(ringBlockServoName);
+        ringBlockServo.setPosition(RAISE_RING_BLOCK);
     }
 
     public boolean setRawPower(double power){
@@ -68,6 +76,14 @@ public class Collector implements SubsystemBase {
             return turnCollectorOn();
         }
         return turnCollectorOff();
+    }
+
+    public void lowerRingBlock() {
+        ringBlockServo.setPosition(LOWER_RING_BLOCK);
+    }
+
+    public void raiseRingBlock() {
+        ringBlockServo.setPosition(RAISE_RING_BLOCK);
     }
 
     @Override

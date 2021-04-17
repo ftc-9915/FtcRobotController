@@ -77,13 +77,14 @@ public class AutonomousFrameworkAsync extends OpMode {
         //initialize paths ahead of time
         pathA =  new AutonomousPathAAsync(drive, wobbleArm, flywheel, collector, hopper);
         pathB = new AutonomousPathBAsync_FourRing(drive, wobbleArm, flywheel, collector, hopper);
-        pathC = new AutonomousPathCAsync(drive, wobbleArm, flywheel, collector, hopper);
+        pathC = new AutonomousPathCAsync_SevenRing(drive, wobbleArm, flywheel, collector, hopper);
 
 //
 //        Initialize webcam
         ringDetectPipeline = new VisionPipeline();
         camera = new Camera(hardwareMap, ringDetectPipeline);
 
+        blueGoalVisionPipeline = new BlueGoalVisionPipeline(telemetry);
 
         //logging
 
@@ -121,6 +122,8 @@ public class AutonomousFrameworkAsync extends OpMode {
 
             case ONE:
                 path = pathB;
+                camera.setPipeline(blueGoalVisionPipeline);
+                camera.setHighGoalPosition();
                 telemetry.addLine("Go Path B");
                 break;
 

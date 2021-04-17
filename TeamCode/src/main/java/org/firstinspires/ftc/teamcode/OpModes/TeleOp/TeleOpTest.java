@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -229,6 +230,14 @@ public class TeleOpTest extends OpMode {
 
 
 
+        //Ring Block Servo
+        if (gamepad2.right_stick_y > 0.5) {
+            collector.raiseRingBlock();
+        }
+        if (gamepad2.right_stick_y < -0.5) {
+            collector.lowerRingBlock();
+        }
+
         switch (currentMode){
             case DRIVER_CONTROL:
 
@@ -366,6 +375,7 @@ public class TeleOpTest extends OpMode {
                 }
 
 
+
                 //DPAD-UP - auto drive to general shooting position
                 if (gamepad1.dpad_up) {
                     collector.turnCollectorOff();
@@ -423,6 +433,7 @@ public class TeleOpTest extends OpMode {
                 //RIGHT BUMPER - Auto Aim
                 if(gamepad1.right_bumper && pipeline.isGoalVisible()) {
                     collector.turnCollectorOff();
+                    collector.lowerRingBlock();;
                     flywheel.setRPM(launcherRPM);
                     currentMode = Mode.ALIGN_TO_GOAL;
                     timer.reset();
@@ -446,14 +457,7 @@ public class TeleOpTest extends OpMode {
 
             case ALIGN_TO_ANGLE:
                 //pass angle in degrees
-                drive.turnTo(angle);
-
-                if (UtilMethods.inRange(Math.toDegrees(drive.getRawExternalHeading()), angle - 1, angle + 1) && timer.seconds() > 1){
-                    currentMode = Mode.DRIVER_CONTROL;
-                    timer.reset();
-                } else{
-                    timer.reset();
-                }
+                drive.turnAsync(Angle.normDelta(0 - currentPose.getHeading()));
 
                 if (gamepad1.left_bumper)
                     currentMode = Mode.DRIVER_CONTROL;
@@ -475,8 +479,13 @@ public class TeleOpTest extends OpMode {
                 }
 
                 //emergency exit
-                if (gamepad1.left_bumper)
+                if (gamepad1.left_bumper) {
+                    rings = 0;
                     currentMode = Mode.DRIVER_CONTROL;
+                    collector.raiseRingBlock();
+                    flywheel.setRPM(0);
+                }
+
 
                 if(pipeline.isGoalVisible()) {
                     //returns positive if robot needs to turn counterclockwise
@@ -587,6 +596,7 @@ public class TeleOpTest extends OpMode {
                 if (gamepad1.left_bumper || rings == 0) {
                     rings = 0;
                     currentMode = Mode.DRIVER_CONTROL;
+                    collector.raiseRingBlock();
                     flywheel.setRPM(0);
                 } else {
                     flywheel.setRPM(launcherRPM);
@@ -603,6 +613,7 @@ public class TeleOpTest extends OpMode {
                         rings--;
                     }
                 }
+
                 break;
 
 

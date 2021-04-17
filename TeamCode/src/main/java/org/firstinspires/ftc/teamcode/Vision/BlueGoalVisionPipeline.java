@@ -71,7 +71,7 @@ public class BlueGoalVisionPipeline extends OpenCvPipeline {
     public static double kP = 0.02;
     public static double kI = 0;
     public static double kD = 0.0005;
-    public static double TOLERANCE = 1.0;
+    public static double TOLERANCE = 0.5;
 
     public PIDController headingController = new PIDController(kP, kI, kD);
 
