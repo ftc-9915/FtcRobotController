@@ -1,15 +1,11 @@
 package org.firstinspires.ftc.teamcode.Tuners;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Subsystems.Collector;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
-import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Flywheel;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Hopper;
 import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
@@ -26,7 +22,8 @@ public class PositionTuner extends LinearOpMode {
     public static double leftClawPosition = WobbleArm.LEFT_CLAW_OPEN_POS;
     public static double rightClawPosition = WobbleArm.RIGHT_CLAW_OPEN_POS;
     public static int wobbleArmPosition = WobbleArm.ARM_POS_PICKUP_GOAL;
-    public static double ringServoPosition = Collector.RAISE_RING_BLOCK;
+    public static double ringBlockServoPosition = Collector.RAISE_RING_BLOCK;
+    public static double ringGuardServoPosition = Collector.RAISE_RING_GUARD;
     public static double cameraServoPosition = 0;
 
     @Override
@@ -49,7 +46,9 @@ public class PositionTuner extends LinearOpMode {
             wobbleArm.clawServoLeft.setPosition(leftClawPosition);
             wobbleArm.clawServoRight.setPosition(rightClawPosition);
             camera.cameraServo.setPosition(cameraServoPosition);
-            collector.ringBlockServo.setPosition(ringServoPosition);
+            collector.ringBlockServo.setPosition(ringBlockServoPosition);
+            collector.ringGuardServo.setPosition(ringGuardServoPosition);
+
 
             drive.update();
 

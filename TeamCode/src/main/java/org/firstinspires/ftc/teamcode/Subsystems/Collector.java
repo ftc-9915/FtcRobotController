@@ -17,10 +17,12 @@ public class Collector implements SubsystemBase {
     //Subsystem Components
     private DcMotor collectorMotor;
     public Servo ringBlockServo;
+    public Servo ringGuardServo;
 
     //Subsystem Component Names
     private String collectorName = "collectorMotor";
     private String ringBlockServoName = "ringBlockServo";
+    private String ringGuardServoName = "ringGuardServo";
 
     //Subsystem Constants
     public static double COLLECTOR_ON_SPEED = 1.0;
@@ -28,6 +30,9 @@ public class Collector implements SubsystemBase {
 
     public static double RAISE_RING_BLOCK = 0.625;
     public static double LOWER_RING_BLOCK = 0.1;
+
+    public static double RAISE_RING_GUARD = 0.1;
+    public static double LOWER_RING_GUARD = 0.58;
 
     //Subsystem State
     enum Mode {
@@ -44,6 +49,9 @@ public class Collector implements SubsystemBase {
 
         ringBlockServo = hardwareMap.servo.get(ringBlockServoName);
         ringBlockServo.setPosition(RAISE_RING_BLOCK);
+
+        ringGuardServo = hardwareMap.servo.get(ringGuardServoName);
+        ringGuardServo.setPosition(RAISE_RING_GUARD);
     }
 
     public boolean setRawPower(double power){
@@ -62,10 +70,12 @@ public class Collector implements SubsystemBase {
     }
 
     public boolean turnCollectorOn(){
+        lowerRingGuard();
         return setRawPower(COLLECTOR_ON_SPEED);
     }
 
     public boolean turnCollectorOff(){
+        raiseRingGuard();
         return setRawPower(0);
     }
 
@@ -85,6 +95,10 @@ public class Collector implements SubsystemBase {
     public void raiseRingBlock() {
         ringBlockServo.setPosition(RAISE_RING_BLOCK);
     }
+
+    public void raiseRingGuard() { ringGuardServo.setPosition(RAISE_RING_GUARD); }
+
+    public void lowerRingGuard() { ringGuardServo.setPosition(LOWER_RING_GUARD); }
 
     @Override
     public boolean isBusy() {

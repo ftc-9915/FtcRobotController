@@ -52,7 +52,7 @@ public class AutonomousFrameworkAsync extends OpMode {
     @Override
     public void init() {
         //Init Drive
-        drive = new MecanumDrivebase(hardwareMap, 1.5);
+        drive = new MecanumDrivebase(hardwareMap, 0.8);
         drive.setPoseEstimate(PoseLibrary.START_POS_BLUE_2);
 
         //Initialize Wobble Arm

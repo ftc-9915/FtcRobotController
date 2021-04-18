@@ -121,8 +121,8 @@ public class MecanumDrivebase extends com.acmerobotics.roadrunner.drive.MecanumD
     public MecanumDrivebase(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
 
-        //dashboard = FtcDashboard.getInstance();
-        //dashboard.setTelemetryTransmissionInterval(25);
+        dashboard = FtcDashboard.getInstance();
+        dashboard.setTelemetryTransmissionInterval(25);
 
         clock = NanoClock.system();
 
@@ -264,10 +264,10 @@ public class MecanumDrivebase extends com.acmerobotics.roadrunner.drive.MecanumD
 
 
 
-        //TelemetryPacket packet = new TelemetryPacket();
-        //Canvas fieldOverlay = packet.fieldOverlay();
+        TelemetryPacket packet = new TelemetryPacket();
+        Canvas fieldOverlay = packet.fieldOverlay();
 
-        /*
+
         packet.put("mode", mode);
 
         packet.put("x", currentPose.getX());
@@ -278,7 +278,7 @@ public class MecanumDrivebase extends com.acmerobotics.roadrunner.drive.MecanumD
         packet.put("yError", lastError.getY());
         packet.put("headingError", lastError.getHeading());
 
-         */
+
 
         switch (mode) {
             case IDLE:
@@ -336,10 +336,10 @@ public class MecanumDrivebase extends com.acmerobotics.roadrunner.drive.MecanumD
             }
         }
 
-        //fieldOverlay.setStroke("#3F51B5");
-       // DashboardUtil.drawRobot(fieldOverlay, currentPose);
+        fieldOverlay.setStroke("#3F51B5");
+       DashboardUtil.drawRobot(fieldOverlay, currentPose);
 
-        //dashboard.sendTelemetryPacket(packet);
+        dashboard.sendTelemetryPacket(packet);
     }
 
     public void waitForIdle() {
