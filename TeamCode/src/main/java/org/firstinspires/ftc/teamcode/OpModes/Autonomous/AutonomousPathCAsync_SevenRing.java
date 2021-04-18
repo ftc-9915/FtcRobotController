@@ -50,26 +50,28 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
 
     //Treakable values for tuning
     private static final double RPM_FORGIVENESS = 125;
-    public static int goalX = -25;
-    public static int goalY = 57;
+    public static int goalX = -33;
+    public static int goalY = 54;
     public static double shootingPoseAngle = -5;
     public static double shootingPoseRPM = PoseLibrary.SHOOTING_POSE_BC.getRPM();
 
     //Poses
     Pose2d shootingPosePt1 = new Pose2d (-24,21);
     Pose2d shootingPosePt2 = PoseLibrary.SHOOTING_POSE_BC.getPose2d();
+    Pose2d shootingPosePt3 = new Pose2d(6.8066, 26.37388, Math.toRadians(-8));
     Pose2d placeGoalPose = new Pose2d(48, 52, Math.toRadians(-0.1));
 
-    Pose2d prepareToPushRingStack = new Pose2d(-12, 36, Math.toRadians(180.0));
-    Pose2d pushRingStack = new Pose2d(-36, 36, Math.toRadians(180.0));
+    Pose2d prepareToPushRingStack = new Pose2d(0, 34, Math.toRadians(180.0));
+    Pose2d pushRingStack = new Pose2d(-12, 34, Math.toRadians(180.0));
     // *then go back to ringPosePt1
 
-    Pose2d pickUpRingPose1 = new Pose2d(-30, 36, Math.toRadians(180.0));
+    Pose2d pickUpRingPose1 = new Pose2d(-15, 34, Math.toRadians(180.0));
+    Pose2d pickUpRingPose2 = new Pose2d(-19, 34, Math.toRadians(180.0));
 
 
     Pose2d pickUpGoalPose1 = new Pose2d(-24, goalY, Math.toRadians(180.0));
     Pose2d pickUpGoalPose2 = new Pose2d(goalX, goalY, Math.toRadians(180.0));
-    Pose2d placeSecondGoalPose1 = new Pose2d(48, 55, Math.toRadians(0.0));
+    Pose2d placeSecondGoalPose1 = new Pose2d(45, 53, Math.toRadians(0.0));
     Pose2d parkPose = new Pose2d(19, 50, Math.toRadians(0.0));
 
     //build trajectories on construction
@@ -90,59 +92,60 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
 
         goToPrepareToAccessRingStackPose1 = drive.trajectoryBuilder(goToPlaceGoalPose.end())
                 .lineToSplineHeading(prepareToPushRingStack)
-                .addDisplacementMarker(() -> drive.followTrajectory(goToPushRingStackPose))
+                .addDisplacementMarker(() -> drive.followTrajectoryAsync(goToPushRingStackPose))
                 .build();
 
         goToPushRingStackPose = drive.trajectoryBuilder(goToPrepareToAccessRingStackPose1.end())
                 .lineToConstantHeading(pushRingStack.vec())
-                .addDisplacementMarker(() -> {
-                    drive.followTrajectory(goToBackUpByRingStackPose);
-                    // TODO hopper does not actually go down
-                    hopper.setLiftDownPos();
-                })
+                .addDisplacementMarker(() -> hopper.setLiftDownPos())
+                .addDisplacementMarker(() -> hopper.setPushOutPos())
+                .addDisplacementMarker(() -> drive.followTrajectoryAsync(goToBackUpByRingStackPose))
                 .build();
 
         goToBackUpByRingStackPose = drive.trajectoryBuilder(goToPushRingStackPose.end())
                 .lineToConstantHeading(prepareToPushRingStack.vec())
-                .addDisplacementMarker(() -> {
-                    collector.turnCollectorOn();
-                    drive.followTrajectory(goToPickUpRingPose1);
-                })
+                .addDisplacementMarker(() -> collector.turnCollectorOn())
+                .addDisplacementMarker(() -> drive.followTrajectoryAsync(goToPickUpRingPose1))
                 .build();
 
         goToPickUpRingPose1 = drive.trajectoryBuilder(goToBackUpByRingStackPose.end())
-                .lineToConstantHeading(pickUpRingPose1.vec())
-                .addDisplacementMarker(() -> {
-                    drive.followTrajectory(goToShootingPose2);
-                })
+                .lineToConstantHeading(pickUpRingPose1.vec(), new MinVelocityConstraint(
+                                Arrays.asList(
+                                        new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
+                                        new MecanumVelocityConstraint(8, DriveConstants.TRACK_WIDTH)
+                                )
+                        ),
+                        new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                .addDisplacementMarker(() -> drive.followTrajectoryAsync(goToShootingPose2))
                 .build();
 
         goToShootingPose2 = drive.trajectoryBuilder(goToPickUpRingPose1.end())
-                .lineToSplineHeading(shootingPosePt2)
+                .lineToSplineHeading(shootingPosePt3)
+                 .addTemporalMarker(1.5, () -> hopper.setLiftUpPos())
                 .build();
 
         goToPrepareToAccessRingStackPose2 = drive.trajectoryBuilder(goToShootingPose2.end())
                 .lineToSplineHeading(prepareToPushRingStack)
                 .addDisplacementMarker(() -> {
 //                    collector.turnCollectorOn();
-                    drive.followTrajectory(goToPickupRingPose2);
+                    drive.followTrajectoryAsync(goToPickupRingPose2);
                 })
                 .build();
 
         goToPickupRingPose2 = drive.trajectoryBuilder(goToPrepareToAccessRingStackPose2.end())
-                // same pose as pushing the ring stack for now
-                .lineToConstantHeading(pushRingStack.vec())
-                .addDisplacementMarker(() -> drive.followTrajectory(goToShootingPose3))
+                .lineToConstantHeading(pickUpRingPose2.vec())
+                .addDisplacementMarker(() -> drive.followTrajectoryAsync(goToShootingPose3))
                 .build();
 
         goToShootingPose3 = drive.trajectoryBuilder(goToPickupRingPose2.end())
-                .lineToSplineHeading(shootingPosePt2)
+                .addTemporalMarker(1.5, () -> hopper.setLiftUpPos())
+                .lineToSplineHeading(shootingPosePt3)
                 .build();
 
         //----------------------------------
 
         goToPickUpGoalPose1 = drive.trajectoryBuilder(goToShootingPose3.end())
-                .lineToLinearHeading(pickUpGoalPose1)
+                .lineToSplineHeading(pickUpGoalPose1)
                 .addDisplacementMarker(() -> drive.followTrajectoryAsync(goToPickUpGoalPose2))
                 .build();
 
@@ -201,6 +204,7 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
                         }
                     }
                     else {
+                        rings = 3;
                         currentState = State.DRIVE_TO_PLACE_GOAL;
                         drive.followTrajectoryAsync(goToPlaceGoalPose);
                     }
@@ -229,41 +233,6 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
                 }
                 break;
 
-//            case PREPARE_TO_PUSH_RING_STACK:
-//                if(!drive.isBusy()) {
-//                    drive.followTrajectoryAsync(goToPushRingStackPose);
-//                    currentState = State.SHOOT_2;
-//                }
-//                break;
-
-//            case PUSH_RING_STACK:
-//                if(!drive.isBusy()) {
-//                    drive.followTrajectoryAsync(goToBackUpByRingStackPose);
-//                    currentState = State.BACK_UP;
-//                }
-//                break;
-//
-//            case BACK_UP:
-//                if(!drive.isBusy()) {
-//                    collector.turnCollectorOn();
-//                    drive.followTrajectoryAsync(goToPickUpRingPose1);
-//                    currentState = State.PICKUP_RING_1;
-//                }
-//                break;
-//
-//            case PICKUP_RING_1:
-//                if(!drive.isBusy()) {
-//                    drive.followTrajectoryAsync(goToShootingPose2);
-//                    currentState = State.DRIVE_TO_SHOOT_2;
-//                }
-//                break;
-//
-//            case DRIVE_TO_SHOOT_2:
-//                if(!drive.isBusy()) {
-//                    collector.turnCollectorOff();
-//                    currentState = State.SHOOT_2;
-//                }
-//                break;
 
             case SHOOT_2:
                 if (!drive.isBusy()) {
@@ -283,7 +252,10 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
                         }
                     }
                     else {
+                        rings = 3;
                         currentState = State.SHOOT_3;
+                        hopper.setLiftDownPos();
+                        hopper.setPushOutPos();
                         drive.followTrajectoryAsync(goToPrepareToAccessRingStackPose2);
                     }
                 }
@@ -308,6 +280,7 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
                     }
                     else {
                         currentState = State.DRIVE_TO_SECOND_GOAL;
+                        timer.reset();
                         drive.followTrajectoryAsync(goToPickUpGoalPose1);
                     }
                 }
