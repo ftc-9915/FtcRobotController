@@ -21,8 +21,6 @@ import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
 
 import java.util.Arrays;
 
-import static org.firstinspires.ftc.teamcode.Subsystems.WobbleArm.PREPARE_TO_PLACE_GOAL;
-
 @Config
 public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
 
@@ -60,7 +58,7 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
     //Poses
     Pose2d shootingPosePt1 = new Pose2d (-24,21);
     Pose2d shootingPosePt2 = PoseLibrary.SHOOTING_POSE_BC.getPose2d();
-    Pose2d shootingPosePt3 = new Pose2d(6.8066, 26.37388, Math.toRadians(-8));
+    Pose2d shootingPosePt3 = new Pose2d(6.8066, 26.37388, Math.toRadians(-12));
     Pose2d placeGoalPose = new Pose2d(48, 52, Math.toRadians(-0.1));
 
     Pose2d prepareToPushRingStack = new Pose2d(-5, 34, Math.toRadians(180.0));
@@ -90,7 +88,7 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
                 .splineTo(placeGoalPose.vec(), placeGoalPose.getHeading())
                 .addDisplacementMarker(() -> hopper.setLiftDownPos())
                 .addDisplacementMarker(() -> hopper.setPushOutPos())
-                .addDisplacementMarker(() -> collector.turnCollectorOn())
+                .addDisplacementMarker(() -> collector.turnCollectorOnWithRingGuard())
                 .build();
 
         //---------------------------------------------------------

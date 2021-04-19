@@ -230,7 +230,7 @@ public class AlignToGoalTest extends OpMode {
 
                 // Turns collector on/off
                 if (gamepad1.a && buttonReleased1) {
-                    collector.turnCollectorOn();
+                    collector.turnCollectorOnWithRingGuard();
                     hopper.setPushOutPos();
                     hopper.setLiftDownPos();
                     buttonReleased1 = false;

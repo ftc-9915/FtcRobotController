@@ -24,6 +24,7 @@ public class PositionTuner extends LinearOpMode {
     public static int wobbleArmPosition = WobbleArm.ARM_POS_PICKUP_GOAL;
     public static double ringBlockServoPosition = Collector.RAISE_RING_BLOCK;
     public static double ringGuardServoPosition = Collector.RAISE_RING_GUARD;
+    public static double angle = 0.0;
     public static double cameraServoPosition = 0;
 
     @Override
@@ -49,6 +50,9 @@ public class PositionTuner extends LinearOpMode {
             collector.ringBlockServo.setPosition(ringBlockServoPosition);
             collector.ringGuardServo.setPosition(ringGuardServoPosition);
 
+            if(gamepad1.a) {
+                drive.turnAsync(Math.toRadians(angle));
+            }
 
             drive.update();
 

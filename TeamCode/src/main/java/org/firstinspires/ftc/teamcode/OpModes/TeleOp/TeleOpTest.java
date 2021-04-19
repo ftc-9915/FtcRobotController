@@ -6,7 +6,6 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -22,9 +21,6 @@ import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Hopper;
 import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
 import org.firstinspires.ftc.teamcode.Vision.BlueGoalVisionPipeline;
 import org.firstinspires.ftc.teamcode.Vision.Camera;
-
-import static org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary.POWER_SHOT_POSES_LEFT;
-import static org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary.POWER_SHOT_POSES_RIGHT;
 
 
 @TeleOp(name="TeleOp Test", group="test")
@@ -188,6 +184,7 @@ public class TeleOpTest extends OpMode {
         telemetry.addData("Drive Mode: ", currentMode);
         telemetry.addData("x", currentPose.getX());
         telemetry.addData("y", currentPose.getY());
+        telemetry.addData("heading", currentPose.getHeading());
         telemetry.addData("Angle To Goal", pipeline.getYaw());
         telemetry.addData("Aligned To Goal", pipeline.isGoalCentered());
         telemetry.addData("raw heading", Math.toDegrees(drive.getRawExternalHeading()));
@@ -231,10 +228,10 @@ public class TeleOpTest extends OpMode {
 
 
         //Ring Block Servo
-        if (gamepad2.right_stick_y > 0.5) {
+        if (gamepad2.right_stick_y < -0.5) {
             collector.raiseRingBlock();
         }
-        if (gamepad2.right_stick_y < -0.5) {
+        if (gamepad2.right_stick_y > 0.5) {
             collector.lowerRingBlock();
         }
 
@@ -359,6 +356,14 @@ public class TeleOpTest extends OpMode {
                 }
 
 
+                // Ring guard controls
+                if(gamepad2.back) {
+                    collector.raiseRingGuard();
+                }
+                if(gamepad2.start) {
+                    collector.lowerRingGuard();
+                }
+
 
                 // Do not adjust values again until after buttons are released (and pressed again) so the
                 // adjustments are made each time the gamepad buttons are pressed rather than each time through loop
@@ -456,11 +461,14 @@ public class TeleOpTest extends OpMode {
 
 
             case ALIGN_TO_ANGLE:
-                //pass angle in degrees
-                drive.turnAsync(Angle.normDelta(0 - currentPose.getHeading()));
+                drive.turnTo(angle);
 
-                if (gamepad1.left_bumper)
+                if (UtilMethods.inRange(Math.toDegrees(drive.getRawExternalHeading()), angle - 1, angle + 1) && timer.seconds() > 1){
                     currentMode = Mode.DRIVER_CONTROL;
+                    timer.reset();
+                } else{
+                    timer.reset();
+                }
 
                 break;
 
@@ -505,14 +513,13 @@ public class TeleOpTest extends OpMode {
                     currentMode = Mode.DRIVER_CONTROL;
                     // 0 1 2
                 } else if (!drive.isBusy()) {
+                    launcherRPM -= 50;
                     currentMode = Mode.PREPARE_TO_SHOOT_POWERSHOTS;
                     hopper.setPushOutPos();
                     powershotHeadingOffset = drive.getRawExternalHeading();
                     timer.reset();
                 }
                 flywheel.setRPM(launcherRPM);
-
-
                 break;
 
             //when robot has reached the end of it's generated trajectory, reset timer and rings to 1, then move to shoot rings state
@@ -543,12 +550,12 @@ public class TeleOpTest extends OpMode {
                 flywheel.setRPM(launcherRPM);
                 hopper.setLiftUpPos();
                 if (rings > 0) {
-                    if (flywheel.atTargetRPM()
-                            && hopper.getPushMode() == Hopper.PushMode.PUSH_OUT && timer.seconds() > 0.5) {
+                    if (UtilMethods.inRange(flywheel.getRPM(), launcherRPM - 125, launcherRPM + 125)
+                            && hopper.getPushMode() == Hopper.PushMode.PUSH_OUT && timer.seconds() > 0.25) {
                         hopper.setPushInPos();
                         timer.reset();
                     }
-                    if (hopper.getPushMode() == Hopper.PushMode.PUSH_IN  && timer.seconds() > 0.5) {
+                    if (hopper.getPushMode() == Hopper.PushMode.PUSH_IN  && timer.seconds() > 0.25) {
                         hopper.setPushOutPos();
                         timer.reset();
                         rings--;
@@ -568,11 +575,11 @@ public class TeleOpTest extends OpMode {
                     currentMode = Mode.DRIVER_CONTROL;
                 else if (powerShotState == 1) {
                     //turn to -6.5 degrees
-                    drive.turnAsync(Math.toRadians(-5));
+                    drive.turnAsync(Math.toRadians(-4));
                     currentMode = Mode.WAIT_FOR_TURN_TO_FINISH;
                 } else if (powerShotState == 2) {
                     //turn to -13 degrees
-                    drive.turnAsync(Math.toRadians(-5));
+                    drive.turnAsync(Math.toRadians(-4));
                     currentMode = Mode.WAIT_FOR_TURN_TO_FINISH;
                 }
                 flywheel.setRPM(launcherRPM);

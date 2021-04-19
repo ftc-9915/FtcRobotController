@@ -11,7 +11,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Common.UtilMethods;
-import org.firstinspires.ftc.teamcode.OpModes.TeleOp.TeleOpTest;
 import org.firstinspires.ftc.teamcode.Subsystems.Collector;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
@@ -84,7 +83,7 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
         goToPickupRingPose1 = drive.trajectoryBuilder(goToPlaceGoalPose.end())
                 .addDisplacementMarker(() -> hopper.setLiftDownPos())
                 .addDisplacementMarker(() -> hopper.setPushOutPos())
-                .addDisplacementMarker(() -> collector.turnCollectorOn())
+                .addDisplacementMarker(() -> collector.turnCollectorOnWithRingGuard())
                 .lineToLinearHeading(pickUpRingPose1)
                 .build();
 

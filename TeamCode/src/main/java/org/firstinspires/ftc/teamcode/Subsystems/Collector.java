@@ -6,8 +6,6 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.Subsystems.SubsystemBase;
-
 
 @Config
 public class Collector implements SubsystemBase {
@@ -69,8 +67,12 @@ public class Collector implements SubsystemBase {
         return false;
     }
 
-    public boolean turnCollectorOn(){
+    public boolean turnCollectorOnWithRingGuard(){
         lowerRingGuard();
+        return setRawPower(COLLECTOR_ON_SPEED);
+    }
+
+    public boolean turnCollectorOn(){
         return setRawPower(COLLECTOR_ON_SPEED);
     }
 
@@ -83,7 +85,7 @@ public class Collector implements SubsystemBase {
 
     public boolean toggleCollectorOnOff(){
         if (currentMode == Mode.COLLECTOR_OFF) {
-            return turnCollectorOn();
+            return turnCollectorOnWithRingGuard();
         }
         return turnCollectorOff();
     }
