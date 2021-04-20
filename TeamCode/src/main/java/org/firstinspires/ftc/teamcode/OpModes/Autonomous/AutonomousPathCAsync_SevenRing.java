@@ -65,7 +65,7 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
     Pose2d pushRingStack = new Pose2d(-12, 34, Math.toRadians(180.0));
     // *then go back to ringPosePt1
 
-    Pose2d pickUpRingPose1 = new Pose2d(-15, 34.5, Math.toRadians(180.0));
+    Pose2d pickUpRingPose1 = new Pose2d(-14, 34.5, Math.toRadians(180.0));
     Pose2d pickUpRingPose2 = new Pose2d(-19, 34, Math.toRadians(180.0));
 
 
@@ -124,7 +124,7 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
 
         goToShootingPose2 = drive.trajectoryBuilder(goToPickUpRingPose1.end())
                 .lineToSplineHeading(shootingPosePt3)
-                 .addTemporalMarker(1.5, () -> {
+                 .addTemporalMarker(1.25, () -> {
                      collector.raiseRingGuard();
                      hopper.setLiftUpPos();
                  })

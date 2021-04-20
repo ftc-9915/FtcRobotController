@@ -56,6 +56,8 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
     //Poses
     Pose2d shootingPosePt1 = new Pose2d (-24,21);
     Pose2d shootingPosePt2 = PoseLibrary.SHOOTING_POSE_BC.getPose2d();
+    Pose2d shootingPosePt3 = new Pose2d(6.8066, 26.37388, Math.toRadians(-10));
+
     Pose2d placeGoalPose = new Pose2d(22, 25, Math.toRadians(0.0));
     Pose2d pickUpRingPose1 = new Pose2d(-15, 36, Math.toRadians(180.0));
     Pose2d pickUpRingPose2 = new Pose2d(-25, 36, Math.toRadians(180.0));
@@ -63,7 +65,7 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
     Pose2d pickUpGoalPose1 = new Pose2d(-20, goalY, Math.toRadians(180.0));
     Pose2d pickUpGoalPose2 = new Pose2d(goalX, goalY, Math.toRadians(180.0));
     Pose2d placeSecondGoalPose1 = new Pose2d(30, 57, Math.toRadians(0.0));
-    Pose2d placeSecondGoalPose2 = new Pose2d(23, 33, Math.toRadians(0.0));
+    Pose2d placeSecondGoalPose2 = new Pose2d(25, 31.5, Math.toRadians(0.0));
     Pose2d parkPose = new Pose2d(17, 27, Math.toRadians(0.0));
 
     //build trajectories on construction
@@ -118,7 +120,7 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
                 .build();
 
         goToFinalShootingPose = drive.trajectoryBuilder(goToPlaceSecondGoalPart2.end())
-                .lineToLinearHeading(shootingPosePt2)
+                .lineToLinearHeading(shootingPosePt3)
                 .build();
 
         goToParkingPose = drive.trajectoryBuilder(goToFinalShootingPose.end())

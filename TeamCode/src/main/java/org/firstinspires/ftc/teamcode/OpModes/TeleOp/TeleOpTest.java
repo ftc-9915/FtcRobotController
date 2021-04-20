@@ -313,6 +313,7 @@ public class TeleOpTest extends OpMode {
                 if (gamepad2.right_bumper && buttonReleased2) {
                     collector.turnCollectorOff();
                     hopper.setLiftUpPos();
+                    collector.raiseRingBlock();
                     buttonReleased2 = false;
                 }
 
@@ -438,7 +439,7 @@ public class TeleOpTest extends OpMode {
                 //RIGHT BUMPER - Auto Aim
                 if(gamepad1.right_bumper && pipeline.isGoalVisible()) {
                     collector.turnCollectorOff();
-                    collector.lowerRingBlock();;
+                    collector.raiseRingBlock();;
                     flywheel.setRPM(launcherRPM);
                     currentMode = Mode.ALIGN_TO_GOAL;
                     timer.reset();
@@ -575,11 +576,11 @@ public class TeleOpTest extends OpMode {
                     currentMode = Mode.DRIVER_CONTROL;
                 else if (powerShotState == 1) {
                     //turn to -6.5 degrees
-                    drive.turnAsync(Math.toRadians(-4));
+                    drive.turnAsync(Math.toRadians(-5));
                     currentMode = Mode.WAIT_FOR_TURN_TO_FINISH;
                 } else if (powerShotState == 2) {
                     //turn to -13 degrees
-                    drive.turnAsync(Math.toRadians(-4));
+                    drive.turnAsync(Math.toRadians(-5));
                     currentMode = Mode.WAIT_FOR_TURN_TO_FINISH;
                 }
                 flywheel.setRPM(launcherRPM);
@@ -603,7 +604,6 @@ public class TeleOpTest extends OpMode {
                 if (gamepad1.left_bumper || rings == 0) {
                     rings = 0;
                     currentMode = Mode.DRIVER_CONTROL;
-                    collector.raiseRingBlock();
                     flywheel.setRPM(0);
                 } else {
                     flywheel.setRPM(launcherRPM);
@@ -612,6 +612,7 @@ public class TeleOpTest extends OpMode {
                 if (rings > 0) {
                     if (flywheel.atTargetRPM() && hopper.getPushMode() == Hopper.PushMode.PUSH_OUT && timer.seconds() > 0.5) {
                         hopper.setPushInPos();
+                        collector.lowerRingBlock();
                         timer.reset();
                     }
                     if (hopper.getPushMode() == Hopper.PushMode.PUSH_IN  && timer.seconds() > 0.5) {
