@@ -138,12 +138,10 @@ public class AutonomousPathCAsync_SevenRingV2 extends AutonomousPathAsync {
                 // Once `isBusy() == false`, the trajectory follower signals that it is finished
                 // We move on to the next state
                 // Make sure we use the async follow function
-                if (!drive.isBusy()) {
                     currentState = State.SHOOT;
                     shootingPoseRPM = BACK_SHOOTING_POSE.getRPM();
                     drive.followTrajectoryAsync(goToShootingPosePt1);
                     timer.reset();
-                }
                 break;
             case SHOOT:
                 if (!drive.isBusy()) {
@@ -228,7 +226,7 @@ public class AutonomousPathCAsync_SevenRingV2 extends AutonomousPathAsync {
                     }
                     else {
                         currentState = State.DRIVE_TO_PLACE_GOAL;
-                        drive.followTrajectoryAsync(goToPlaceSecondGoalPart1); //picks up ring and drives back to shooting position
+                        drive.followTrajectoryAsync(goToPlaceGoalPose);
                     }
                 }
                 break;
@@ -335,7 +333,7 @@ public class AutonomousPathCAsync_SevenRingV2 extends AutonomousPathAsync {
         telemetry.addData("Current State", currentState);
         telemetry.addData("Rings", rings);
         telemetry.addData("RPM", flywheel.getRPM());
-        telemetry.addData("In Range", UtilMethods.inRange(flywheel.getRPM(), shootingPoseRPM - RPM_FORGIVENESS, shootingPoseRPM + RPM_FORGIVENESS));
+        telemetry.addData("In Range", flywheel.atTargetRPM());
         telemetry.update();
 
     }
@@ -346,6 +344,10 @@ public class AutonomousPathCAsync_SevenRingV2 extends AutonomousPathAsync {
     enum State {
         DRIVE_TO_SHOOT,
         SHOOT,   // First, follow a splineTo() trajectory
+        DRIVE_TO_SHOOT_2,
+        SHOOT_2,
+        DRIVE_TO_SHOOT_3,
+        SHOOT_3,
         DRIVE_TO_PLACE_GOAL,   // Then, follow a lineTo() trajectory
         PLACE_GOAL,         // Then we want to do a point turn
         DRIVE_TO_SECOND_GOAL,   // Then, we follow another lineTo() trajectory

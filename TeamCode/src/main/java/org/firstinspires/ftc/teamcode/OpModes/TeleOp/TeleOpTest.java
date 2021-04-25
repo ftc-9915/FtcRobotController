@@ -27,7 +27,7 @@ import org.firstinspires.ftc.teamcode.Vision.Camera;
 @Config
 public class TeleOpTest extends OpMode {
 
-    public static double aimTimer = 1;
+    public static double aimTimer = 0.6;
 
     //Subsystems
     MecanumDrivebase drive;
@@ -610,12 +610,12 @@ public class TeleOpTest extends OpMode {
                     hopper.setLiftUpPos();
                 }
                 if (rings > 0) {
-                    if (flywheel.atTargetRPM() && hopper.getPushMode() == Hopper.PushMode.PUSH_OUT && timer.seconds() > 0.5) {
+                    if (flywheel.atTargetRPM() && hopper.getPushMode() == Hopper.PushMode.PUSH_OUT && timer.seconds() > 0.25) {
                         hopper.setPushInPos();
                         collector.lowerRingBlock();
                         timer.reset();
                     }
-                    if (hopper.getPushMode() == Hopper.PushMode.PUSH_IN  && timer.seconds() > 0.5) {
+                    if (hopper.getPushMode() == Hopper.PushMode.PUSH_IN  && timer.seconds() > 0.25) {
                         hopper.setPushOutPos();
                         timer.reset();
                         rings--;
