@@ -27,8 +27,8 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
     //Treakable values for tuning
 
     private static final double RPM_FORGIVENESS = 125;
-    public static int goalX = -25;
-    public static int goalY = 59;
+    public static int goalX = -28;
+    public static int goalY = 63;
     public static double shootingPoseAngle = -5;
     public static double shootingPoseRPM = PoseLibrary.SHOOTING_POSE_BC.getRPM();
 
@@ -62,7 +62,7 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
     Pose2d pickUpRingPose1 = new Pose2d(-15, 36, Math.toRadians(180.0));
     Pose2d pickUpRingPose2 = new Pose2d(-25, 36, Math.toRadians(180.0));
 
-    Pose2d pickUpGoalPose1 = new Pose2d(-20, goalY, Math.toRadians(180.0));
+    Pose2d pickUpGoalPose1 = new Pose2d(-10, goalY, Math.toRadians(180.0));
     Pose2d pickUpGoalPose2 = new Pose2d(goalX, goalY, Math.toRadians(180.0));
     Pose2d placeSecondGoalPose1 = new Pose2d(30, 57, Math.toRadians(0.0));
     Pose2d placeSecondGoalPose2 = new Pose2d(25, 31.5, Math.toRadians(0.0));
@@ -85,7 +85,7 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
         goToPickupRingPose1 = drive.trajectoryBuilder(goToPlaceGoalPose.end())
                 .addDisplacementMarker(() -> hopper.setLiftDownPos())
                 .addDisplacementMarker(() -> hopper.setPushOutPos())
-                .addDisplacementMarker(() -> collector.turnCollectorOnWithRingGuard())
+                .addDisplacementMarker(() -> collector.turnCollectorOn())
                 .lineToLinearHeading(pickUpRingPose1)
                 .build();
 
@@ -109,17 +109,11 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
         //
 
         goToPlaceSecondGoalPart1 = drive.trajectoryBuilder(goToPickUpGoalPose2.end())
-                .lineToSplineHeading(placeSecondGoalPose1)
-                .addDisplacementMarker(() -> {
-                    drive.followTrajectoryAsync(goToPlaceSecondGoalPart2);
-                })
+                .lineToSplineHeading(placeSecondGoalPose2)
                 .build();
 
-        goToPlaceSecondGoalPart2 = drive.trajectoryBuilder(goToPlaceSecondGoalPart1.end())
-                .lineToConstantHeading(placeSecondGoalPose2.vec())
-                .build();
 
-        goToFinalShootingPose = drive.trajectoryBuilder(goToPlaceSecondGoalPart2.end())
+        goToFinalShootingPose = drive.trajectoryBuilder(goToPlaceSecondGoalPart1.end())
                 .lineToLinearHeading(shootingPosePt3)
                 .build();
 

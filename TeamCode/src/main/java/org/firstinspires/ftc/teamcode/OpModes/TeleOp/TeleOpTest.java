@@ -27,7 +27,7 @@ import org.firstinspires.ftc.teamcode.Vision.Camera;
 @Config
 public class TeleOpTest extends OpMode {
 
-    public static double aimTimer = 0.6;
+    public static double aimTimer = 1;
 
     //Subsystems
     MecanumDrivebase drive;
@@ -38,6 +38,8 @@ public class TeleOpTest extends OpMode {
 
     Camera camera;
     BlueGoalVisionPipeline pipeline;
+
+    Trajectory driveToPowershotPosition;
 
 
 
@@ -142,6 +144,10 @@ public class TeleOpTest extends OpMode {
         buttonReleased2 = true;
         triggerReleased = true;
 
+
+         driveToPowershotPosition = drive.trajectoryBuilder(new Pose2d(0,0,Math.toRadians(0.0)))
+                .lineToConstantHeading(new Vector2d(-9.9, 15))
+                .build();
 
         //set read mode to manual
         for (LynxModule module : hardwareMap.getAll(LynxModule.class))
@@ -307,6 +313,7 @@ public class TeleOpTest extends OpMode {
                 // Lifts/Lowers the collecting platform
                 if (gamepad2.left_bumper && buttonReleased2) {
                     hopper.setLiftDownPos();
+                    collector.turnCollectorOn();
                     buttonReleased2 = false;
                 }
 
@@ -338,6 +345,7 @@ public class TeleOpTest extends OpMode {
                 }
                 if (gamepad2.dpad_right && buttonReleased2) {
                     armPos = wobbleArm.ARM_POS_OVER_WALL;
+                    wobbleArm.openClaw();
                     buttonReleased2 = false;
                 }
                 if (gamepad2.dpad_left && buttonReleased2) {
@@ -410,9 +418,7 @@ public class TeleOpTest extends OpMode {
                     powerShotState = 0;
 
                     drive.setPoseEstimate(new Pose2d(0,0,Math.toRadians(0.0)));
-                    Trajectory driveToPowershotPosition = drive.trajectoryBuilder(new Pose2d(0,0,Math.toRadians(0.0)))
-                            .lineToConstantHeading(new Vector2d(-9.9, 15))
-                            .build();
+
 
                     drive.followTrajectoryAsync(driveToPowershotPosition);
 

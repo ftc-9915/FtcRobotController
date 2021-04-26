@@ -29,8 +29,8 @@ public class Collector implements SubsystemBase {
     public static double RAISE_RING_BLOCK = 0.625;
     public static double LOWER_RING_BLOCK = 0.1;
 
-    public static double RAISE_RING_GUARD = 0.1;
-    public static double LOWER_RING_GUARD = 0.58;
+    public static double RAISE_RING_GUARD = 0.25;
+    public static double LOWER_RING_GUARD = 0.73;
 
     //Subsystem State
     enum Mode {

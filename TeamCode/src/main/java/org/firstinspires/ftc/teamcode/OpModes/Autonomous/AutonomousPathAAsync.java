@@ -46,7 +46,7 @@ public class AutonomousPathAAsync extends AutonomousPathAsync {
 
     //Treakable values for tuning
     private static final double RPM_FORGIVENESS = 125;
-    public static int goalX = -26;
+    public static int goalX = -28;
     public static int goalY = 59;
     public static double shootingPoseRPM = PoseLibrary.SHOOTING_POSE_A.getRPM();
 

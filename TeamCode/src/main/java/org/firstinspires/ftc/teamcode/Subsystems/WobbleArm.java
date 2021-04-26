@@ -29,7 +29,7 @@ public class WobbleArm implements SubsystemBase {
 
     //Subsystem Constants
     public static int ARM_POS_PLACE_GOAL = -450;
-    public static int ARM_POS_PICKUP_GOAL = -480;
+    public static int ARM_POS_PICKUP_GOAL = -500;
     public static int ARM_POS_LIFT_ARM = -200;
     public static int PREPARE_TO_PLACE_GOAL = -380;
     public static int ARM_POS_OVER_WALL = -350;
