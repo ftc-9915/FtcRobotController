@@ -21,6 +21,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Flywheel;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Hopper;
 import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
+import org.firstinspires.ftc.teamcode.Vision.Camera;
 
 import java.util.Arrays;
 
@@ -64,8 +65,8 @@ public class AutonomousPathAAsync extends AutonomousPathAsync {
     Telemetry dashboardTelemetry;
 
     //build trajectories on construction
-    public AutonomousPathAAsync(MecanumDrivebase drive, WobbleArm wobbleArm, Flywheel flywheel, Collector collector, Hopper hopper) {
-        super(drive, wobbleArm, flywheel, collector, hopper);
+    public AutonomousPathAAsync(MecanumDrivebase drive, WobbleArm wobbleArm, Flywheel flywheel, Collector collector, Hopper hopper, Camera camera) {
+        super(drive, wobbleArm, flywheel, collector, hopper, camera);
 
         //telemetry
         dashboard = FtcDashboard.getInstance();

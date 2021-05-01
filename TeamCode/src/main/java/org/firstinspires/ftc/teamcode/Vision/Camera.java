@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoController;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.Common.RingPosition;
 import org.firstinspires.ftc.teamcode.Vision.BlueGoalVisionPipeline;
@@ -18,8 +19,9 @@ public class Camera {
 
 
     //Subsystem Components
-    OpenCvCamera webcam;
-    OpenCvPipeline pipeline;
+    public OpenCvCamera webcam;
+    public OpenCvPipeline pipeline;
+    public BlueGoalVisionPipeline goalPipeline;
     public Servo cameraServo;
 
     //Subsystem Component Names
@@ -50,10 +52,7 @@ public class Camera {
         });
     }
 
-    public void setPipeline(OpenCvPipeline pipeline) {
-        this.pipeline = pipeline;
-        this.webcam.setPipeline(pipeline);
-    }
+
 
     public void setRingStackPosition() {
         cameraServo.setPosition(RING_STACK_POSITION);
@@ -63,7 +62,6 @@ public class Camera {
         cameraServo.setPosition(HIGH_GOAL_POSITION);
     }
 
+    }
 
 
-
-}

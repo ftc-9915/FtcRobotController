@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Common.UtilMethods;
+import org.firstinspires.ftc.teamcode.OpModes.TeleOp.TeleOpTest;
 import org.firstinspires.ftc.teamcode.Subsystems.Collector;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
@@ -18,6 +19,8 @@ import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Flywheel;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Hopper;
 import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
+import org.firstinspires.ftc.teamcode.Vision.BlueGoalVisionPipeline;
+import org.firstinspires.ftc.teamcode.Vision.Camera;
 
 import java.util.Arrays;
 
@@ -42,8 +45,10 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
     Trajectory goToPickupRingPose2;
     Trajectory goToShootingPose3;
 
+    BlueGoalVisionPipeline goalPipeline;
+
     //Set starting state and rings to shoot and timer
-    State currentState = State.DRIVE_TO_SHOOT;
+    State currentState = State.PREPARE_CAMERA;
     int rings = 3;
     ElapsedTime timer = new ElapsedTime();
     boolean hopperPositionIn = false;
@@ -58,14 +63,14 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
     //Poses
     Pose2d shootingPosePt1 = new Pose2d (-24,21);
     Pose2d shootingPosePt2 = PoseLibrary.SHOOTING_POSE_BC.getPose2d();
-    Pose2d shootingPosePt3 = new Pose2d(2.8066, 26.37388, Math.toRadians(-10));
+    Pose2d shootingPosePt3 = new Pose2d(2.8066, 26.37388, Math.toRadians(-6));
     Pose2d placeGoalPose = new Pose2d(48, 52, Math.toRadians(-0.1));
 
     Pose2d prepareToPushRingStack = new Pose2d(-5, 34, Math.toRadians(180.0));
     Pose2d pushRingStack = new Pose2d(-12, 34, Math.toRadians(180.0));
     // *then go back to ringPosePt1
 
-    Pose2d pickUpRingPose1 = new Pose2d(-15, 34.5, Math.toRadians(180.0));
+    Pose2d pickUpRingPose1 = new Pose2d(-16, 34.5, Math.toRadians(180.0));
     Pose2d pickUpRingPose2 = new Pose2d(-19, 34, Math.toRadians(180.0));
 
 
@@ -75,8 +80,8 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
     Pose2d parkPose = new Pose2d(15, 50, Math.toRadians(0.0));
 
     //build trajectories on construction
-    public AutonomousPathCAsync_SevenRing(MecanumDrivebase drive, WobbleArm wobbleArm, Flywheel flywheel, Collector collector, Hopper hopper) {
-        super(drive, wobbleArm, flywheel, collector, hopper);
+    public AutonomousPathCAsync_SevenRing(MecanumDrivebase drive, WobbleArm wobbleArm, Flywheel flywheel, Collector collector, Hopper hopper, Camera camera) {
+        super(drive, wobbleArm, flywheel, collector, hopper, camera);
 
         //Trajectories
         goToShootingPosePt1 = drive.trajectoryBuilder(PoseLibrary.START_POS_BLUE_2)
@@ -182,6 +187,13 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
     public void followPathAsync(Telemetry telemetry) {
 
         switch (currentState) {
+            case PREPARE_CAMERA:
+                camera.setHighGoalPosition();
+                goalPipeline = new BlueGoalVisionPipeline(telemetry);
+                camera.webcam.setPipeline(goalPipeline);
+                currentState = State.DRIVE_TO_SHOOT;
+                break;
+
             case DRIVE_TO_SHOOT:
                 // Check if the drive class isn't busy
                 // `isBusy() == true` while it's following the trajectory
@@ -197,6 +209,8 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
                 break;
             case SHOOT:
                 if (!drive.isBusy()) {
+                    telemetry.addData("Camera Data", this.goalPipeline.getGoalHeight());
+                    telemetry.addData("Motor Power Data", this.goalPipeline.getMotorPower());
                     flywheel.setRPM(shootingPoseRPM);
                     hopper.setLiftUpPos();
                     if (rings > 0) {
@@ -226,6 +240,8 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
             case DRIVE_TO_PLACE_GOAL:
                 if (!drive.isBusy()) {
                     currentState = State.PLACE_GOAL;
+                    wobbleArm.openClaw();
+
                     timer.reset();
                 } else if (timer.seconds() > 0.5) {
                     wobbleArm.placeGoal();
@@ -234,14 +250,12 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
 
             case PLACE_GOAL:
                 //Trigger action depending on timer using else if logic
-                if (timer.seconds() > 1) {
+                if (timer.seconds() > 0.75) {
                     currentState = State.DRIVE_TO_SHOOT_2;
                     wobbleArm.setArmPos(-100);
                     //will drive to pose 1 and pose 2 using displacement marker
                     drive.followTrajectoryAsync(goToPrepareToAccessRingStackPose1);
                     timer.reset();
-                } else if (timer.seconds() > 0.2){
-                    wobbleArm.openClaw();
                 }
                 break;
 
@@ -249,14 +263,44 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
             case DRIVE_TO_SHOOT_2:
                 if(!drive.isBusy() && timer.seconds() > 1) {
                     drive.followTrajectoryAsync(goToShootingPose2);
-                    currentState = State.SHOOT_2;
+                    currentState = State.CHECK_DRIVE_1;
                     timer.reset();
                 }
                 break;
 
+            case CHECK_DRIVE_1:
+                if (!drive.isBusy()) {
+                    currentState = State.ALIGN_TO_GOAL;
+                    timer.reset();
+                }
+                break;
+
+            case ALIGN_TO_GOAL:
+                //if goal is centered for 1 second shoot rings, else reset timer
+                flywheel.setRPM(PoseLibrary.SHOOTING_POSE_BC.getRPM());
+
+                if (goalPipeline.isGoalVisible() && timer.seconds() < 0.6) {
+                    //returns positive if robot needs to turn counterclockwise
+                    double motorPower = goalPipeline.getMotorPower();
+
+                    drive.leftFront.setPower(-motorPower);
+                    drive.leftRear.setPower(-motorPower);
+                    drive.rightFront.setPower(motorPower);
+                    drive.rightRear.setPower(motorPower);
+                } else {
+                    rings = 3;
+                    timer.reset();
+                    drive.setMotorPowers(0,0,0,0);
+                    currentState = State.SHOOT_2;
+                }
+
+
+                break;
 
             case SHOOT_2:
                 if (!drive.isBusy()) {
+                    telemetry.addData("Camera Data", this.goalPipeline.getGoalHeight());
+                    telemetry.addData("Motor Power Data", this.goalPipeline.getMotorPower());
                     flywheel.setRPM(shootingPoseRPM);
                     hopper.setLiftUpPos();
                     if (rings > 0) {
@@ -382,6 +426,10 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
         PoseLibrary.AUTO_ENDING_POSE = poseEstimate;
 
         // Print pose to telemetry
+
+        telemetry.addData("Current arm position", wobbleArm.currentPosition);
+        telemetry.addData("Target arm position", wobbleArm.targetArmPosition);
+
         telemetry.addData("x", poseEstimate.getX());
         telemetry.addData("y", poseEstimate.getY());
         telemetry.addData("heading", poseEstimate.getHeading());
@@ -397,11 +445,14 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
     // This enum defines our "state"
     // This is essentially just defines the possible steps our program will take
     enum State {
+        PREPARE_CAMERA,
         DRIVE_TO_SHOOT,
         SHOOT,   // First, follow a splineTo() trajectory
         DRIVE_TO_PLACE_GOAL,   // Then, follow a lineTo() trajectory
         PLACE_GOAL,
         DRIVE_TO_SHOOT_2,// Then we want to do a point turn
+        CHECK_DRIVE_1,
+        ALIGN_TO_GOAL,
         SHOOT_2,
         SHOOT_3,
         DRIVE_TO_SECOND_GOAL,   // Then, we follow another lineTo() trajectory

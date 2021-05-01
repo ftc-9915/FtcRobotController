@@ -28,8 +28,8 @@ public class WobbleArm implements SubsystemBase {
 
 
     //Subsystem Constants
-    public static int ARM_POS_PLACE_GOAL = -450;
-    public static int ARM_POS_PICKUP_GOAL = -500;
+    public static int ARM_POS_PLACE_GOAL = -600;
+    public static int ARM_POS_PICKUP_GOAL = -800;
     public static int ARM_POS_LIFT_ARM = -200;
     public static int PREPARE_TO_PLACE_GOAL = -380;
     public static int ARM_POS_OVER_WALL = -350;
@@ -37,7 +37,7 @@ public class WobbleArm implements SubsystemBase {
     public static int ARM_UPPER_LIMIT = 0;
     public static int ARM_LOWER_LIMIT = -550;
 
-    public static double DEFAULT_ARM_POWER = 0.4;
+    public static double DEFAULT_ARM_POWER = 0.7;
 
     public static double LEFT_CLAW_OPEN_POS = 0.4;
     public static double LEFT_CLAW_CLOSE_POS = 0.125;
@@ -46,6 +46,8 @@ public class WobbleArm implements SubsystemBase {
     public static double RIGHT_CLAW_CLOSE_POS = 0.55;
 
 
+    public int targetArmPosition = 0;
+    public int currentPosition = 0;
 
 
 
@@ -72,26 +74,22 @@ public class WobbleArm implements SubsystemBase {
 
     //teleop methods
     public void liftArm() {
-            armMotor.setTargetPosition(ARM_POS_LIFT_ARM);
-            armMotor.setPower(DEFAULT_ARM_POWER);
-
+        this.setArmPos(ARM_POS_LIFT_ARM);
     }
 
     public void placeGoal() {
-          armMotor.setTargetPosition(ARM_POS_PLACE_GOAL);
-            armMotor.setPower(DEFAULT_ARM_POWER);
+        this.setArmPos(ARM_POS_PLACE_GOAL);
+
 
     }
 
     public void pickUpSecondGoal() {
-            armMotor.setTargetPosition(ARM_POS_PICKUP_GOAL);
-            armMotor.setPower(DEFAULT_ARM_POWER);
+            this.setArmPos(ARM_POS_PICKUP_GOAL);
     }
 
     public void setArmPos(int position) {
         int normalizedPosition = UtilMethods.ensureRange(position, ARM_LOWER_LIMIT, ARM_UPPER_LIMIT);
-        armMotor.setTargetPosition(normalizedPosition);
-        armMotor.setPower(DEFAULT_ARM_POWER);
+        targetArmPosition = normalizedPosition;
     }
 
     public double getArmPosition() {
@@ -113,6 +111,20 @@ public class WobbleArm implements SubsystemBase {
         clawServoRight.setPosition(RIGHT_CLAW_CLOSE_POS);
 
         return true;
+    }
+
+    public void update() {
+        if (currentPosition > targetArmPosition) {
+            currentPosition -= 5;
+            armMotor.setTargetPosition(currentPosition);
+            armMotor.setPower(DEFAULT_ARM_POWER);
+        } else if (currentPosition < targetArmPosition){
+            currentPosition += 5;
+            armMotor.setTargetPosition(currentPosition);
+            armMotor.setPower(DEFAULT_ARM_POWER);
+
+        }
+
     }
 
 

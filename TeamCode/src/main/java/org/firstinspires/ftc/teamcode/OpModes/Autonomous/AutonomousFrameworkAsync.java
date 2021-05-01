@@ -5,12 +5,8 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Common.RingPosition;
-import org.firstinspires.ftc.teamcode.Common.UtilMethods;
 import org.firstinspires.ftc.teamcode.Subsystems.Collector;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.MecanumDrivebase;
 import org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary;
@@ -29,6 +25,7 @@ public class AutonomousFrameworkAsync extends OpMode {
     Camera camera;
     VisionPipeline ringDetectPipeline;
     BlueGoalVisionPipeline blueGoalVisionPipeline;
+
 
     public static AutonomousPathAsync pathA;
     public static AutonomousPathAsync pathB;
@@ -73,18 +70,17 @@ public class AutonomousFrameworkAsync extends OpMode {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
 
-
-        //initialize paths ahead of time
-        pathA =  new AutonomousPathAAsync(drive, wobbleArm, flywheel, collector, hopper);
-        pathB = new AutonomousPathBAsync_FourRing(drive, wobbleArm, flywheel, collector, hopper);
-        pathC = new AutonomousPathCAsync_SevenRing(drive, wobbleArm, flywheel, collector, hopper);
-
-//
 //        Initialize webcam
         ringDetectPipeline = new VisionPipeline();
         camera = new Camera(hardwareMap, ringDetectPipeline);
 
-        blueGoalVisionPipeline = new BlueGoalVisionPipeline(telemetry);
+        //initialize paths ahead of time
+        pathA =  new AutonomousPathAAsync(drive, wobbleArm, flywheel, collector, hopper, camera);
+        pathB = new AutonomousPathBAsync_FourRing(drive, wobbleArm, flywheel, collector, hopper, camera);
+        pathC = new AutonomousPathCAsync_SevenRing(drive, wobbleArm, flywheel, collector, hopper, camera);
+
+//
+
 
         //logging
 
@@ -122,8 +118,6 @@ public class AutonomousFrameworkAsync extends OpMode {
 
             case ONE:
                 path = pathB;
-                camera.setPipeline(blueGoalVisionPipeline);
-                camera.setHighGoalPosition();
                 telemetry.addLine("Go Path B");
                 break;
 
@@ -148,6 +142,8 @@ public class AutonomousFrameworkAsync extends OpMode {
         }
 
         path.followPathAsync(telemetry);
+        wobbleArm.update();
+
 
     }
 

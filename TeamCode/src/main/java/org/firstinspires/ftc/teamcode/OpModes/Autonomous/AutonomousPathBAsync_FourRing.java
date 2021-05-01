@@ -19,6 +19,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Flywheel;
 import org.firstinspires.ftc.teamcode.Subsystems.Shooter.Hopper;
 import org.firstinspires.ftc.teamcode.Subsystems.WobbleArm;
 import org.firstinspires.ftc.teamcode.Vision.BlueGoalVisionPipeline;
+import org.firstinspires.ftc.teamcode.Vision.Camera;
 
 import java.util.Arrays;
 
@@ -69,8 +70,8 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
     Pose2d parkPose = new Pose2d(17, 27, Math.toRadians(0.0));
 
     //build trajectories on construction
-    public AutonomousPathBAsync_FourRing(MecanumDrivebase drive, WobbleArm wobbleArm, Flywheel flywheel, Collector collector, Hopper hopper) {
-        super(drive, wobbleArm, flywheel, collector, hopper);
+    public AutonomousPathBAsync_FourRing(MecanumDrivebase drive, WobbleArm wobbleArm, Flywheel flywheel, Collector collector, Hopper hopper, Camera camera) {
+        super(drive, wobbleArm, flywheel, collector, hopper, camera);
 
         //Trajectories
         goToShootingPosePt1 = drive.trajectoryBuilder(PoseLibrary.START_POS_BLUE_2)
