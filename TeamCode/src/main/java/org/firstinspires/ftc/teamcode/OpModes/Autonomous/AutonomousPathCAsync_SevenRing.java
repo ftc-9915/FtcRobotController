@@ -232,7 +232,7 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
                         timer.reset();
                         drive.followTrajectoryAsync(goToPlaceGoalPose);
                         wobbleArm.closeClaw();
-                        wobbleArm.liftArm();
+                        wobbleArm.placeGoal();
                     }
                 }
                 break;
@@ -243,8 +243,6 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
                     wobbleArm.openClaw();
 
                     timer.reset();
-                } else if (timer.seconds() > 0.5) {
-                    wobbleArm.placeGoal();
                 }
                 break;
 
@@ -279,7 +277,7 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
                 //if goal is centered for 1 second shoot rings, else reset timer
                 flywheel.setRPM(PoseLibrary.SHOOTING_POSE_BC.getRPM());
 
-                if (goalPipeline.isGoalVisible() && timer.seconds() < 0.6) {
+                if (goalPipeline.isGoalVisible() && timer.seconds() < 1) {
                     //returns positive if robot needs to turn counterclockwise
                     double motorPower = goalPipeline.getMotorPower();
 
@@ -396,7 +394,7 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
                         timer.reset();
                     } else if (UtilMethods.atTarget(WobbleArm.ARM_POS_PLACE_GOAL, wobbleArm.getArmPosition(), 10) || timer.seconds() > 1.5) {
                         wobbleArm.openClaw();
-                    } else if (timer.seconds() > 0.5) {
+                    } else {
                         wobbleArm.placeGoal();
                     }
                 }

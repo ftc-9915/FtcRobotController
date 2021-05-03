@@ -28,8 +28,8 @@ public class WobbleArm implements SubsystemBase {
 
 
     //Subsystem Constants
-    public static int ARM_POS_PLACE_GOAL = -600;
-    public static int ARM_POS_PICKUP_GOAL = -800;
+    public static int ARM_POS_PLACE_GOAL = -450;
+    public static int ARM_POS_PICKUP_GOAL = -480;
     public static int ARM_POS_LIFT_ARM = -200;
     public static int PREPARE_TO_PLACE_GOAL = -380;
     public static int ARM_POS_OVER_WALL = -350;
@@ -45,9 +45,13 @@ public class WobbleArm implements SubsystemBase {
     public static double RIGHT_CLAW_OPEN_POS = 0.3;
     public static double RIGHT_CLAW_CLOSE_POS = 0.55;
 
+    public static int armSpeedIncrement = 10;
 
     public int targetArmPosition = 0;
     public int currentPosition = 0;
+
+
+
 
 
 
@@ -114,13 +118,13 @@ public class WobbleArm implements SubsystemBase {
     }
 
     public void update() {
-        if (currentPosition > targetArmPosition) {
-            currentPosition -= 5;
-            armMotor.setTargetPosition(currentPosition);
+        if (this.currentPosition > targetArmPosition) {
+            this.currentPosition -= armSpeedIncrement;
+            armMotor.setTargetPosition(this.currentPosition);
             armMotor.setPower(DEFAULT_ARM_POWER);
-        } else if (currentPosition < targetArmPosition){
-            currentPosition += 5;
-            armMotor.setTargetPosition(currentPosition);
+        } else if (this.currentPosition < targetArmPosition){
+            this.currentPosition += armSpeedIncrement;
+            armMotor.setTargetPosition(this.currentPosition);
             armMotor.setPower(DEFAULT_ARM_POWER);
 
         }

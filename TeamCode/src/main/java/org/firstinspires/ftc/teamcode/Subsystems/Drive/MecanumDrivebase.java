@@ -112,8 +112,18 @@ public class MecanumDrivebase extends com.acmerobotics.roadrunner.drive.MecanumD
 
     private Pose2d lastPoseOnTurn;
 
+    public static double turnTimeout = 0.5;
+
     public MecanumDrivebase(HardwareMap hardwareMap, double timeout){
         this(hardwareMap);
+        turnTimeout = timeout;
+        follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, TRANSLATIONAL_PID, HEADING_PID,
+                new Pose2d(0.25, 0.25, Math.toRadians(1.0)), timeout);
+    }
+
+    public void changeTimeout(double timeout){
+        turnTimeout = timeout;
+
         follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, TRANSLATIONAL_PID, HEADING_PID,
                 new Pose2d(0.25, 0.25, Math.toRadians(1.0)), timeout);
     }
@@ -306,7 +316,7 @@ public class MecanumDrivebase extends com.acmerobotics.roadrunner.drive.MecanumD
                // fieldOverlay.setStroke("#4CAF50");
                // DashboardUtil.drawRobot(fieldOverlay, newPose);
 
-                if (t >= turnProfile.duration() + 0.5) {
+                if (t >= turnProfile.duration() + turnTimeout) {
                     mode = Mode.IDLE;
                     setDriveSignal(new DriveSignal());
                 }

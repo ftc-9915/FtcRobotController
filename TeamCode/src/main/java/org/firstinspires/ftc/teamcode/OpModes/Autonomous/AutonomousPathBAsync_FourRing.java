@@ -69,6 +69,8 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
     Pose2d placeSecondGoalPose2 = new Pose2d(25, 31.5, Math.toRadians(0.0));
     Pose2d parkPose = new Pose2d(17, 27, Math.toRadians(0.0));
 
+    BlueGoalVisionPipeline goalPipeline;
+
     //build trajectories on construction
     public AutonomousPathBAsync_FourRing(MecanumDrivebase drive, WobbleArm wobbleArm, Flywheel flywheel, Collector collector, Hopper hopper, Camera camera) {
         super(drive, wobbleArm, flywheel, collector, hopper, camera);
@@ -128,6 +130,14 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
 
         blueGoalPipeline = new BlueGoalVisionPipeline(telemetry);
         switch (currentState) {
+            case PREPARE_CAMERA:
+                camera.setHighGoalPosition();
+                goalPipeline = new BlueGoalVisionPipeline(telemetry);
+                camera.webcam.setPipeline(goalPipeline);
+                currentState = State.DRIVE_TO_SHOOT;
+                break;
+
+
             case DRIVE_TO_SHOOT:
                 // Check if the drive class isn't busy
                 // `isBusy() == true` while it's following the trajectory
@@ -328,6 +338,7 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
     // This enum defines our "state"
     // This is essentially just defines the possible steps our program will take
     enum State {
+        PREPARE_CAMERA,
         DRIVE_TO_SHOOT,
         SHOOT,   // First, follow a splineTo() trajectory
         DRIVE_TO_PLACE_GOAL,   // Then, follow a lineTo() trajectory

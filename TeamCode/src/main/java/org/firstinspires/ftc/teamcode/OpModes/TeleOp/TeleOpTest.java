@@ -164,7 +164,7 @@ public class TeleOpTest extends OpMode {
 
 
         drive.update();
-
+        wobbleArm.update();
 
 
 
@@ -182,6 +182,9 @@ public class TeleOpTest extends OpMode {
             triggerReleased = false;
         }
 
+
+        telemetry.addData("Target Arm Position", wobbleArm.targetArmPosition);
+        telemetry.addData("Current Arm Position", wobbleArm.currentPosition);
 
         telemetry.addData("Powershot State", powerShotState);
 
