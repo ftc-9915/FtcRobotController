@@ -25,6 +25,8 @@ import org.firstinspires.ftc.teamcode.Vision.Camera;
 
 import java.util.Arrays;
 
+import static org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary.powershotStartPose;
+
 @Config
 public class AutonomousPathAAsync extends AutonomousPathAsync {
 
@@ -54,7 +56,6 @@ public class AutonomousPathAAsync extends AutonomousPathAsync {
 
     //Poses
     public static Pose2d placeGoalAndShootingPose1 = new Pose2d(28, 36, Math.toRadians(90.0));
-    public static Pose2d_RPM powershotStartPose = new Pose2d_RPM(-4, 0, Math.toRadians(0.0), 2900);
     public static Pose2d pickUpGoalPose1 = new Pose2d(28, 28, Math.toRadians(90.0));
     public static Pose2d pickUpGoalPose2 = new Pose2d(-20, goalY, Math.toRadians(180.0));
     public static Pose2d pickUpGoalPose3 = new Pose2d(goalX, goalY, Math.toRadians(180.0));

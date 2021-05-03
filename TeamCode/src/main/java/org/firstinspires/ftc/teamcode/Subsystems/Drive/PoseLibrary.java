@@ -21,6 +21,8 @@ public class PoseLibrary {
 
 
     //automatic power shot poses
+    public static Pose2d_RPM powershotStartPose = new Pose2d_RPM(-4, 0, Math.toRadians(0.0), 2900);
+
     public static Pose2d_RPM POWER_SHOT_START_POSE_LEFT = new Pose2d_RPM(10, 72-8.5, Math.toRadians(0.0), 2900);
     public static Pose2d_RPM POWER_SHOT_START_POSE_RIGHT = new Pose2d_RPM(10, 72-85.5, Math.toRadians(0.0), 2900);
 

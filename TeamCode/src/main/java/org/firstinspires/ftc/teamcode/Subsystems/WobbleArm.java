@@ -117,6 +117,10 @@ public class WobbleArm implements SubsystemBase {
         return true;
     }
 
+    public boolean atTarget() {
+        return currentPosition == targetArmPosition;
+    }
+
     public void update() {
         if (this.currentPosition > targetArmPosition) {
             this.currentPosition -= armSpeedIncrement;

@@ -23,6 +23,8 @@ import org.firstinspires.ftc.teamcode.Vision.Camera;
 
 import java.util.Arrays;
 
+import static org.firstinspires.ftc.teamcode.Subsystems.Drive.PoseLibrary.powershotStartPose;
+
 @Config
 public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
     //Treakable values for tuning
@@ -36,7 +38,7 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
     BlueGoalVisionPipeline blueGoalPipeline;
 
     //Pre declare trajectories
-    Trajectory goToShootingPosePt1;
+    Trajectory goToPowershotStartingPosition;
     Trajectory goToPlaceGoalPose;
     Trajectory goToPickupRingPose1;
     Trajectory goToPickupRingPose2;
@@ -50,8 +52,8 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
     //Set starting state and rings to shoot and timer
     State currentState = State.DRIVE_TO_SHOOT;
     int rings = 3;
+    int powerShotState = 0;
     ElapsedTime timer = new ElapsedTime();
-    public static double aimTimer =  2;
     boolean hopperPositionIn = false;
 
     //Poses
@@ -76,12 +78,15 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
         super(drive, wobbleArm, flywheel, collector, hopper, camera);
 
         //Trajectories
-        goToShootingPosePt1 = drive.trajectoryBuilder(PoseLibrary.START_POS_BLUE_2)
-                .splineTo(shootingPosePt1.vec(), shootingPosePt1.getHeading())
-                .splineTo(shootingPosePt2.vec(), shootingPosePt2.getHeading())
+//        goToShootingPosePt1 = drive.trajectoryBuilder(PoseLibrary.START_POS_BLUE_2)
+//                .splineTo(shootingPosePt1.vec(), shootingPosePt1.getHeading())
+//                .splineTo(shootingPosePt2.vec(), shootingPosePt2.getHeading())
+//                .build();
+        goToPowershotStartingPosition =  drive.trajectoryBuilder(PoseLibrary.START_POS_BLUE_2)
+                .splineTo(powershotStartPose.getPose2d().vec(), powershotStartPose.getPose2d().getHeading())
                 .build();
 
-        goToPlaceGoalPose = drive.trajectoryBuilder(goToShootingPosePt1.end())
+        goToPlaceGoalPose = drive.trajectoryBuilder(goToPowershotStartingPosition.end())
                 .splineTo(placeGoalPose.vec(), placeGoalPose.getHeading())
                 .build();
 
@@ -137,7 +142,6 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
                 currentState = State.DRIVE_TO_SHOOT;
                 break;
 
-
             case DRIVE_TO_SHOOT:
                 // Check if the drive class isn't busy
                 // `isBusy() == true` while it's following the trajectory
@@ -145,34 +149,78 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
                 // We move on to the next state
                 // Make sure we use the async follow function
                 if (!drive.isBusy()) {
-                    currentState = State.SHOOT;
-                    flywheel.setRPM(shootingPoseRPM);
-                    drive.followTrajectoryAsync(goToShootingPosePt1);
+                    currentState = State.PREPARE_TO_SHOOT_POWERSHOTS;
+                    flywheel.setRPM(powershotStartPose.getRPM());
+                    drive.followTrajectoryAsync(goToPowershotStartingPosition);
+                    rings = 1;
                     timer.reset();
+                    powerShotState = 0;
                 }
                 break;
-            case SHOOT:
+            //when robot has reached the end of it's generated trajectory, reset timer and rings to 1, then move to shoot rings state
+            case PREPARE_TO_SHOOT_POWERSHOTS:
                 if (!drive.isBusy()) {
-                    hopper.setLiftUpPos();
-                    if (rings > 0) {
-                        if (UtilMethods.inRange(flywheel.getRPM(), shootingPoseRPM - RPM_FORGIVENESS, shootingPoseRPM + RPM_FORGIVENESS) && !hopperPositionIn && timer.seconds() > 0.5) {
-                            hopper.setPushInPos();
-                            timer.reset();
-                            hopperPositionIn = true;
-                        }
-                        if (hopperPositionIn && timer.seconds() > 0.5) {
-                            hopper.setPushOutPos();
-                            timer.reset();
-                            hopperPositionIn = false;
-                            rings--;
-                        }
-                    }
-                    else {
-                        timer.reset();
-                        currentState = State.DRIVE_TO_PLACE_GOAL;
-                        drive.followTrajectoryAsync(goToPlaceGoalPose);
-                    }
+                    rings = 1;
+                    timer.reset();
+                    currentState = State.SHOOT_RINGS_POWERSHOT;
                 }
+                flywheel.setRPM(powershotStartPose.getRPM());
+
+                break;
+
+            //set rings to shoot and reset timer required before moving to this state
+            case SHOOT_RINGS_POWERSHOT:
+
+                flywheel.setRPM(powershotStartPose.getRPM());
+                hopper.setLiftUpPos();
+                if (rings > 0) {
+                    if (UtilMethods.inRange(flywheel.getRPM(), powershotStartPose.getRPM() - 125, powershotStartPose.getRPM() + 125)
+                            && hopper.getPushMode() == Hopper.PushMode.PUSH_OUT && timer.seconds() > 0.25) {
+                        hopper.setPushInPos();
+                        timer.reset();
+                    }
+                    if (hopper.getPushMode() == Hopper.PushMode.PUSH_IN && timer.seconds() > 0.25) {
+                        hopper.setPushOutPos();
+                        timer.reset();
+                        rings--;
+                    }
+                } else {
+                    currentState = State.TURN_TO;
+                    powerShotState++;
+                    timer.reset();
+                }
+
+
+                break;
+
+
+            case TURN_TO:
+                if (powerShotState > 2) {
+                    currentState = State.DRIVE_TO_PLACE_GOAL;
+                    drive.changeTimeout(0.5);
+                    drive.followTrajectoryAsync(goToPlaceGoalPose);
+                    timer.reset();
+                }
+                else if (powerShotState == 1) {
+                    //turn to -6.5 degrees
+                    drive.turnAsync(Math.toRadians(-5));
+                    currentState = State.WAIT_FOR_TURN_TO_FINISH;
+                } else if (powerShotState == 2) {
+                    //turn to -13 degrees
+                    drive.turnAsync(Math.toRadians(-5));
+                    currentState = State.WAIT_FOR_TURN_TO_FINISH;
+                }
+                flywheel.setRPM(powershotStartPose.getRPM());
+
+                break;
+
+
+            case WAIT_FOR_TURN_TO_FINISH:
+                if(!drive.isBusy()) {
+                    currentState = State.PREPARE_TO_SHOOT_POWERSHOTS;
+                }
+                flywheel.setRPM(powershotStartPose.getRPM());
+
                 break;
 
             case DRIVE_TO_PLACE_GOAL:
@@ -184,13 +232,13 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
 
             case PLACE_GOAL:
                 //Trigger action depending on timer using else if logic
-                if (timer.seconds() > 1.5) {
+                if (timer.seconds() > 1.0) {
                     currentState = State.DRIVE_TO_RING;
                     wobbleArm.liftArm();
                     //will drive to pose 1 and pose 2 using displacement marker
                     drive.followTrajectoryAsync(goToPickupRingPose1);
                     timer.reset();
-                } else if (UtilMethods.atTarget(WobbleArm.ARM_POS_PLACE_GOAL, wobbleArm.getArmPosition(), 10) || timer.seconds() > 1) {
+                } else if (wobbleArm.atTarget() || timer.seconds() > 1) {
                     wobbleArm.openClaw();
                 } else  {
                     wobbleArm.placeGoal();
@@ -339,6 +387,11 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
     // This is essentially just defines the possible steps our program will take
     enum State {
         PREPARE_CAMERA,
+        PREPARE_TO_SHOOT_POWERSHOTS,
+        SHOOT_RINGS_POWERSHOT,
+        TURN_TO,
+        TURN_TO_PLACE_GOAL,
+        WAIT_FOR_TURN_TO_FINISH,
         DRIVE_TO_SHOOT,
         SHOOT,   // First, follow a splineTo() trajectory
         DRIVE_TO_PLACE_GOAL,   // Then, follow a lineTo() trajectory
