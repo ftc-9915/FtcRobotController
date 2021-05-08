@@ -62,9 +62,9 @@ import static org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants.kV;
  */
 @Config
 public class MecanumDrivebase extends com.acmerobotics.roadrunner.drive.MecanumDrive {
-    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(5.46, 0, 0.4);
-    public static PIDCoefficients HEADING_PID = new PIDCoefficients(14, 0, 0.2);
-    public static PIDCoefficients POINT_TURN_PID = new PIDCoefficients(15, 0, 0.1);
+    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(3.5, 0, 0.1);
+    public static PIDCoefficients HEADING_PID = new PIDCoefficients(8, 0, 0.8);
+    public static PIDCoefficients POINT_TURN_PID = new PIDCoefficients(6, 0, 0);
 
     public static double kPTurn = 2;
     public static double kITurn = 0.0;
