@@ -54,8 +54,8 @@ public class AutonomousPathCAsync_SevenRingV2 extends AutonomousPathAsync {
 
     //Treakable values for tuning
     private static final double RPM_FORGIVENESS = 125;
-    public static int goalX = -25;
-    public static int goalY = 57;
+    public static int goalX = -33;
+    public static int goalY = 54;
     public static double shootingPoseAngle = -5;
     public static double shootingPoseRPM = PoseLibrary.SHOOTING_POSE_BC.getRPM();
 
@@ -81,21 +81,21 @@ public class AutonomousPathCAsync_SevenRingV2 extends AutonomousPathAsync {
                 .build();
 
         goToPickupRingPose1 = drive.trajectoryBuilder(goToShootingPosePt1.end())
-                .addDisplacementMarker(() -> collector.lowerRingGuard())
-                .addDisplacementMarker(() -> collector.turnCollectorOn())
-                .splineTo(pickUpRingPose1.vec(), pickUpRingPose1.getHeading())
+                .addDisplacementMarker(collector::lowerRingGuard)
+                .addDisplacementMarker(collector::turnCollectorOn)
+                .lineToLinearHeading(pickUpRingPose1)
                 .addDisplacementMarker(() -> drive.followTrajectoryAsync(goToShootingPosePt2))
                 .build();
 
         goToShootingPosePt2 = drive.trajectoryBuilder(goToPickupRingPose1.end())
-                .splineTo(shootingPosePt1.vec(), shootingPosePt1.getHeading())
+                .lineToLinearHeading(shootingPosePt1)
                 .addDisplacementMarker(() -> collector.turnCollectorOff())
                 .build();
 
         goToPickupRingPose2 = drive.trajectoryBuilder(goToShootingPosePt2.end())
                 .addDisplacementMarker(() -> collector.lowerRingGuard())
                 .addDisplacementMarker(() -> collector.turnCollectorOn())
-                .splineTo(pickUpRingPose2.vec(), pickUpRingPose2.getHeading())
+                .lineToLinearHeading(pickUpRingPose2)
                 .addDisplacementMarker(() -> drive.followTrajectoryAsync(goToShootingPosePt3))
                 .build();
 

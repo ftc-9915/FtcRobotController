@@ -130,12 +130,8 @@ public class Flywheel implements SubsystemBase {
         return flywheelMotor.getVelocity();
     }
 
-    public boolean setRawPower(double power) {
-        if(!isBusy()) {
+    public void  setRawPower(double power) {
             flywheelMotor.setPower(power);
-            return true;
-        }
-        return false;
     }
 
 

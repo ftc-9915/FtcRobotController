@@ -92,29 +92,22 @@ public class WobbleArm implements SubsystemBase {
     }
 
     public void setArmPos(int position) {
-        int normalizedPosition = UtilMethods.ensureRange(position, ARM_LOWER_LIMIT, ARM_UPPER_LIMIT);
-        targetArmPosition = normalizedPosition;
+        targetArmPosition = UtilMethods.ensureRange(position, ARM_LOWER_LIMIT, ARM_UPPER_LIMIT);
     }
 
     public double getArmPosition() {
         return armMotor.getCurrentPosition();
     }
 
-    public boolean openClaw() {
+    public void  openClaw() {
         clawServoLeft.setPosition(LEFT_CLAW_OPEN_POS);
         clawServoRight.setPosition(RIGHT_CLAW_OPEN_POS);
 
-        if (clawServoLeft.getPosition() == LEFT_CLAW_OPEN_POS && clawServoRight.getPosition() == RIGHT_CLAW_OPEN_POS) {
-            return true;
-        }
-        return false;
     }
 
-    public boolean closeClaw() {
+    public void  closeClaw() {
         clawServoLeft.setPosition(LEFT_CLAW_CLOSE_POS);
         clawServoRight.setPosition(RIGHT_CLAW_CLOSE_POS);
-
-        return true;
     }
 
     public boolean atTarget() {

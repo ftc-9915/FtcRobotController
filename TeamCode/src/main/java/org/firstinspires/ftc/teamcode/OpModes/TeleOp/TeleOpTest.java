@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -35,34 +36,23 @@ public class TeleOpTest extends OpMode {
     WobbleArm wobbleArm;
     Collector collector;
     Hopper hopper;
-
     Camera camera;
     BlueGoalVisionPipeline pipeline;
 
+    //Predeclared Trajectories
     Trajectory driveToPowershotPosition;
 
-
-
-    //DcMotor launcherMotor;
-//    DcMotor collectorMotor;
-//    DcMotor armMotor;
-//    Servo liftServo;
-//    Servo pushServo;
-//    Servo clawServo1;
-//    Servo clawServo2;
 
     ElapsedTime timer = new ElapsedTime();
 
     double launcherRPM;
     boolean launcherOn;
     int armPos;
-
-    // Ensures that the adjustments are made each time the gamepad buttons are pressed rather than each time through loop
     boolean buttonReleased1;
     boolean buttonReleased2;
     boolean triggerReleased;
 
-
+    //initialization variables
     int rings = 0;
     int powerShotState = 1; // *** changed from 0 to 1 ***
     double[] powerShotAngles;
@@ -72,8 +62,8 @@ public class TeleOpTest extends OpMode {
     double strafe = 0.0;
     double rotation = 0.0;
     double strafePower = 1.0;
-    boolean slowmodeOn = false;
     double powershotHeadingOffset = 0;
+    boolean exitToAutoAim = false;
 
 
 
@@ -111,23 +101,14 @@ public class TeleOpTest extends OpMode {
 
         //Init Hopper
         hopper = new Hopper(hardwareMap);
-//        liftServo = hardwareMap.servo.get("liftServo");
-//        pushServo = hardwareMap.servo.get("pushServo");
-//        // Starting position
-//        liftServo.setPosition(LIFT_DOWN_POS);
-//        pushServo.setPosition(NOT_PUSH_POS);
-
 
         //Init Collector
         collector = new Collector(hardwareMap);
-//      collectorMotor = hardwareMap.dcMotor.get("collectorMotor");
-
-
 
         //Init Wobble Arm
         wobbleArm = new WobbleArm(hardwareMap);
 
-
+        //Init flywheel
         flywheel = new Flywheel(hardwareMap);
 
         //Init Camera
@@ -145,6 +126,7 @@ public class TeleOpTest extends OpMode {
         triggerReleased = true;
 
 
+        //create trajectories
          driveToPowershotPosition = drive.trajectoryBuilder(new Pose2d(0,0,Math.toRadians(0.0)))
                 .lineToConstantHeading(new Vector2d(-9.9, 15))
                 .build();
@@ -161,15 +143,21 @@ public class TeleOpTest extends OpMode {
         for (LynxModule module : hardwareMap.getAll(LynxModule.class))
             module.clearBulkCache();
 
-
-
-        drive.update();
-        wobbleArm.update();
-
+        //drive input
+        speed = -gamepad1.left_stick_y * strafePower;
+        strafe = gamepad1.left_stick_x * strafePower;
+        rotation = gamepad1.right_stick_x * strafePower;
 
 
         // Retrieve pose
         Pose2d currentPose = drive.getPoseEstimate();
+
+        //log telemetry data for drivers
+        telemetry.addData("Goal Visibility", pipeline.isGoalVisible());
+        telemetry.addData("RPM", launcherRPM);
+        telemetry.addData("Drive Mode: ", currentMode);
+
+        //Universal drive controls (works in all states)
 
         // Adjusts launcher speed every time trigger goes below 0.4
         if (gamepad2.left_trigger > 0.4 && triggerReleased) {
@@ -182,60 +170,6 @@ public class TeleOpTest extends OpMode {
             triggerReleased = false;
         }
 
-
-        telemetry.addData("Target Arm Position", wobbleArm.targetArmPosition);
-        telemetry.addData("Current Arm Position", wobbleArm.currentPosition);
-
-        telemetry.addData("Powershot State", powerShotState);
-
-        telemetry.addData("Goal Visibility", pipeline.isGoalVisible());
-        telemetry.addData("RPM", launcherRPM);
-        telemetry.addData("Drive Mode: ", currentMode);
-        telemetry.addData("x", currentPose.getX());
-        telemetry.addData("y", currentPose.getY());
-        telemetry.addData("heading", currentPose.getHeading());
-        telemetry.addData("Angle To Goal", pipeline.getYaw());
-        telemetry.addData("Aligned To Goal", pipeline.isGoalCentered());
-        telemetry.addData("raw heading", Math.toDegrees(drive.getRawExternalHeading()));
-        telemetry.addData("At Setpoint Angle",UtilMethods.inRange(Math.toDegrees(drive.getRawExternalHeading()), angle - 1, angle + 1));
-        telemetry.addData("Tele Shooting Pose", PoseLibrary.TELE_SHOOTING_POSE.getPose2d());
-
-//        telemetry.addData("Current Robot Position", pipeline.getFieldPositionFromGoal().toString());
-//        telemetry.addData("Distance to Goal", pipeline.getDistanceToGoalWall());
-
-//        telemetry.addData("Distance (in)", pipeline.getDistanceToGoalWall());
-//        telemetry.addData("Goal Height (px)", getGoalHeight());
-//        telemetry.addData("Goal Pitch (degrees)", getPitch());
-//        telemetry.addData("Goal Yaw (degrees)",pipeline.getYaw());
-//        telemetry.addData("Width:", input.width());
-//        telemetry.addData("Height:", input.height());
-//        telemetry.addData("Motor Power", pipeline.getMotorPower());
-//        telemetry.addData("At Set Point", pipeline.isGoalCentered());
-//        telemetry.addData("Real motor power", drive.leftFront.getPower());
-//        telemetry.addData("Timer", timer.seconds());
-
-
-        // Controls and Information
-
-        /*
-        telemetry.addLine();
-        telemetry.addLine("--- Controls (Gamepad 2) ---");
-        telemetry.addData("Open Claw", "Button A");
-        telemetry.addData("Close Claw", "Button B");
-        telemetry.addData("Move Arm", "Left Stick Up/Down");
-        telemetry.addData("Arm Up", "Dpad Up");
-        telemetry.addData("Arm Down", "Dpad Down");
-        telemetry.addData("Arm Over Wall", "Dpad Right");
-        telemetry.addData("Turn launcher on/off", "Button X");
-        telemetry.addData("Push/retract collector servo", "Button Y");
-        telemetry.addData("Lower collector platform", "Left Bumper");
-        telemetry.addData("Lift collector platform", "Right Bumper");
-        telemetry.addData("Decrease Launcher Speed", "Left Trigger");
-        telemetry.addData("Increase Launcher Speed", "Right Trigger");
-         */
-
-
-
         //Ring Block Servo
         if (gamepad2.right_stick_y < -0.5) {
             collector.raiseRingBlock();
@@ -245,31 +179,19 @@ public class TeleOpTest extends OpMode {
         }
 
         switch (currentMode){
+
             case DRIVER_CONTROL:
+                // ---------------  driver control specific subsystem updates ---------------
 
-                // Chassis code
-                speed = -gamepad1.left_stick_y * strafePower;
-                strafe = gamepad1.left_stick_x * strafePower;
-                rotation = gamepad1.right_stick_x * strafePower;
-
-
-                drive.setMotorPowers(speed + strafe + rotation, speed - strafe + rotation, speed + strafe - rotation, speed - strafe - rotation);
-
-                // Slowmode
-                if (gamepad1.y && buttonReleased1) {
-                    if (slowmodeOn) {
-
-                        strafePower = 1.0;
-                        slowmodeOn = false;
-                    } else {
-
-                        strafePower = 0.5;
-                        slowmodeOn = true;
-                    }
-                    buttonReleased1 = false;
+                //ensure hopper arm returns to out position
+                if (timer.seconds() > 0.75 || hopper.pushMode != Hopper.PushMode.PUSH_OUT) {
+                    hopper.setPushOutPos();
                 }
 
-                // Turns collector on/off
+
+                // --------------- driver control mode specific  controls -----------------
+
+                // Sets robot up for pickup
                 if (gamepad1.a && buttonReleased1) {
                     collector.turnCollectorOn();
                     hopper.setPushOutPos();
@@ -277,6 +199,7 @@ public class TeleOpTest extends OpMode {
                     buttonReleased1 = false;
                 }
 
+                //Turns off collector
                 if (gamepad1.b && buttonReleased1) {
                     collector.turnCollectorOff();
                     buttonReleased1 = false;
@@ -288,7 +211,7 @@ public class TeleOpTest extends OpMode {
                     buttonReleased1 = false;
                 }
 
-                // Turns launcher on/off
+                // Turns launcher on/off and sets to predetermined RPM speed
                 if (gamepad2.x && buttonReleased2) {
                     if (launcherOn) {
                         flywheel.setRPM(0);
@@ -301,16 +224,11 @@ public class TeleOpTest extends OpMode {
                 }
 
 
-
                 // Pushes/retracts collector servo
                 if (gamepad2.y && buttonReleased2) {
                     hopper.setPushInPos();
                     timer.reset();
                     buttonReleased2 = false;
-                }
-
-                if (timer.seconds() > 0.75) {
-                    hopper.setPushOutPos();
                 }
 
                 // Lifts/Lowers the collecting platform
@@ -367,7 +285,6 @@ public class TeleOpTest extends OpMode {
                     buttonReleased2 = false;
                 }
 
-
                 // Ring guard controls
                 if(gamepad2.back) {
                     collector.raiseRingGuard();
@@ -376,42 +293,13 @@ public class TeleOpTest extends OpMode {
                     collector.lowerRingGuard();
                 }
 
-
-                // Do not adjust values again until after buttons are released (and pressed again) so the
-                // adjustments are made each time the gamepad buttons are pressed rather than each time through loop
-                if (!gamepad1.a && !gamepad1.b && !gamepad1.x && !gamepad1.y) {
-                    buttonReleased1 = true;
-                }
-
-                if(!gamepad2.left_bumper && !gamepad2.right_bumper && !gamepad2.a && !gamepad2.b && !gamepad2.x && !gamepad2.y && !gamepad2.dpad_up && !gamepad2.dpad_right && !gamepad2.dpad_down && !gamepad2.dpad_left) {
-                    buttonReleased2 = true;
-                }
-
-                if (gamepad2.left_trigger < 0.4 && gamepad2.right_trigger < 0.4) {
-                    triggerReleased = true;
-                }
-
-
-
-                //DPAD-UP - auto drive to general shooting position
-                if (gamepad1.dpad_up) {
-                    collector.turnCollectorOff();
-                    Trajectory driveToShootPositionPath = drive.trajectoryBuilder(currentPose)
-                            .lineToLinearHeading(PoseLibrary.TELE_SHOOTING_POSE.getPose2d())
-                            .build();
-
-                    drive.followTrajectoryAsync(driveToShootPositionPath);
-                    flywheel.setRPM(PoseLibrary.TELE_SHOOTING_POSE.getRPM());
-
-                    currentMode = Mode.LINE_TO_POINT;
-                }
+                // ---------- state switching driver controls ------------------
 
 
                 //DPAD DOWN - go to 0 degrees heading
                 if (gamepad1.dpad_down) {
-                    angle = 0;
+                    drive.turnAsync(Angle.normDelta(0 - currentPose.getHeading()));
                     currentMode = Mode.ALIGN_TO_ANGLE;
-                    timer.reset();
                 }
 
                 //DPAD LEFT - Shoot Powershots From Right To Left
@@ -454,16 +342,18 @@ public class TeleOpTest extends OpMode {
                     timer.reset();
                 }
 
-
-                //GAMEPAD 2 LEFT STICK BUTTON - Set shooting position
-                if(gamepad2.left_stick_button) {
-                    PoseLibrary.TELE_SHOOTING_POSE.setPose2d(currentPose);
+                // Do not adjust values again until after buttons are released (and pressed again) so the
+                // adjustments are made each time the gamepad buttons are pressed rather than each time through loop
+                if (!gamepad1.a && !gamepad1.b && !gamepad1.x && !gamepad1.y) {
+                    buttonReleased1 = true;
                 }
 
+                if(!gamepad2.left_bumper && !gamepad2.right_bumper && !gamepad2.a && !gamepad2.b && !gamepad2.x && !gamepad2.y && !gamepad2.dpad_up && !gamepad2.dpad_right && !gamepad2.dpad_down && !gamepad2.dpad_left) {
+                    buttonReleased2 = true;
+                }
 
-                //GAMEPAD 2 RIGHT STICK BUTTON - Reset odometry to white line to starting line to maintain good distance
-                if(gamepad2.right_stick_button) {
-                    drive.setPoseEstimate(new Pose2d(12, currentPose.getY(), currentPose.getHeading()));
+                if (gamepad2.left_trigger < 0.4 && gamepad2.right_trigger < 0.4) {
+                    triggerReleased = true;
                 }
 
                 break;
@@ -471,15 +361,24 @@ public class TeleOpTest extends OpMode {
 
 
             case ALIGN_TO_ANGLE:
-                drive.turnTo(angle);
-
-                if (UtilMethods.inRange(Math.toDegrees(drive.getRawExternalHeading()), angle - 1, angle + 1) && timer.seconds() > 1){
+                if (gamepad1.left_bumper) {
+                    drive.cancelFollowing();
                     currentMode = Mode.DRIVER_CONTROL;
-                    timer.reset();
-                } else{
+                }
+                if (!drive.isBusy() && !exitToAutoAim)  {
+                    currentMode = Mode.DRIVER_CONTROL;
+                }  else if (!drive.isBusy() && exitToAutoAim && pipeline.isGoalVisible()) {
+                    exitToAutoAim = false;
+                    currentMode = Mode.ALIGN_TO_GOAL;
+                    collector.turnCollectorOff();
+                    collector.raiseRingBlock();;
+                    flywheel.setRPM(launcherRPM);
                     timer.reset();
                 }
-
+                //switch to auto aim  after align to angle sequence ends
+                if(gamepad1.right_bumper) {
+                    exitToAutoAim = true;
+                }
                 break;
 
             case ALIGN_TO_GOAL:
@@ -508,11 +407,13 @@ public class TeleOpTest extends OpMode {
                 if(pipeline.isGoalVisible()) {
                     //returns positive if robot needs to turn counterclockwise
                     double motorPower = pipeline.getMotorPower();
+                    rotation -= motorPower;
+//                    drive.leftFront.setPower(-motorPower);
+//                    drive.leftRear.setPower(-motorPower);
+//                    drive.rightFront.setPower(motorPower);
+//                    drive.rightRear.setPower(motorPower);
 
-                    drive.leftFront.setPower(-motorPower);
-                    drive.leftRear.setPower(-motorPower);
-                    drive.rightFront.setPower(motorPower);
-                    drive.rightRear.setPower(motorPower);
+
                 }
                 break;
 
@@ -608,7 +509,6 @@ public class TeleOpTest extends OpMode {
 
             //set rings to shoot and reset timer required before moving to this state
             case SHOOT_RINGS:
-                drive.setMotorPowers(0,0,0,0);
                 //emergency exit
                 if (gamepad1.left_bumper || rings == 0) {
                     rings = 0;
@@ -632,27 +532,14 @@ public class TeleOpTest extends OpMode {
                 }
 
                 break;
-
-
-
-
-            case LINE_TO_POINT:
-                // If left bumper is pressed, we break out of the automatic following
-                if (gamepad1.left_bumper) {
-                    drive.cancelFollowing();
-                    currentMode = Mode.DRIVER_CONTROL;
-                }
-
-                // If drive finishes its task, we break out of the automatic following
-                if (!drive.isBusy()) {
-                    timer.reset();
-                    currentMode = Mode.ALIGN_TO_GOAL;
-                }
-                break;
-
         }
 
+        //update robot
+        drive.setMotorPowers(speed + strafe + rotation, speed - strafe + rotation, speed + strafe - rotation, speed - strafe - rotation);
+        drive.update();
+        wobbleArm.update();
         telemetry.update();
+
 
 
     }
