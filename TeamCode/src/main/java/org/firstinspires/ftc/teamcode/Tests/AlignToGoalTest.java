@@ -415,7 +415,7 @@ public class AlignToGoalTest extends OpMode {
 
             case ALIGN_TO_ANGLE:
                 //pass angle in degrees
-                drive.turnAsync(angle);
+                drive.turnTo(angle);
 
                 if (UtilMethods.inRange(Math.toDegrees(drive.getRawExternalHeading()), angle - 1, angle + 1) && timer.seconds() > 0.02){
                     telemetry.addData("Angle In Range", true);
