@@ -21,8 +21,8 @@ public class MeepMeepTesting {
     public static double TRACK_WIDTH = 10.25; // in
 
 
-    public static int goalX = -33;
-    public static int goalY = 54;
+    public static int goalX = -34;
+    public static int goalY = 34;
 
     public static Pose2d shootingPosePt1 = new Pose2d(-24, 21);
     public static Pose2d shootingPosePt2 = new Pose2d(6.8066, 26.37388, Math.toRadians(-5));
@@ -36,8 +36,8 @@ public class MeepMeepTesting {
     public static Pose2d pickUpRingPose2 = new Pose2d(-19, 34, Math.toRadians(180.0));
 
 
-    public static Pose2d pickUpGoalPose1 = new Pose2d(-24, goalY, Math.toRadians(180.0));
-    public static Pose2d pickUpGoalPose2 = new Pose2d(goalX, goalY, Math.toRadians(180.0));
+    public static Pose2d pickUpGoalPose1 = new Pose2d(-16, 34, Math.toRadians(180.0));
+    public static Pose2d pickUpGoalPose2 = new Pose2d(goalX, goalY, Math.toRadians(150));
     public static Pose2d placeSecondGoalPose1 = new Pose2d(45, 53, Math.toRadians(0.0));
     public static Pose2d parkPose = new Pose2d(15, 50, Math.toRadians(0.0));
 
@@ -56,44 +56,57 @@ public class MeepMeepTesting {
                 // Set constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
                 .setConstraints(MAX_VEL, MAX_ACCEL, MAX_ANG_VEL, MAX_ANG_ACCEL, 10.25)
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(-54.75, 26.5, Math.toRadians(0.0)))
-                                .splineTo(shootingPosePt1.vec(), shootingPosePt1.getHeading())
-                                .splineTo(shootingPosePt2.vec(), shootingPosePt2.getHeading())
-                                //shoot here
-                                .splineTo(placeGoalPose.vec(), placeGoalPose.getHeading())
-                                //place goal here
-//                            .addDisplacementMarker(() -> hopper.setLiftDownPos())
-//                            .addDisplacementMarker(() -> hopper.setPushOutPos())
+                        drive.trajectorySequenceBuilder(placeGoalPose)
+//                                .addDisplacementMarker(() -> wobbleArm.storeArm())
                                 .lineToSplineHeading(prepareToPushRingStack)
 //                                .addTemporalMarker(0.2, () -> collector.turnCollectorOnWithRingGuard())
                                 .lineToConstantHeading(pickUpRingPose1.vec(), new MinVelocityConstraint(
                                                 Arrays.asList(
                                                         new AngularVelocityConstraint(MAX_ANG_VEL),
-                                                        new MecanumVelocityConstraint(8, TRACK_WIDTH)
+                                                        new MecanumVelocityConstraint(15, TRACK_WIDTH)
                                                 )
                                         ),
                                         new ProfileAccelerationConstraint(MAX_ACCEL))
-//                                .addDisplacementMarker(() -> timer.reset())
+                                .waitSeconds(1.0)
                                 .lineToSplineHeading(shootingPosePt3)
-//                                .addTemporalMarker(1.25, () -> {
+                                .addTemporalMarker(1.25, () -> {
 //                                    collector.raiseRingGuard();
 //                                    hopper.setLiftUpPos();
-//                                })
-                                //shoot here
-                                .lineToSplineHeading(pickUpGoalPose1)
-                                .lineToConstantHeading(pickUpGoalPose2.vec(), new MinVelocityConstraint(
-                                                Arrays.asList(
-                                                        new AngularVelocityConstraint(MAX_ANG_VEL),
-                                                        new MecanumVelocityConstraint(20, TRACK_WIDTH)
-                                                )
-                                        ),
-                                        new ProfileAccelerationConstraint(MAX_ACCEL))
-                                //pickup goal here
+                                })
+                                //align and shoot here
+                                .build()
+                )
+
+                        .followTrajectorySequence(drive ->
+                                 drive.trajectorySequenceBuilder(shootingPosePt3)
+                                .addDisplacementMarker(() -> {
+//                                    collector.turnCollectorOnWithRingGuard();
+//                                    hopper.setLiftDownPos();
+                                })
+                                .lineToLinearHeading(pickUpGoalPose1)
+                                .splineTo(pickUpGoalPose2.vec(), pickUpGoalPose2.getHeading())
+//                                .addDisplacementMarker(() -> wobbleArm.closeClaw())
+                                .waitSeconds(0.25)
+//                                .addDisplacementMarker(() -> wobbleArm.liftArm())
+                                .lineToSplineHeading(shootingPosePt3)
+                                .addTemporalMarker(1.25, () -> {
+//                                    collector.raiseRingGuard();
+                                })
+                                //ALIGN_TO_GOAL
+                                .build()
+                )
+
+                .followTrajectorySequence(drive ->
+                        drive.trajectorySequenceBuilder(shootingPosePt3)
                                 .lineToSplineHeading(placeSecondGoalPose1)
-                                //place goal here
+//                                .addTemporalMarker(1.5, () -> wobbleArm.placeGoal())
+//                                .addTemporalMarker(2.0, () -> wobbleArm.openClaw())
+//                                .addDisplacementMarker(() -> wobbleArm.storeArm())
                                 .lineToConstantHeading(parkPose.vec())
-                                .build())
-                .start();
+                                .build()
+                )
+                        .start();
+
 
 
                                 //goToShootingPosePt1

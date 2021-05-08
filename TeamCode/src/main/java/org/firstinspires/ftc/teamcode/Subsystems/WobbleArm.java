@@ -84,7 +84,10 @@ public class WobbleArm implements SubsystemBase {
     public void placeGoal() {
         this.setArmPos(ARM_POS_PLACE_GOAL);
 
+    }
 
+    public void storeArm() {
+        this.setArmPos(0);
     }
 
     public void pickUpSecondGoal() {

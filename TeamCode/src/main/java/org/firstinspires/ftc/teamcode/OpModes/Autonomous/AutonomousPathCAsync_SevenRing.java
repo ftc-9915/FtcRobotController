@@ -129,10 +129,10 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
 
         goToShootingPose2 = drive.trajectoryBuilder(goToPickUpRingPose1.end())
                 .lineToSplineHeading(shootingPosePt3)
-                 .addTemporalMarker(1.25, () -> {
-                     collector.raiseRingGuard();
-                     hopper.setLiftUpPos();
-                 })
+                .addTemporalMarker(1.25, () -> {
+                    collector.raiseRingGuard();
+                    hopper.setLiftUpPos();
+                })
                 .build();
 
 //        goToPrepareToAccessRingStackPose2 = drive.trajectoryBuilder(goToShootingPose2.end())
