@@ -30,8 +30,8 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
     //Treakable values for tuning
 
     private static final double RPM_FORGIVENESS = 125;
-    public static int goalX = -28;
-    public static int goalY = 63;
+    public static int goalX = -26;
+    public static int goalY = 60;
     public static double shootingPoseAngle = -5;
     public static double shootingPoseRPM = PoseLibrary.SHOOTING_POSE_BC.getRPM();
 
@@ -61,14 +61,14 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
     Pose2d shootingPosePt2 = PoseLibrary.SHOOTING_POSE_BC.getPose2d();
     Pose2d shootingPosePt3 = new Pose2d(6.8066, 26.37388, Math.toRadians(-10));
 
-    Pose2d placeGoalPose = new Pose2d(22, 25, Math.toRadians(0.0));
-    Pose2d pickUpRingPose1 = new Pose2d(-15, 36, Math.toRadians(180.0));
-    Pose2d pickUpRingPose2 = new Pose2d(-25, 36, Math.toRadians(180.0));
+    Pose2d placeGoalPose = new Pose2d(22, 21, Math.toRadians(0.0));
+    Pose2d pickUpRingPose1 = new Pose2d(-12, 36, Math.toRadians(180.0));
+    Pose2d pickUpRingPose2 = new Pose2d(-15, 36, Math.toRadians(180.0));
 
     Pose2d pickUpGoalPose1 = new Pose2d(-10, goalY, Math.toRadians(180.0));
     Pose2d pickUpGoalPose2 = new Pose2d(goalX, goalY, Math.toRadians(180.0));
     Pose2d placeSecondGoalPose1 = new Pose2d(30, 57, Math.toRadians(0.0));
-    Pose2d placeSecondGoalPose2 = new Pose2d(25, 31.5, Math.toRadians(0.0));
+    Pose2d placeSecondGoalPose2 = new Pose2d(27, 25, Math.toRadians(0.0));
     Pose2d parkPose = new Pose2d(17, 27, Math.toRadians(0.0));
 
     BlueGoalVisionPipeline goalPipeline;
@@ -86,7 +86,7 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
                 .splineTo(powershotStartPose.getPose2d().vec(), powershotStartPose.getPose2d().getHeading())
                 .build();
 
-        goToPlaceGoalPose = drive.trajectoryBuilder(goToPowershotStartingPosition.end())
+        goToPlaceGoalPose = drive.trajectoryBuilder(new Pose2d(goToPowershotStartingPosition.end().vec(), Math.toRadians(-10)))
                 .splineTo(placeGoalPose.vec(), placeGoalPose.getHeading())
                 .build();
 
@@ -95,9 +95,12 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
                 .addDisplacementMarker(() -> hopper.setPushOutPos())
                 .addDisplacementMarker(() -> collector.turnCollectorOn())
                 .lineToLinearHeading(pickUpRingPose1)
+                .addDisplacementMarker(() -> drive.followTrajectoryAsync(goToPickupRingPose2))
                 .build();
 
-
+        goToPickupRingPose2 = drive.trajectoryBuilder(goToPickupRingPose1.end())
+                .lineToLinearHeading(pickUpRingPose2)
+                .build();
 
         goToPickUpGoalPose1 = drive.trajectoryBuilder(goToPickupRingPose1.end())
                 .lineToLinearHeading(pickUpGoalPose1)
@@ -197,11 +200,13 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
             case TURN_TO:
                 if (powerShotState > 2) {
                     currentState = State.DRIVE_TO_PLACE_GOAL;
-                    drive.changeTimeout(0.5);
+                    drive.changeTimeout(1.5);
                     drive.followTrajectoryAsync(goToPlaceGoalPose);
                     timer.reset();
                 }
                 else if (powerShotState == 1) {
+                    drive.changeTimeout(0.8);
+
                     //turn to -6.5 degrees
                     drive.turnAsync(Math.toRadians(-5));
                     currentState = State.WAIT_FOR_TURN_TO_FINISH;
@@ -231,17 +236,21 @@ public class AutonomousPathBAsync_FourRing extends AutonomousPathAsync {
                 break;
 
             case PLACE_GOAL:
-                //Trigger action depending on timer using else if logic
-                if (timer.seconds() > 1.0) {
-                    currentState = State.DRIVE_TO_RING;
-                    wobbleArm.liftArm();
-                    //will drive to pose 1 and pose 2 using displacement marker
-                    drive.followTrajectoryAsync(goToPickupRingPose1);
-                    timer.reset();
-                } else if (wobbleArm.atTarget() || timer.seconds() > 1) {
-                    wobbleArm.openClaw();
-                } else  {
-                    wobbleArm.placeGoal();
+                if (!drive.isBusy()) {
+                    //Trigger action depending on timer using else if logic
+                    if (timer.seconds() > 2.5) {
+                        //will drive to pose 1 and pose 2 using displacement marker
+                        currentState = State.DRIVE_TO_RING;
+                        drive.followTrajectoryAsync(goToPickupRingPose1);
+                        timer.reset();
+                    }
+                    else if (timer.seconds() > 2) {
+                        wobbleArm.setArmPos(-100);
+                    } else if (timer.seconds() > 1.8) {
+                        wobbleArm.openClaw();
+                    } else if (timer.seconds() > 0.5) {
+                        wobbleArm.placeGoal();
+                    }
                 }
                 break;
 

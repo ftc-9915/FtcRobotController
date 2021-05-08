@@ -143,11 +143,6 @@ public class TeleOpTest extends OpMode {
         for (LynxModule module : hardwareMap.getAll(LynxModule.class))
             module.clearBulkCache();
 
-        //drive input
-        speed = -gamepad1.left_stick_y * strafePower;
-        strafe = gamepad1.left_stick_x * strafePower;
-        rotation = gamepad1.right_stick_x * strafePower;
-
 
         // Retrieve pose
         Pose2d currentPose = drive.getPoseEstimate();
@@ -356,6 +351,14 @@ public class TeleOpTest extends OpMode {
                     triggerReleased = true;
                 }
 
+                //drive input
+                speed = -gamepad1.left_stick_y * strafePower;
+                strafe = gamepad1.left_stick_x * strafePower;
+                rotation = gamepad1.right_stick_x * strafePower;
+
+                drive.setMotorPowers(speed + strafe + rotation, speed - strafe + rotation, speed + strafe - rotation, speed - strafe - rotation);
+
+
                 break;
 
 
@@ -407,11 +410,10 @@ public class TeleOpTest extends OpMode {
                 if(pipeline.isGoalVisible()) {
                     //returns positive if robot needs to turn counterclockwise
                     double motorPower = pipeline.getMotorPower();
-                    rotation -= motorPower;
-//                    drive.leftFront.setPower(-motorPower);
-//                    drive.leftRear.setPower(-motorPower);
-//                    drive.rightFront.setPower(motorPower);
-//                    drive.rightRear.setPower(motorPower);
+                    drive.leftFront.setPower(-motorPower);
+                    drive.leftRear.setPower(-motorPower);
+                    drive.rightFront.setPower(motorPower);
+                    drive.rightRear.setPower(motorPower);
 
 
                 }
@@ -509,6 +511,7 @@ public class TeleOpTest extends OpMode {
 
             //set rings to shoot and reset timer required before moving to this state
             case SHOOT_RINGS:
+                drive.setMotorPowers(0,0,0,0);
                 //emergency exit
                 if (gamepad1.left_bumper || rings == 0) {
                     rings = 0;
@@ -535,7 +538,6 @@ public class TeleOpTest extends OpMode {
         }
 
         //update robot
-        drive.setMotorPowers(speed + strafe + rotation, speed - strafe + rotation, speed + strafe - rotation, speed - strafe - rotation);
         drive.update();
         wobbleArm.update();
         telemetry.update();
