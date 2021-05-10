@@ -41,6 +41,8 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
     Trajectory goToPlaceSecondGoalPart1;
     Trajectory goToParkingPose;
     Trajectory goToShootingPose2;
+
+    Trajectory goToPickUpRingPose2;
     Trajectory goToPrepareToAccessRingStackPose2;
     Trajectory goToPickupRingPose2;
     Trajectory goToShootingPose3;
@@ -54,8 +56,8 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
     boolean hopperPositionIn = false;
 
     //Treakable values for tuning
-    private static final double RPM_FORGIVENESS = 125;
-    public static int goalX = -33;
+    private static final double RPM_FORGIVENESS = 170 ;
+    public static int goalX = -31;
     public static int goalY = 54;
     public static double shootingPoseAngle = -5;
     public static double shootingPoseRPM = PoseLibrary.SHOOTING_POSE_BC.getRPM();
@@ -63,7 +65,7 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
     //Poses
     Pose2d shootingPosePt1 = new Pose2d (-24,21);
     Pose2d shootingPosePt2 = PoseLibrary.SHOOTING_POSE_BC.getPose2d();
-    Pose2d shootingPosePt3 = new Pose2d(2.8066, 26.37388, Math.toRadians(-6));
+    Pose2d shootingPosePt3 = new Pose2d(2.8066, 26.37388, Math.toRadians(-10));
     Pose2d placeGoalPose = new Pose2d(48, 52, Math.toRadians(-0.1));
 
     Pose2d prepareToPushRingStack = new Pose2d(-5, 34, Math.toRadians(180.0));
@@ -71,7 +73,7 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
     // *then go back to ringPosePt1
 
     Pose2d pickUpRingPose1 = new Pose2d(-16, 34.5, Math.toRadians(180.0));
-    Pose2d pickUpRingPose2 = new Pose2d(-19, 34, Math.toRadians(180.0));
+    Pose2d pickUpRingPose2 = new Pose2d(-20, 34, Math.toRadians(180.0));
 
 
     Pose2d pickUpGoalPose1 = new Pose2d(-24, goalY, Math.toRadians(180.0));
@@ -120,7 +122,18 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
                 .lineToConstantHeading(pickUpRingPose1.vec(), new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
-                                        new MecanumVelocityConstraint(8, DriveConstants.TRACK_WIDTH)
+                                        new MecanumVelocityConstraint(20, DriveConstants.TRACK_WIDTH)
+                                )
+                        ),
+                        new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                .addDisplacementMarker(() -> drive.followTrajectoryAsync(goToPickUpRingPose2))
+                .build();
+
+        goToPickUpRingPose2 = drive.trajectoryBuilder(goToPrepareToAccessRingStackPose1.end())
+                .lineToConstantHeading(pickUpRingPose1.vec(), new MinVelocityConstraint(
+                                Arrays.asList(
+                                        new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
+                                        new MecanumVelocityConstraint(20, DriveConstants.TRACK_WIDTH)
                                 )
                         ),
                         new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL))
@@ -214,12 +227,12 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
                     flywheel.setRPM(shootingPoseRPM);
                     hopper.setLiftUpPos();
                     if (rings > 0) {
-                        if (UtilMethods.inRange(flywheel.getRPM(), shootingPoseRPM - RPM_FORGIVENESS, shootingPoseRPM + RPM_FORGIVENESS) && !hopperPositionIn && timer.seconds() > 0.5) {
+                        if (UtilMethods.inRange(flywheel.getRPM(), shootingPoseRPM - RPM_FORGIVENESS, shootingPoseRPM + RPM_FORGIVENESS) && !hopperPositionIn && timer.seconds() > 0.3) {
                             hopper.setPushInPos();
                             timer.reset();
                             hopperPositionIn = true;
                         }
-                        if (hopperPositionIn && timer.seconds() > 0.5) {
+                        if (hopperPositionIn && timer.seconds() > 0.3) {
                             hopper.setPushOutPos();
                             timer.reset();
                             hopperPositionIn = false;
@@ -248,7 +261,7 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
 
             case PLACE_GOAL:
                 //Trigger action depending on timer using else if logic
-                if (timer.seconds() > 0.75) {
+                if (timer.seconds() > 0.5) {
                     currentState = State.DRIVE_TO_SHOOT_2;
                     wobbleArm.setArmPos(-100);
                     //will drive to pose 1 and pose 2 using displacement marker
@@ -277,7 +290,7 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
                 //if goal is centered for 1 second shoot rings, else reset timer
                 flywheel.setRPM(PoseLibrary.SHOOTING_POSE_BC.getRPM());
 
-                if (goalPipeline.isGoalVisible() && timer.seconds() < 1) {
+                if (goalPipeline.isGoalVisible() && timer.seconds() < 0.5) {
                     //returns positive if robot needs to turn counterclockwise
                     double motorPower = goalPipeline.getMotorPower();
 
@@ -302,12 +315,12 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
                     flywheel.setRPM(shootingPoseRPM);
                     hopper.setLiftUpPos();
                     if (rings > 0) {
-                        if (UtilMethods.inRange(flywheel.getRPM(), shootingPoseRPM - RPM_FORGIVENESS, shootingPoseRPM + RPM_FORGIVENESS) && !hopperPositionIn && timer.seconds() > 0.5) {
+                        if (UtilMethods.inRange(flywheel.getRPM(), shootingPoseRPM - RPM_FORGIVENESS, shootingPoseRPM + RPM_FORGIVENESS) && !hopperPositionIn && timer.seconds() > 0.3) {
                             hopper.setPushInPos();
                             timer.reset();
                             hopperPositionIn = true;
                         }
-                        if (hopperPositionIn && timer.seconds() > 0.5) {
+                        if (hopperPositionIn && timer.seconds() > 0.3) {
                             hopper.setPushOutPos();
                             timer.reset();
                             hopperPositionIn = false;
@@ -386,13 +399,13 @@ public class AutonomousPathCAsync_SevenRing extends AutonomousPathAsync {
                 if(!drive.isBusy()) {
                     //TODO: Test if arm logic works
                     //Trigger action depending on timer using else if logic
-                    if (timer.seconds() > 2) {
+                    if (timer.seconds() > 0.5) {
                         currentState = State.PARK;
                         wobbleArm.setArmPos(1);
                         //will drive to pose 1 and pose 2 using displacement marker
                         drive.followTrajectoryAsync(goToParkingPose);
                         timer.reset();
-                    } else if (UtilMethods.atTarget(WobbleArm.ARM_POS_PLACE_GOAL, wobbleArm.getArmPosition(), 10) || timer.seconds() > 1.5) {
+                    } else if (timer.seconds() > 0.25) {
                         wobbleArm.openClaw();
                     } else {
                         wobbleArm.placeGoal();

@@ -179,9 +179,10 @@ public class TeleOpTest extends OpMode {
                 // ---------------  driver control specific subsystem updates ---------------
 
                 //ensure hopper arm returns to out position
-                if (timer.seconds() > 0.75 || hopper.pushMode != Hopper.PushMode.PUSH_OUT) {
+                if (timer.seconds() > 0.75) {
                     hopper.setPushOutPos();
                 }
+
 
 
                 // --------------- driver control mode specific  controls -----------------
@@ -235,7 +236,7 @@ public class TeleOpTest extends OpMode {
 
                 if (gamepad2.right_bumper && buttonReleased2) {
                     collector.turnCollectorOff();
-                    hopper.setLiftUpPos();
+                    hopper.liftServo.setPosition(0.31);
                     collector.raiseRingBlock();
                     buttonReleased2 = false;
                 }
@@ -331,7 +332,8 @@ public class TeleOpTest extends OpMode {
                 //RIGHT BUMPER - Auto Aim
                 if(gamepad1.right_bumper && pipeline.isGoalVisible()) {
                     collector.turnCollectorOff();
-                    collector.raiseRingBlock();;
+                    collector.raiseRingBlock();
+                    hopper.setLiftUpPos();
                     flywheel.setRPM(launcherRPM);
                     currentMode = Mode.ALIGN_TO_GOAL;
                     timer.reset();
@@ -488,11 +490,11 @@ public class TeleOpTest extends OpMode {
                     currentMode = Mode.DRIVER_CONTROL;
                 else if (powerShotState == 1) {
                     //turn to -6.5 degrees
-                    drive.turnAsync(Math.toRadians(-5));
+                    drive.turnAsync(Math.toRadians(-5.5));
                     currentMode = Mode.WAIT_FOR_TURN_TO_FINISH;
                 } else if (powerShotState == 2) {
                     //turn to -13 degrees
-                    drive.turnAsync(Math.toRadians(-5));
+                    drive.turnAsync(Math.toRadians(-5.5));
                     currentMode = Mode.WAIT_FOR_TURN_TO_FINISH;
                 }
                 flywheel.setRPM(launcherRPM);

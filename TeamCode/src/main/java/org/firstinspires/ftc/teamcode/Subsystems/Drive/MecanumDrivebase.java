@@ -62,9 +62,9 @@ import static org.firstinspires.ftc.teamcode.Subsystems.Drive.DriveConstants.kV;
  */
 @Config
 public class MecanumDrivebase extends com.acmerobotics.roadrunner.drive.MecanumDrive {
-    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(3.5, 0, 0.1);
-    public static PIDCoefficients HEADING_PID = new PIDCoefficients(8, 0, 0.8);
-    public static PIDCoefficients POINT_TURN_PID = new PIDCoefficients(6, 0, 0);
+    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(4, 0, 0.1);
+    public static PIDCoefficients HEADING_PID = new PIDCoefficients(6, 0, 0.2);
+    public static PIDCoefficients POINT_TURN_PID = new PIDCoefficients(7    , 0, 0);
 
     public static double kPTurn = 2;
     public static double kITurn = 0.0;
@@ -123,6 +123,13 @@ public class MecanumDrivebase extends com.acmerobotics.roadrunner.drive.MecanumD
 
     public void changeTimeout(double timeout){
         turnTimeout = timeout;
+
+        follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, TRANSLATIONAL_PID, HEADING_PID,
+                new Pose2d(0.25, 0.25, Math.toRadians(1.0)), timeout);
+    }
+
+    public void changeTimeout(double timeout, double turnTimeout_){
+        turnTimeout = turnTimeout_;
 
         follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, TRANSLATIONAL_PID, HEADING_PID,
                 new Pose2d(0.25, 0.25, Math.toRadians(1.0)), timeout);

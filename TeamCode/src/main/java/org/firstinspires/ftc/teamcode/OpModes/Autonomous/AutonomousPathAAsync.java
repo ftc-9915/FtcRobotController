@@ -166,14 +166,12 @@ public class AutonomousPathAAsync extends AutonomousPathAsync {
                     timer.reset();
                     currentState = State.SHOOT_RINGS_POWERSHOT;
                 }
-                flywheel.setRPM(powershotStartPose.getRPM());
 
                 break;
 
             //set rings to shoot and reset timer required before moving to this state
             case SHOOT_RINGS_POWERSHOT:
 
-                flywheel.setRPM(powershotStartPose.getRPM());
                 hopper.setLiftUpPos();
                 if (rings > 0) {
                     if (UtilMethods.inRange(flywheel.getRPM(), powershotStartPose.getRPM() - 125, powershotStartPose.getRPM() + 125)
@@ -199,20 +197,22 @@ public class AutonomousPathAAsync extends AutonomousPathAsync {
             case TURN_TO:
                 if (powerShotState > 2) {
                     currentState = State.TURN_TO_PLACE_GOAL;
+                    flywheel.setRPM(0);
+
                     drive.changeTimeout(0.8);
                     drive.followTrajectoryAsync(goToDropGoalPosePt1);
                 }
                 else if (powerShotState == 1) {
                     //turn to -6.5 degrees
-                    drive.turnAsync(Math.toRadians(-5));
+                    flywheel.setRPM(2850);
+                    drive.turnAsync(Math.toRadians(-5.5));
                     currentState = State.WAIT_FOR_TURN_TO_FINISH;
                 } else if (powerShotState == 2) {
                     //turn to -13 degrees
-                    drive.turnAsync(Math.toRadians(-5));
+                    flywheel.setRPM(2800);
+                    drive.turnAsync(Math.toRadians(-5.5));
                     currentState = State.WAIT_FOR_TURN_TO_FINISH;
                 }
-                flywheel.setRPM(powershotStartPose.getRPM());
-
                 break;
 
 
@@ -220,7 +220,6 @@ public class AutonomousPathAAsync extends AutonomousPathAsync {
                 if(!drive.isBusy()) {
                     currentState = State.PREPARE_TO_SHOOT_POWERSHOTS;
                 }
-                flywheel.setRPM(powershotStartPose.getRPM());
 
                 break;
 
